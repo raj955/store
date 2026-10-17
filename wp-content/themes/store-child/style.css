@@ -1,0 +1,13 @@
+/*
+ Theme Name:   Store Child
+ Description:  Custom store design on top of Kadence. Deployed from GitHub; edit in the repo, not on the server.
+ Template:     kadence
+ Version:      0.1.0
+ Requires PHP: 7.4
+ Text Domain:  store-child
+*/
+
+/* Brand colours and fonts go here once the design is final. */
+:root {
+	--store-accent: #111111;
+}
