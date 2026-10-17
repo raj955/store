@@ -1,0 +1,116 @@
+# Deploys the store's custom code (child theme + store plugin) to cPanel.
+# Flow: push to main -> check secrets -> stamp deploy info -> PHP syntax check -> FTPS upload.
+# One-time setup is in README.md.
+
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wp-content/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: only show what would change, upload nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Never run two deploys to the live site at the same time.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to live site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: ${{ secrets.FTP_PORT || '21' }}
+      FTP_SECURITY: ${{ secrets.FTP_SECURITY || 'loose' }}
+      # Empty when the FTP account is rooted at wp-content (recommended).
+      FTP_BASE_DIR: ${{ secrets.FTP_BASE_DIR }}
+
+    steps:
+      - name: Check FTP secrets
+        run: |
+          missing=""
+          for name in FTP_SERVER FTP_USERNAME FTP_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              missing="$missing $name"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing GitHub secrets:$missing (see README, step 4)"
+            exit 1
+          fi
+          if [ -n "$FTP_BASE_DIR" ] && [ "${FTP_BASE_DIR: -1}" != "/" ]; then
+            echo "::error::FTP_BASE_DIR must end with a slash, e.g. public_html/wp-content/"
+            exit 1
+          fi
+          echo "FTP secrets present."
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Write deploy info
+        run: |
+          printf "<?php\nreturn array(\n\t'sha'  => '%s',\n\t'time' => '%s',\n);\n" \
+            "${GITHUB_SHA::7}" "$(date -u +'%Y-%m-%d %H:%M UTC')" \
+            > wp-content/plugins/store-features/build-info.php
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # Keep this at or below the PHP version your host runs.
+          php-version: "8.1"
+          coverage: none
+
+      - name: PHP syntax check
+        run: |
+          find wp-content -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
+
+      - name: Deploy child theme
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ env.FTP_SERVER }}
+          username: ${{ env.FTP_USERNAME }}
+          password: ${{ env.FTP_PASSWORD }}
+          port: ${{ env.FTP_PORT }}
+          protocol: ftps
+          security: ${{ env.FTP_SECURITY }}
+          local-dir: ./wp-content/themes/store-child/
+          server-dir: ${{ env.FTP_BASE_DIR }}themes/store-child/
+          dry-run: ${{ inputs.dry_run == true }}
+
+      - name: Deploy store plugin
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ env.FTP_SERVER }}
+          username: ${{ env.FTP_USERNAME }}
+          password: ${{ env.FTP_PASSWORD }}
+          port: ${{ env.FTP_PORT }}
+          protocol: ftps
+          security: ${{ env.FTP_SECURITY }}
+          local-dir: ./wp-content/plugins/store-features/
+          server-dir: ${{ env.FTP_BASE_DIR }}plugins/store-features/
+          dry-run: ${{ inputs.dry_run == true }}
+
+      - name: Summary
+        env:
+          DRY_RUN: ${{ inputs.dry_run == true }}
+        run: |
+          {
+            echo "### Deploy finished"
+            echo ""
+            echo "- Commit: \`${GITHUB_SHA::7}\`"
+            echo "- Dry run: $DRY_RUN"
+          } >> "$GITHUB_STEP_SUMMARY"
