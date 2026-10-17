@@ -1,0 +1,15 @@
+# Written by the deploy pipeline
+build-info.php
+.ftp-deploy-sync-state.json
+
+# Secrets and dependencies
+.env
+node_modules/
+vendor/
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
