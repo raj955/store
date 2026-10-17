@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Store Features
  * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar. Deployed from GitHub.
- * Version:           0.2.0
+ * Version:           0.2.1
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Text Domain:       store-features
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'STORE_FEATURES_VERSION', '0.2.0' );
+define( 'STORE_FEATURES_VERSION', '0.2.1' );
 define( 'STORE_FEATURES_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -74,6 +74,33 @@ function store_features_product_tabs( $tabs ) {
 	return $tabs;
 }
 add_filter( 'woocommerce_product_tabs', 'store_features_product_tabs', 98 );
+
+/**
+ * Small wording fixes in strings that come from the theme and the swatches plugin.
+ *
+ * @param string $translation Translated text.
+ * @param string $text        Original text.
+ * @param string $domain      Text domain.
+ * @return string
+ */
+function store_features_wording( $translation, $text, $domain ) {
+	if ( 'kadence' === $domain && 'Review Cart' === $text ) {
+		return __( 'Your cart', 'store-features' );
+	}
+	if ( 'variation-swatches-woo' === $domain && 'Add to Cart' === $text ) {
+		return __( 'Add to cart', 'store-features' );
+	}
+	return $translation;
+}
+add_filter( 'gettext', 'store_features_wording', 10, 3 );
+
+/**
+ * A short reassurance line in the cart drawer, above the View cart and Checkout buttons.
+ */
+function store_features_mini_cart_note() {
+	echo '<p class="sf-cart-note">' . esc_html__( 'Free shipping and cash on delivery across India.', 'store-features' ) . '</p>';
+}
+add_action( 'woocommerce_widget_shopping_cart_before_buttons', 'store_features_mini_cart_note' );
 
 /**
  * Load the small front-end layer (inline, so there is nothing extra to deploy or cache).
@@ -300,6 +327,7 @@ function store_features_style() {
 .sf-dialog__unit, .sf-dialog__note { margin: 4px 0 14px; color: var(--muted, #565D7A); font-size: 14px; }
 .sf-dialog__more { margin: 6px 0 0; }
 .sf-dialog__more a { color: var(--neel, #1E2650); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.sf-cart-note { margin: 0 0 12px; color: var(--muted, #565D7A); font-size: 14px; }
 .sf-delivery { margin: -2px 0 16px; font-size: 15px; color: var(--ink, #2B3150); }
 .sf-delivery span { margin-right: 4px; color: var(--muted, #565D7A); }
 .sf-sticky { position: fixed; left: 0; right: 0; bottom: 0; z-index: 90; display: none; align-items: center; gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line, #DCDEE6); box-shadow: 0 -6px 20px rgba(23, 28, 58, .08); transform: translateY(110%); transition: transform .25s ease; }
