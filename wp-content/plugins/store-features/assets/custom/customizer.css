@@ -75,6 +75,6 @@
 
 /* Wide screens: the preview stays in view while you scroll through the controls. */
 @media (min-width: 768px) {
-	.single-product div.product .sf-cz-stage.images { position: sticky; top: 24px; }
+	.single-product div.product .sf-cz-stage.images { position: sticky !important; top: 24px; }
 	.admin-bar.single-product div.product .sf-cz-stage.images { top: 56px; }
 }
