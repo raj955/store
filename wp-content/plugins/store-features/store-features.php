@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Store Features
- * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages, order hand-off to Qikink, "Design your own" customizer. Deployed from GitHub.
- * Version:           0.5.0
+ * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages, order hand-off to Qikink, "Design your own" customizer, sign in with Google, visitor tracking. Deployed from GitHub.
+ * Version:           0.6.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Text Domain:       store-features
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'STORE_FEATURES_VERSION', '0.5.0' );
+define( 'STORE_FEATURES_VERSION', '0.6.0' );
 define( 'STORE_FEATURES_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -69,6 +69,12 @@ function store_features_product_tabs( $tabs ) {
 
 	if ( isset( $tabs['description'] ) ) {
 		$tabs['description']['title'] = __( 'Details', 'store-features' );
+	}
+
+	// "Reviews (0)" reads as empty; show the count only once there are reviews.
+	global $product;
+	if ( isset( $tabs['reviews'] ) && $product instanceof WC_Product && 0 === (int) $product->get_review_count() ) {
+		$tabs['reviews']['title'] = __( 'Reviews', 'store-features' );
 	}
 
 	return $tabs;
@@ -282,27 +288,34 @@ unset( $store_features_tag );
 
 require_once STORE_FEATURES_DIR . 'includes/qikink.php';
 require_once STORE_FEATURES_DIR . 'includes/custom-design.php';
+require_once STORE_FEATURES_DIR . 'includes/shop-ux.php';
+require_once STORE_FEATURES_DIR . 'includes/google-login.php';
+require_once STORE_FEATURES_DIR . 'includes/tracking.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
  * order" (the trust list under Add to cart).
  */
 function store_features_fix_theme_wording() {
-	if ( '1' === get_option( 'store_features_wording_fixed' ) ) {
+	if ( '2' === get_option( 'store_features_wording_fixed' ) ) {
 		return;
 	}
 	foreach ( (array) get_theme_mods() as $key => $value ) {
 		$fixed = store_features_custom_fix_strings(
 			$value,
 			function ( $text ) {
-				return str_replace( array( 'Printed after you order. ', 'Printed after you order.' ), '', $text );
+				return str_replace(
+					array( 'Printed after you order. ', 'Printed after you order.', 'Printed to order in India.' ),
+					array( '', '', 'Made in India.' ),
+					$text
+				);
 			}
 		);
 		if ( $fixed !== $value ) {
 			set_theme_mod( $key, $fixed );
 		}
 	}
-	update_option( 'store_features_wording_fixed', '1', false );
+	update_option( 'store_features_wording_fixed', '2', false );
 }
 add_action( 'admin_init', 'store_features_fix_theme_wording' );
 

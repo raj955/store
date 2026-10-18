@@ -424,6 +424,7 @@
 			clamp(state.text);
 		}
 		state.active = 'text';
+		track('design_started', { type: 'text' });
 		render();
 	});
 
@@ -458,6 +459,7 @@
 			el.remove.hidden = false;
 			el.fileText.textContent = t.change;
 			selectTab('photo');
+			track('design_photo', { dpi: Math.round(nw / p.w) });
 		};
 		img.onerror = function () {
 			URL.revokeObjectURL(url);
@@ -851,6 +853,36 @@
 			showError(err && err.message ? err.message : t.failed);
 		});
 	}, true);
+
+	/* ------------------------------------------------------------ tracking */
+
+	var tracked = {};
+	function track(name, params) {
+		if (!tracked[name] && window.sfTrack) {
+			tracked[name] = true;
+			window.sfTrack(name, params || {});
+		}
+	}
+
+	/* ------------------------------------------------------------ steps */
+
+	/* Number the three choices, so the order is obvious: design, colour, size. */
+	(function () {
+		var steps = [
+			panel.querySelector('.sf-cz-title'),
+			form.querySelector('label[for="pa_color"]'),
+			form.querySelector('label[for="pa_size"]')
+		];
+		steps.forEach(function (heading, i) {
+			if (heading && !heading.querySelector('.sf-cz-step')) {
+				var num = document.createElement('span');
+				num.className = 'sf-cz-step';
+				num.textContent = String(i + 1);
+				num.setAttribute('aria-hidden', 'true');
+				heading.insertBefore(num, heading.firstChild);
+			}
+		});
+	})();
 
 	/* ------------------------------------------------------------ start */
 

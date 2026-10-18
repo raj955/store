@@ -78,3 +78,6 @@
 	.single-product div.product .sf-cz-stage.images { position: sticky !important; top: 24px; }
 	.admin-bar.single-product div.product .sf-cz-stage.images { top: 56px; }
 }
+
+.sf-cz-step { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-right: 8px; border-radius: 50%; background: var(--neel, #1E2650); color: #fff; font-size: 13px; font-weight: 700; line-height: 1; vertical-align: 2px; }
+.sf-cz-title .sf-cz-step { vertical-align: 3px; }
