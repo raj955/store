@@ -636,7 +636,7 @@ add_action( 'wp', 'store_features_custom_page_setup' );
  */
 function store_features_custom_stage() {
 	?>
-	<div class="sf-cz-stage woocommerce-product-gallery">
+	<div class="sf-cz-stage woocommerce-product-gallery images">
 		<div class="sf-cz-frame">
 			<canvas class="sf-cz-canvas" width="1000" height="1250" role="img" aria-label="<?php esc_attr_e( 'Preview of your design', 'store-features' ); ?>"></canvas>
 			<p class="sf-cz-empty"><?php esc_html_e( 'Type your text or add a photo to see it here.', 'store-features' ); ?></p>
