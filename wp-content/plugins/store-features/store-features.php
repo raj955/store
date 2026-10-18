@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Store Features
- * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar. Deployed from GitHub.
- * Version:           0.2.1
+ * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages. Deployed from GitHub.
+ * Version:           0.3.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Text Domain:       store-features
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'STORE_FEATURES_VERSION', '0.2.1' );
+define( 'STORE_FEATURES_VERSION', '0.3.0' );
 define( 'STORE_FEATURES_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -101,6 +101,180 @@ function store_features_mini_cart_note() {
 	echo '<p class="sf-cart-note">' . esc_html__( 'Free shipping and cash on delivery across India.', 'store-features' ) . '</p>';
 }
 add_action( 'woocommerce_widget_shopping_cart_before_buttons', 'store_features_mini_cart_note' );
+
+/**
+ * Store contact details, kept in one place.
+ *
+ * They are edited in WooCommerce → Settings → General → "Store contact" and shown on the
+ * Contact, Terms and Privacy pages through shortcodes, so a new brand name, phone number or
+ * address only ever has to be changed once. The store name is the Site Title and the address
+ * is WooCommerce's own Store Address.
+ *
+ * @return array<string, array{label: string, type: string, default: string}>
+ */
+function store_features_contact_fields() {
+	return array(
+		'store_features_owner' => array(
+			'label'   => __( 'Owner and grievance officer', 'store-features' ),
+			'type'    => 'text',
+			'default' => '',
+		),
+		'store_features_email' => array(
+			'label'   => __( 'Support email', 'store-features' ),
+			'type'    => 'email',
+			'default' => '',
+		),
+		'store_features_phone' => array(
+			'label'   => __( 'Support phone and WhatsApp', 'store-features' ),
+			'type'    => 'text',
+			'default' => '',
+		),
+		'store_features_hours' => array(
+			'label'   => __( 'Support hours', 'store-features' ),
+			'type'    => 'text',
+			'default' => 'Monday to Saturday, 10 am to 6 pm',
+		),
+	);
+}
+
+/**
+ * Register the contact options so they can also be read and set through the REST API.
+ */
+function store_features_register_contact_settings() {
+	foreach ( store_features_contact_fields() as $option => $field ) {
+		register_setting(
+			'store_features',
+			$option,
+			array(
+				'type'              => 'string',
+				'description'       => $field['label'],
+				'default'           => $field['default'],
+				'sanitize_callback' => 'email' === $field['type'] ? 'sanitize_email' : 'sanitize_text_field',
+				'show_in_rest'      => true,
+			)
+		);
+	}
+}
+add_action( 'init', 'store_features_register_contact_settings' );
+
+/**
+ * Add the "Store contact" section under WooCommerce → Settings → General.
+ *
+ * @param array $settings General settings.
+ * @return array
+ */
+function store_features_contact_settings( $settings ) {
+	$section = array(
+		array(
+			'title' => __( 'Store contact', 'store-features' ),
+			'desc'  => __( 'Shown on the Contact, Terms and Privacy pages. The store name comes from Settings → General → Site Title, and the address from Store Address above.', 'store-features' ),
+			'type'  => 'title',
+			'id'    => 'store_features_contact',
+		),
+	);
+
+	foreach ( store_features_contact_fields() as $option => $field ) {
+		$section[] = array(
+			'title'   => $field['label'],
+			'id'      => $option,
+			'type'    => $field['type'],
+			'default' => $field['default'],
+		);
+	}
+
+	$section[] = array(
+		'type' => 'sectionend',
+		'id'   => 'store_features_contact',
+	);
+
+	return array_merge( $settings, $section );
+}
+add_filter( 'woocommerce_general_settings', 'store_features_contact_settings' );
+
+/**
+ * The store's address from WooCommerce → Settings → General → Store Address.
+ *
+ * @param bool $city_only Return only "City, State".
+ * @return string
+ */
+function store_features_store_address( $city_only = false ) {
+	$country_state = (string) get_option( 'woocommerce_default_country', '' );
+	$parts         = explode( ':', $country_state );
+	$country       = $parts[0];
+	$state         = isset( $parts[1] ) ? $parts[1] : '';
+	$state_name    = $state;
+	$country_name  = $country;
+
+	if ( function_exists( 'WC' ) && WC()->countries ) {
+		$states = WC()->countries->get_states( $country );
+		if ( $state && is_array( $states ) && isset( $states[ $state ] ) ) {
+			$state_name = $states[ $state ];
+		}
+		$countries = WC()->countries->get_countries();
+		if ( isset( $countries[ $country ] ) ) {
+			$country_name = $countries[ $country ];
+		}
+	}
+
+	$city = trim( (string) get_option( 'woocommerce_store_city', '' ) );
+
+	if ( $city_only ) {
+		return implode( ', ', array_filter( array( $city, $state_name ) ) );
+	}
+
+	$lines = array(
+		trim( (string) get_option( 'woocommerce_store_address', '' ) ),
+		trim( (string) get_option( 'woocommerce_store_address_2', '' ) ),
+		$city,
+		trim( $state_name . ' ' . trim( (string) get_option( 'woocommerce_store_postcode', '' ) ) ),
+		$country_name,
+	);
+
+	return implode( ', ', array_filter( $lines ) );
+}
+
+/**
+ * Shortcodes for the policy pages: [store_name], [store_owner], [store_email], [store_phone],
+ * [store_hours], [store_city] and [store_address].
+ *
+ * @param array  $atts    Unused.
+ * @param string $content Unused.
+ * @param string $tag     Shortcode name.
+ * @return string
+ */
+function store_features_contact_shortcode( $atts, $content, $tag ) {
+	switch ( $tag ) {
+		case 'store_name':
+			return esc_html( get_bloginfo( 'name' ) );
+		case 'store_owner':
+			return esc_html( get_option( 'store_features_owner', '' ) );
+		case 'store_email':
+			$email = sanitize_email( get_option( 'store_features_email', '' ) );
+			if ( ! $email ) {
+				return '';
+			}
+			$shown = antispambot( $email );
+			return '<a href="mailto:' . $shown . '">' . $shown . '</a>';
+		case 'store_phone':
+			$phone = trim( (string) get_option( 'store_features_phone', '' ) );
+			if ( '' === $phone ) {
+				return '';
+			}
+			$digits = preg_replace( '/[^0-9+]/', '', $phone );
+			return '<a href="tel:' . esc_attr( $digits ) . '">' . esc_html( $phone ) . '</a>';
+		case 'store_hours':
+			return esc_html( get_option( 'store_features_hours', 'Monday to Saturday, 10 am to 6 pm' ) );
+		case 'store_city':
+			return esc_html( store_features_store_address( true ) );
+		case 'store_address':
+			return esc_html( store_features_store_address() );
+	}
+	return '';
+}
+foreach ( array( 'store_name', 'store_owner', 'store_email', 'store_phone', 'store_hours', 'store_city', 'store_address' ) as $store_features_tag ) {
+	add_shortcode( $store_features_tag, 'store_features_contact_shortcode' );
+}
+unset( $store_features_tag );
 
 /**
  * Load the small front-end layer (inline, so there is nothing extra to deploy or cache).
