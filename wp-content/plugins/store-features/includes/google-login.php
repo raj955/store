@@ -177,6 +177,7 @@ function store_features_google_script() {
 			text: 'continue_with',
 			shape: 'rectangular',
 			logo_alignment: 'left',
+			locale: 'en',
 			width: Math.min(400, Math.max(240, slot.offsetWidth || 320))
 		});
 	});
