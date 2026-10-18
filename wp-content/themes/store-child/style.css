@@ -2,7 +2,7 @@
  Theme Name:   Store Child
  Description:  Store design on top of Kadence: indigo and white, Anek Devanagari, product grid, product page, home page sections. Deployed from GitHub; edit in the repo, not on the server.
  Template:     kadence
- Version:      0.2.0
+ Version:      0.2.1
  Requires PHP: 7.4
  Text Domain:  store-child
 */
@@ -312,6 +312,9 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
 .home-section { max-width: 1280px; margin: 0 auto; padding: 80px 32px 0; }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 0 0 26px; }
 .section-head h2 { margin: 0; font-size: clamp(26px, 3vw, 36px); }
+.home-custom .section-head { margin-bottom: 10px; }
+.home-custom-intro { max-width: 60ch; margin: 0 0 26px; color: var(--muted); font-size: 17px; line-height: 1.55; }
+.home-custom-intro span { color: var(--heading); font-weight: 600; }
 .entry-content .section-head a { font-weight: 600; color: var(--neel); text-decoration: underline; text-underline-offset: 4px; white-space: nowrap; }
 
 /* Hero: the garment as a spec sheet */

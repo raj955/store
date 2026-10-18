@@ -49,7 +49,7 @@
 
 .sf-cz-adjust { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--line, #DCDEE6); }
 .sf-cz-adjust[hidden] { display: none; }
-.sf-cz-size { width: 100%; margin: 2px 0 12px; accent-color: var(--neel, #1E2650); }
+.sf-cz-size { display: block; width: 100%; height: 32px; margin: 2px 0 10px; padding: 0; border: 0; background: none; box-shadow: none; accent-color: var(--neel, #1E2650); }
 .sf-cz-move { display: flex; flex-wrap: wrap; gap: 6px; }
 .sf-cz-move button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 10px; border: 1px solid var(--line, #DCDEE6); border-radius: var(--radius, 4px); background: #fff; color: var(--heading, #171C3A); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .sf-cz-move button:hover { border-color: var(--neel, #1E2650); }
