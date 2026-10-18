@@ -2,7 +2,7 @@
  Theme Name:   Store Child
  Description:  Store design on top of Kadence: indigo and white, Anek Devanagari, product grid, product page, home page sections. Deployed from GitHub; edit in the repo, not on the server.
  Template:     kadence
- Version:      0.2.1
+ Version:      0.2.2
  Requires PHP: 7.4
  Text Domain:  store-child
 */
@@ -169,11 +169,17 @@ a { text-underline-offset: 3px; }
 .woocommerce ul.products .cfvsw-label-option.cfvsw-selected-swatch .cfvsw-swatch-inner { color: #fff; }
 .woocommerce ul.products .reset_variations { display: none !important; }
 
-/* Grid add-to-cart as a quiet text action */
-.woocommerce ul.products li.product .product-action-wrap { padding: 0; margin-top: 2px; }
-.woocommerce ul.products li.product .product-action-wrap .button {
-  font-size: 14px; font-weight: 600; color: var(--neel); letter-spacing: .01em; padding: 4px 0; text-transform: none;
+/* Grid add-to-cart: a full-width button under each card */
+.woocommerce ul.products li.product .product-action-wrap { display: block; padding: 0; margin-top: 10px; }
+.woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin: 0; padding: 10px 12px;
+  border: 1px solid var(--neel); border-radius: var(--radius); background: var(--neel); color: #fff;
+  font-size: 15px; font-weight: 600; letter-spacing: .01em; text-transform: none; line-height: 1.2;
 }
+.woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn:hover { background: var(--heading); border-color: var(--heading); }
+.woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn--design { background: #fff; color: var(--neel); }
+.woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn--design:hover { background: var(--neel); color: #fff; }
+.woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn::after { content: none; }
 
 /* ---------------------------------------------------------------- Single product */
 .single-product .product_title { font-size: clamp(26px, 3vw, 36px); margin-bottom: 6px; }
@@ -292,9 +298,9 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   .woocommerce ul.products { column-gap: 12px; row-gap: 32px; }
   .woocommerce ul.products li.product .woocommerce-loop-product__title { font-size: 14.5px; }
   .woocommerce ul.products li.product .price { font-size: 14.5px; }
-  /* sizes are picked on the product page on phones */
-  .woocommerce ul.products .cfvsw-shop-variations tr:has(.cfvsw-label-option),
-  .woocommerce ul.products li.product .product-action-wrap { display: none; }
+  /* sizes are picked in the Add to cart panel */
+  .woocommerce ul.products .cfvsw-shop-variations tr:has(.cfvsw-label-option) { display: none; }
+  .woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn { font-size: 14px; padding: 8px; }
   .woocommerce span.onsale { top: 8px; left: 8px; }
   .woocommerce ul.products li.product .yith-wcwl-add-to-wishlist-button { width: 34px; height: 34px; }
   .single-product .cfvsw-label-option { min-width: 48px !important; }
