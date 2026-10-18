@@ -204,7 +204,7 @@ function store_features_shop_ux_assets() {
 	}
 	if ( is_shop() || is_product_category() ) {
 		// Bring the current category chip into view in the sideways-scrolling row on phones.
-		wp_add_inline_script( 'store-features', "(function(){var r=document.querySelector('.chip-row'),a=r&&r.querySelector('[aria-current]');if(a&&r.scrollWidth>r.clientWidth){r.scrollLeft=a.offsetLeft-(r.clientWidth-a.offsetWidth)/2;}})();" );
+		wp_add_inline_script( 'store-features', "(function(){var r=document.querySelector('.chip-row'),a=r&&r.querySelector('[aria-current]');if(a&&r.scrollWidth>r.clientWidth){r.scrollLeft=a.getBoundingClientRect().left-r.getBoundingClientRect().left+r.scrollLeft-(r.clientWidth-a.offsetWidth)/2;}})();" );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'store_features_shop_ux_assets', 31 );
