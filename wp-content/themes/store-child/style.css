@@ -2,7 +2,7 @@
  Theme Name:   Store Child
  Description:  Store design on top of Kadence: indigo and white, Anek Devanagari, product grid, product page, home page sections. Deployed from GitHub; edit in the repo, not on the server.
  Template:     kadence
- Version:      0.2.2
+ Version:      0.2.3
  Requires PHP: 7.4
  Text Domain:  store-child
 */
@@ -169,6 +169,9 @@ a { text-underline-offset: 3px; }
 .woocommerce ul.products .cfvsw-label-option.cfvsw-selected-swatch .cfvsw-swatch-inner { color: #fff; }
 .woocommerce ul.products .reset_variations { display: none !important; }
 
+/* Sizes are picked in the Add to cart panel, not on the card */
+.woocommerce ul.products .cfvsw-shop-variations tr:has(.cfvsw-label-option) { display: none; }
+
 /* Grid add-to-cart: a full-width button under each card, lined up across a row */
 .woocommerce ul.products li.product { display: flex; flex-direction: column; }
 .woocommerce ul.products li.product .product-details { display: flex; flex: 1 1 auto; flex-direction: column; }
@@ -301,8 +304,6 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   .woocommerce ul.products { column-gap: 12px; row-gap: 32px; }
   .woocommerce ul.products li.product .woocommerce-loop-product__title { font-size: 14.5px; }
   .woocommerce ul.products li.product .price { font-size: 14.5px; }
-  /* sizes are picked in the Add to cart panel */
-  .woocommerce ul.products .cfvsw-shop-variations tr:has(.cfvsw-label-option) { display: none; }
   .woocommerce ul.products li.product .product-action-wrap .button.sf-card-btn { font-size: 14px; padding: 8px; }
   .woocommerce span.onsale { top: 8px; left: 8px; }
   .woocommerce ul.products li.product .yith-wcwl-add-to-wishlist-button { width: 34px; height: 34px; }
