@@ -736,8 +736,9 @@ function store_features_custom_assets() {
 	sort( $queries );
 
 	wp_enqueue_style( 'store-features-custom-fonts', 'https://fonts.googleapis.com/css2?' . implode( '&', $queries ) . '&display=swap', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
-	wp_enqueue_style( 'store-features-custom', $base . 'customizer.css', array(), STORE_FEATURES_VERSION );
-	wp_enqueue_script( 'store-features-custom', $base . 'customizer.js', array( 'jquery', 'wc-add-to-cart-variation' ), STORE_FEATURES_VERSION, true );
+	$dir = STORE_FEATURES_DIR . 'assets/custom/';
+	wp_enqueue_style( 'store-features-custom', $base . 'customizer.css', array(), (string) filemtime( $dir . 'customizer.css' ) );
+	wp_enqueue_script( 'store-features-custom', $base . 'customizer.js', array( 'jquery', 'wc-add-to-cart-variation' ), (string) filemtime( $dir . 'customizer.js' ), true );
 
 	$colours = array();
 	foreach ( $style['colours'] as $slug ) {
