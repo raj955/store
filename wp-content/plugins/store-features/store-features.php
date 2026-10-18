@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Store Features
- * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages, order hand-off to Qikink. Deployed from GitHub.
- * Version:           0.4.0
+ * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages, order hand-off to Qikink, "Design your own" customizer. Deployed from GitHub.
+ * Version:           0.5.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Text Domain:       store-features
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'STORE_FEATURES_VERSION', '0.4.0' );
+define( 'STORE_FEATURES_VERSION', '0.5.0' );
 define( 'STORE_FEATURES_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -98,6 +98,10 @@ add_filter( 'gettext', 'store_features_wording', 10, 3 );
  * A short reassurance line in the cart drawer, above the View cart and Checkout buttons.
  */
 function store_features_mini_cart_note() {
+	if ( function_exists( 'store_features_custom_cart_has_design' ) && store_features_custom_cart_has_design() ) {
+		echo '<p class="sf-cart-note">' . esc_html__( 'Free shipping across India. Pieces with your own design are paid online.', 'store-features' ) . '</p>';
+		return;
+	}
 	echo '<p class="sf-cart-note">' . esc_html__( 'Free shipping and cash on delivery across India.', 'store-features' ) . '</p>';
 }
 add_action( 'woocommerce_widget_shopping_cart_before_buttons', 'store_features_mini_cart_note' );
@@ -277,6 +281,7 @@ foreach ( array( 'store_name', 'store_owner', 'store_email', 'store_phone', 'sto
 unset( $store_features_tag );
 
 require_once STORE_FEATURES_DIR . 'includes/qikink.php';
+require_once STORE_FEATURES_DIR . 'includes/custom-design.php';
 
 /**
  * Declare support for WooCommerce's order tables (orders are read and written through the CRUD API).
@@ -342,6 +347,9 @@ function store_features_script() {
 	/* Add to cart from the product page without a page reload. Falls back to a normal submit. */
 	$(document).on('submit', '.single-product .summary form.cart', function (e) {
 		var form = this;
+		if (document.body.classList.contains('sf-custom-product')) {
+			return; /* The customizer adds these itself, with the design. */
+		}
 		var btn = form.querySelector('.single_add_to_cart_button');
 		if (!cfg.addToCartUrl || !btn || btn.classList.contains('disabled')) {
 			return;
@@ -513,6 +521,7 @@ function store_features_style() {
 .sf-dialog__unit, .sf-dialog__note { margin: 4px 0 14px; color: var(--muted, #565D7A); font-size: 14px; }
 .sf-dialog__more { margin: 6px 0 0; }
 .sf-dialog__more a { color: var(--neel, #1E2650); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.sf-custom-notice { margin: 0 0 20px; padding: 14px 16px; border-left: 3px solid var(--neel, #1E2650); background: var(--wash, #F6F7FA); color: var(--ink, #2B3150); font-size: 15px; line-height: 1.5; }
 .sf-cart-note { margin: 0 0 12px; color: var(--muted, #565D7A); font-size: 14px; }
 .sf-delivery { margin: -2px 0 16px; font-size: 15px; color: var(--ink, #2B3150); }
 .sf-delivery span { margin-right: 4px; color: var(--muted, #565D7A); }

@@ -17,6 +17,8 @@
  *   _sf_qikink_design_w     print width in inches
  *   _sf_qikink_design_h     print height in inches
  * A variation can override the generated SKU with _sf_qikink_sku.
+ * Order lines made with "Design your own" carry their own print file (see custom-design.php)
+ * and are never sent automatically: the order waits for a person to check the design.
  *
  * @package store-features
  */
@@ -59,6 +61,10 @@ function store_features_qikink_colour_codes() {
 		'grey-melange' => 'Gm',
 		'mint'         => 'Mnt',
 		'baby-blue'    => 'BB',
+		'red'          => 'Rd',
+		'royal-blue'   => 'Rb',
+		'light-pink'   => 'LBp',
+		'coral'        => 'Cor',
 	);
 }
 
@@ -189,16 +195,25 @@ function store_features_qikink_payload( $order ) {
 			return $sku;
 		}
 
-		$code  = substr( preg_replace( '/[^A-Za-z0-9]/', '', (string) $parent->get_meta( '_sf_qikink_design_code' ) ), 0, 20 );
-		$link  = (string) $parent->get_meta( '_sf_qikink_design_url' );
-		$width = (float) $parent->get_meta( '_sf_qikink_design_w' );
-		$high  = (float) $parent->get_meta( '_sf_qikink_design_h' );
+		$custom = function_exists( 'store_features_custom_item_design' ) ? store_features_custom_item_design( $item ) : null;
+		if ( $custom ) {
+			// The customer's own design, made on the product page.
+			$code   = $custom['code'];
+			$link   = $custom['print_url'];
+			$width  = $custom['w'];
+			$high   = $custom['h'];
+			$mockup = $custom['mockup_url'];
+		} else {
+			$code     = substr( preg_replace( '/[^A-Za-z0-9]/', '', (string) $parent->get_meta( '_sf_qikink_design_code' ) ), 0, 20 );
+			$link     = (string) $parent->get_meta( '_sf_qikink_design_url' );
+			$width    = (float) $parent->get_meta( '_sf_qikink_design_w' );
+			$high     = (float) $parent->get_meta( '_sf_qikink_design_h' );
+			$image_id = $product->get_image_id() ? $product->get_image_id() : $parent->get_image_id();
+			$mockup   = $image_id ? wp_get_attachment_image_url( $image_id, 'full' ) : '';
+		}
 		if ( '' === $code || '' === $link || $width <= 0 || $high <= 0 ) {
 			return new WP_Error( 'qikink_design', sprintf( '%s is missing its print file details.', $parent->get_name() ) );
 		}
-
-		$image_id = $product->get_image_id() ? $product->get_image_id() : $parent->get_image_id();
-		$mockup   = $image_id ? wp_get_attachment_image_url( $image_id, 'full' ) : '';
 		$quantity = max( 1, (int) $item->get_quantity() );
 
 		$items[] = array(
@@ -405,6 +420,10 @@ function store_features_qikink_post_order( $payload ) {
  * @param int $order_id Order ID.
  */
 function store_features_qikink_maybe_queue( $order_id ) {
+	if ( function_exists( 'store_features_custom_order_has_design' ) && store_features_custom_order_has_design( $order_id ) ) {
+		store_features_custom_hold_for_review( $order_id );
+		return;
+	}
 	if ( 'yes' !== store_features_qikink_setting( 'auto_send', 'no' ) || '' === store_features_qikink_base_url() ) {
 		return;
 	}
@@ -476,6 +495,8 @@ function store_features_qikink_order_status_box( $order ) {
 		$label = 'Sent, Qikink order ' . $order->get_meta( '_sf_qikink_order_id' ) . ' (' . $order->get_meta( '_sf_qikink_mode' ) . ')';
 	} elseif ( 'error' === $status ) {
 		$label = 'Not sent: ' . $order->get_meta( '_sf_qikink_error' );
+	} elseif ( 'review' === $status ) {
+		$label = 'Waiting for you. This order has a customer\'s own design: check it under the products below, then choose Order actions → Send to Qikink.';
 	}
 	echo '<p class="form-field form-field-wide"><strong>Qikink:</strong> ' . esc_html( $label ) . '</p>';
 }
