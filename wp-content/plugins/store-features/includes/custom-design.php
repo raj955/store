@@ -789,6 +789,7 @@ function store_features_custom_assets() {
 				'textPreview' => __( 'Text: %s', 'store-features' ),
 				'photoLabel'  => __( 'Photo', 'store-features' ),
 				'previewOf'   => __( 'Preview of your design on the %s garment', 'store-features' ),
+				'showPreview' => __( 'Show the preview', 'store-features' ),
 			),
 		)
 	);
@@ -823,3 +824,44 @@ function store_features_custom_setup() {
 	update_option( 'store_features_custom_setup', '2', false );
 }
 add_action( 'admin_init', 'store_features_custom_setup' );
+
+/* ------------------------------------------------------------ theme wording */
+
+/**
+ * Replace text inside the theme's saved settings (Customizer), recursively.
+ *
+ * @param mixed    $value Setting value.
+ * @param callable $fix   Gets a string, returns the new string.
+ * @return mixed
+ */
+function store_features_custom_fix_strings( $value, $fix ) {
+	if ( is_array( $value ) ) {
+		foreach ( $value as $key => $item ) {
+			$value[ $key ] = store_features_custom_fix_strings( $item, $fix );
+		}
+		return $value;
+	}
+	return is_string( $value ) ? $fix( $value ) : $value;
+}
+
+/**
+ * On custom product pages, the theme's "cash on delivery" line under Add to cart becomes
+ * "paid online".
+ *
+ * @param mixed $mods Theme settings.
+ * @return mixed
+ */
+function store_features_custom_theme_wording( $mods ) {
+	if ( is_admin() || ! function_exists( 'is_product' ) || ! did_action( 'wp' ) || ! is_product() || ! store_features_is_custom_product( get_queried_object_id() ) ) {
+		return $mods;
+	}
+	return store_features_custom_fix_strings(
+		$mods,
+		function ( $text ) {
+			return false !== stripos( $text, 'cash on delivery' ) && strlen( $text ) < 120
+				? __( 'Free shipping across India. Paid online.', 'store-features' )
+				: $text;
+		}
+	);
+}
+add_filter( 'option_theme_mods_' . get_option( 'stylesheet' ), 'store_features_custom_theme_wording' );

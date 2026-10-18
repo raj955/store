@@ -5,7 +5,7 @@
 .sf-cz-canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; cursor: default; }
 .sf-cz-canvas.has-design { cursor: grab; touch-action: none; }
 .sf-cz-canvas.is-dragging { cursor: grabbing; }
-.sf-cz-empty { position: absolute; left: 50%; top: 52%; width: min(70%, 300px); margin: 0; transform: translate(-50%, -50%); color: var(--muted, #565D7A); font-size: 15px; line-height: 1.45; text-align: center; pointer-events: none; }
+.sf-cz-empty { position: absolute; left: 50%; top: 50%; width: min(70%, 280px); margin: 0; padding: 10px 14px; transform: translate(-50%, -50%); border-radius: var(--radius, 4px); background: rgba(255, 255, 255, .92); color: var(--ink, #2B3150); font-size: 15px; line-height: 1.45; text-align: center; pointer-events: none; }
 .sf-cz-empty[hidden] { display: none; }
 .sf-cz-hint { margin: 10px 0 0; color: var(--muted, #565D7A); font-size: 14px; }
 
@@ -67,3 +67,8 @@
 	.sf-cz-panel { padding: 16px 14px 14px; }
 	.sf-cz-font__sample { font-size: 18px; }
 }
+
+.sf-cz-mini { position: fixed; left: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 91; display: none; width: 88px; padding: 0; overflow: hidden; border: 1px solid var(--line, #DCDEE6); border-radius: var(--radius, 4px); background: var(--studio, #EDEEF2); box-shadow: 0 8px 24px rgba(23, 28, 58, .18); cursor: pointer; }
+.sf-cz-mini canvas { display: block; width: 100%; height: auto; }
+.sf-cz-mini.is-visible { display: block; }
+.sf-cz-mini:focus-visible { outline: 2px solid var(--neel, #1E2650); outline-offset: 2px; }

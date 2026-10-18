@@ -38,7 +38,7 @@
 		active: 'text',
 		inkAuto: true,
 		busy: false,
-		text: { value: '', lines: [], font: 0, ink: '#FFFFFF', size: 1.4, cx: A.w / 2, top: 0.6, w: 0, h: 0, asc: 1, lh: 1.3 },
+		text: { value: '', lines: [], font: 0, ink: '#FFFFFF', size: 2.2, cx: A.w / 2, top: 0.6, w: 0, h: 0, asc: 1, lh: 1.3 },
 		photo: null
 	};
 
@@ -237,12 +237,50 @@
 		}
 
 		var any = hasDesign();
+		paintMini(any);
 		el.empty.hidden = any;
 		canvas.classList.toggle('has-design', any);
 		canvas.setAttribute('aria-label', fmt(t.previewOf, (info.label || '').toLowerCase()) +
 			(state.text.lines.length ? '. ' + fmt(t.textPreview, state.text.lines.join(' / ')) : '') +
 			(state.photo ? '. ' + t.photoLabel : ''));
 		updateControls();
+	}
+
+	/* ------------------------------------------------------------ phone preview */
+
+	/* On phones the controls sit below the preview, so a small copy follows you while you edit. */
+	var mini = document.createElement('button');
+	mini.type = 'button';
+	mini.className = 'sf-cz-mini';
+	mini.setAttribute('aria-label', t.showPreview);
+	mini.innerHTML = '<canvas width="240" height="300" aria-hidden="true"></canvas>';
+	document.body.appendChild(mini);
+	var miniCtx = mini.querySelector('canvas').getContext('2d');
+	var seen = { stage: true, controls: false };
+	function paintMini(any) {
+		var show = any && !seen.stage && seen.controls && window.matchMedia('(max-width: 767px)').matches;
+		mini.classList.toggle('is-visible', show);
+		if (show) {
+			miniCtx.drawImage(canvas, 0, 0, 240, 300);
+		}
+	}
+	mini.addEventListener('click', function () {
+		canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	});
+	if ('IntersectionObserver' in window) {
+		new IntersectionObserver(function (entries) {
+			seen.stage = entries[0].isIntersecting;
+			render();
+		}, { threshold: 0.35 }).observe(canvas);
+		var controls = new IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				entry.target.sfSeen = entry.isIntersecting;
+			});
+			seen.controls = !!(panel.sfSeen || form.sfSeen);
+			render();
+		});
+		controls.observe(panel);
+		controls.observe(form);
 	}
 
 	/* ------------------------------------------------------------ controls */

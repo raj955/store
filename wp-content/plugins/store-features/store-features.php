@@ -284,6 +284,29 @@ require_once STORE_FEATURES_DIR . 'includes/qikink.php';
 require_once STORE_FEATURES_DIR . 'includes/custom-design.php';
 
 /**
+ * One-time wording fix in the theme settings: products are not described as "printed after you
+ * order" (the trust list under Add to cart).
+ */
+function store_features_fix_theme_wording() {
+	if ( '1' === get_option( 'store_features_wording_fixed' ) ) {
+		return;
+	}
+	foreach ( (array) get_theme_mods() as $key => $value ) {
+		$fixed = store_features_custom_fix_strings(
+			$value,
+			function ( $text ) {
+				return str_replace( array( 'Printed after you order. ', 'Printed after you order.' ), '', $text );
+			}
+		);
+		if ( $fixed !== $value ) {
+			set_theme_mod( $key, $fixed );
+		}
+	}
+	update_option( 'store_features_wording_fixed', '1', false );
+}
+add_action( 'admin_init', 'store_features_fix_theme_wording' );
+
+/**
  * Declare support for WooCommerce's order tables (orders are read and written through the CRUD API).
  */
 function store_features_declare_wc_compatibility() {
