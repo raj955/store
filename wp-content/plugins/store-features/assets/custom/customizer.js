@@ -258,7 +258,7 @@
 	var miniCtx = mini.querySelector('canvas').getContext('2d');
 	var seen = { stage: true, controls: false };
 	function paintMini(any) {
-		var show = any && !seen.stage && seen.controls && window.matchMedia('(max-width: 767px)').matches;
+		var show = any && !seen.stage && seen.controls;
 		mini.classList.toggle('is-visible', show);
 		if (show) {
 			miniCtx.drawImage(canvas, 0, 0, 240, 300);

@@ -291,6 +291,7 @@ require_once STORE_FEATURES_DIR . 'includes/custom-design.php';
 require_once STORE_FEATURES_DIR . 'includes/shop-ux.php';
 require_once STORE_FEATURES_DIR . 'includes/google-login.php';
 require_once STORE_FEATURES_DIR . 'includes/tracking.php';
+require_once STORE_FEATURES_DIR . 'includes/quick-add.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you

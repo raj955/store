@@ -214,9 +214,10 @@ add_action( 'wp_enqueue_scripts', 'store_features_shop_ux_assets', 31 );
  * product categories so new categories (Men, Women, Kids…) appear on their own.
  */
 function store_features_category_chips() {
-	if ( ! ( is_shop() || is_product_category() ) ) {
+	if ( ! ( is_shop() || is_product_category() ) || is_product_category( 'design-your-own' ) ) {
 		return;
 	}
+	$own   = get_term_by( 'slug', 'design-your-own', 'product_cat' );
 	$terms = get_terms(
 		array(
 			'taxonomy'   => 'product_cat',
@@ -224,7 +225,7 @@ function store_features_category_chips() {
 			'hide_empty' => true,
 			'orderby'    => 'menu_order',
 			'order'      => 'ASC',
-			'exclude'    => array( (int) get_option( 'default_product_cat' ) ),
+			'exclude'    => array_filter( array( (int) get_option( 'default_product_cat' ), $own ? (int) $own->term_id : 0 ) ),
 		)
 	);
 	if ( is_wp_error( $terms ) || count( $terms ) < 2 ) {

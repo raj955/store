@@ -628,6 +628,9 @@ function store_features_custom_page_setup() {
 	add_action( 'woocommerce_before_single_product_summary', 'store_features_custom_stage', 20 );
 	add_action( 'woocommerce_before_add_to_cart_form', 'store_features_custom_panel', 5 );
 	add_action( 'woocommerce_before_add_to_cart_button', 'store_features_custom_agree', 5 );
+	// Keep the page about the design: no "related products" grid underneath.
+	remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', 20 );
+	remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_upsell_display', 15 );
 }
 add_action( 'wp', 'store_features_custom_page_setup' );
 
@@ -866,3 +869,39 @@ function store_features_custom_theme_wording( $mods ) {
 	);
 }
 add_filter( 'option_theme_mods_' . get_option( 'stylesheet' ), 'store_features_custom_theme_wording' );
+
+/**
+ * IDs of the "Design your own" products.
+ *
+ * @return int[]
+ */
+function store_features_custom_product_ids() {
+	static $ids = null;
+	if ( null === $ids ) {
+		$ids = array_map(
+			'intval',
+			get_posts(
+				array(
+					'post_type'      => 'product',
+					'post_status'    => 'publish',
+					'fields'         => 'ids',
+					'posts_per_page' => 50,
+					'meta_key'       => '_sf_custom', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					'meta_value'     => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				)
+			)
+		);
+	}
+	return $ids;
+}
+
+/**
+ * Ready-made products don't suggest the "Design your own" blanks as related products.
+ *
+ * @param int[] $related Related product IDs.
+ * @return int[]
+ */
+function store_features_custom_not_related( $related ) {
+	return array_values( array_diff( array_map( 'intval', (array) $related ), store_features_custom_product_ids() ) );
+}
+add_filter( 'woocommerce_related_products', 'store_features_custom_not_related' );
