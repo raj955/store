@@ -204,3 +204,41 @@ function store_features_shop_ux_assets() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'store_features_shop_ux_assets', 31 );
+
+/**
+ * Category chips above the products on the shop and category pages, built from the top-level
+ * product categories so new categories (Men, Women, Kids…) appear on their own.
+ */
+function store_features_category_chips() {
+	if ( ! ( is_shop() || is_product_category() ) ) {
+		return;
+	}
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'parent'     => 0,
+			'hide_empty' => true,
+			'orderby'    => 'menu_order',
+			'order'      => 'ASC',
+			'exclude'    => array( (int) get_option( 'default_product_cat' ) ),
+		)
+	);
+	if ( is_wp_error( $terms ) || count( $terms ) < 2 ) {
+		return;
+	}
+	$current = is_product_category() ? (int) get_queried_object_id() : 0;
+	$top     = $current ? array_merge( array( $current ), get_ancestors( $current, 'product_cat' ) ) : array();
+
+	echo '<nav class="chip-row" aria-label="' . esc_attr__( 'Product categories', 'store-features' ) . '">';
+	printf( '<a href="%s"%s>%s</a>', esc_url( wc_get_page_permalink( 'shop' ) ), $current ? '' : ' aria-current="page"', esc_html__( 'All', 'store-features' ) );
+	foreach ( $terms as $term ) {
+		printf(
+			'<a href="%s"%s>%s</a>',
+			esc_url( get_term_link( $term ) ),
+			in_array( (int) $term->term_id, $top, true ) ? ' aria-current="page"' : '',
+			esc_html( $term->name )
+		);
+	}
+	echo '</nav>';
+}
+add_action( 'woocommerce_archive_description', 'store_features_category_chips', 20 );
