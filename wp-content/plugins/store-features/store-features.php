@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Store Features
- * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages. Deployed from GitHub.
- * Version:           0.3.0
+ * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages, order hand-off to Qikink. Deployed from GitHub.
+ * Version:           0.4.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Text Domain:       store-features
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'STORE_FEATURES_VERSION', '0.3.0' );
+define( 'STORE_FEATURES_VERSION', '0.4.0' );
 define( 'STORE_FEATURES_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -275,6 +275,18 @@ foreach ( array( 'store_name', 'store_owner', 'store_email', 'store_phone', 'sto
 	add_shortcode( $store_features_tag, 'store_features_contact_shortcode' );
 }
 unset( $store_features_tag );
+
+require_once STORE_FEATURES_DIR . 'includes/qikink.php';
+
+/**
+ * Declare support for WooCommerce's order tables (orders are read and written through the CRUD API).
+ */
+function store_features_declare_wc_compatibility() {
+	if ( class_exists( 'Automattic\\WooCommerce\\Utilities\\FeaturesUtil' ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+}
+add_action( 'before_woocommerce_init', 'store_features_declare_wc_compatibility' );
 
 /**
  * Load the small front-end layer (inline, so there is nothing extra to deploy or cache).
