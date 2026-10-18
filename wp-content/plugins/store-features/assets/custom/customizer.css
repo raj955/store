@@ -72,3 +72,9 @@
 .sf-cz-mini canvas { display: block; width: 100%; height: auto; }
 .sf-cz-mini.is-visible { display: block; }
 .sf-cz-mini:focus-visible { outline: 2px solid var(--neel, #1E2650); outline-offset: 2px; }
+
+/* Wide screens: the preview stays in view while you scroll through the controls. */
+@media (min-width: 768px) {
+	.sf-cz-stage { position: sticky; top: 24px; align-self: flex-start; }
+	.admin-bar .sf-cz-stage { top: 56px; }
+}
