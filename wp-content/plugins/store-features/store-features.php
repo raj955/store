@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Store Features
  * Description:       Custom store features: size chart pop-up, delivery estimate, add to cart without a page reload, mobile add-to-cart bar, store contact details for the policy pages, order hand-off to Qikink, "Design your own" customizer, sign in with Google, visitor tracking. Deployed from GitHub.
- * Version:           0.6.0
+ * Version:           0.7.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Text Domain:       store-features
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'STORE_FEATURES_VERSION', '0.6.0' );
+define( 'STORE_FEATURES_VERSION', '0.7.0' );
 define( 'STORE_FEATURES_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -143,6 +143,11 @@ function store_features_contact_fields() {
 			'label'   => __( 'Support hours', 'store-features' ),
 			'type'    => 'text',
 			'default' => 'Monday to Saturday, 10 am to 6 pm',
+		),
+		'store_features_instagram' => array(
+			'label'   => __( 'Instagram page (full link)', 'store-features' ),
+			'type'    => 'text',
+			'default' => '',
 		),
 	);
 }
@@ -299,6 +304,7 @@ require_once STORE_FEATURES_DIR . 'includes/custom-admin.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-assets.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-adopt.php';
 require_once STORE_FEATURES_DIR . 'includes/move-domain.php';
+require_once STORE_FEATURES_DIR . 'includes/seo.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you

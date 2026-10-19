@@ -52,6 +52,13 @@ class Store_Features_Tracking_Integration extends WC_Integration {
 				'placeholder' => '123456789012345',
 				'description' => __( 'For Instagram and Facebook ads. Meta Events Manager → Data sources → your pixel.', 'store-features' ),
 			),
+			'gsc_token'  => array(
+				'title'       => __( 'Google Search Console code', 'store-features' ),
+				'type'        => 'text',
+				'default'     => '',
+				'placeholder' => 'abc123XYZ…',
+				'description' => __( 'Proves to Google that this site is yours, so you can see searches and submit the sitemap. Search Console → Add property → URL prefix → HTML tag: paste only the content="…" value.', 'store-features' ),
+			),
 		);
 	}
 }
