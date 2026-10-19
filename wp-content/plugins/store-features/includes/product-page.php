@@ -235,6 +235,35 @@ function store_features_product_page_script() {
 		}
 	}
 
+	/* Picking a colour shows that colour's photo straight away, before a size is chosen.
+	   WooCommerce only swaps the photo once colour and size are both picked, and resets it
+	   whenever the choice is incomplete, so this runs just after its own handlers. */
+	var vform = document.querySelector('.single-product .summary form.variations_form');
+	if (vform && !document.body.classList.contains('sf-custom-product') && $.fn.wc_variations_image_update) {
+		var $vform = $(vform);
+		var showColour = function () {
+			var sel = vform.querySelector('select[name="attribute_pa_color"]');
+			var all = $vform.data('product_variations');
+			if (!sel || !sel.value || !Array.isArray(all)) {
+				return;
+			}
+			var size = vform.querySelector('select[name="attribute_pa_size"]');
+			if (size && size.value) {
+				return; /* a full choice: WooCommerce shows that variation's photo itself */
+			}
+			for (var i = 0; i < all.length; i++) {
+				var v = all[i];
+				if (v.attributes && v.attributes.attribute_pa_color === sel.value && v.image && v.image.src) {
+					$vform.wc_variations_image_update(v);
+					return;
+				}
+			}
+		};
+		$vform.on('change', 'select[name="attribute_pa_color"]', function () { setTimeout(showColour, 30); });
+		$vform.on('reset_data', function () { setTimeout(showColour, 30); });
+		setTimeout(showColour, 300);
+	}
+
 	/* Size chart links point at the size chart section: open it first. */
 	document.addEventListener('click', function (e) {
 		var a = e.target.closest && e.target.closest('a[href="#size-chart"]');
