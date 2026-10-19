@@ -481,7 +481,7 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
 .woocommerce-form-track-order .input-text { min-height: 48px; }
 .woocommerce-form-track-order .button { min-height: 48px; padding-left: 28px; padding-right: 28px; }
 @media (max-width: 600px) {
-  .woocommerce-form-track-order .form-row-first,
-  .woocommerce-form-track-order .form-row-last { float: none; width: 100%; }
+  .woocommerce form.woocommerce-form-track-order .form-row-first,
+  .woocommerce form.woocommerce-form-track-order .form-row-last { float: none; width: 100%; }
   .woocommerce-form-track-order .button { width: 100%; }
 }
