@@ -30,8 +30,59 @@ add_action(
 				'callback'            => 'store_features_adopt_qikink_product',
 			)
 		);
+		register_rest_route(
+			'store-features/v1',
+			'/qikink-photos-tidy',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => function () {
+					return current_user_can( 'manage_woocommerce' );
+				},
+				'callback'            => 'store_features_qikink_photos_tidy',
+			)
+		);
 	}
 );
+
+/**
+ * Point every variation of a colour at the one gallery photo of that colour.
+ * Body: { id }. Only touches products adopted from Qikink.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
+ */
+function store_features_qikink_photos_tidy( $request ) {
+	$product = wc_get_product( absint( $request['id'] ) );
+	if ( ! $product || ! $product->is_type( 'variable' ) || 'yes' !== $product->get_meta( '_sf_from_qikink' ) ) {
+		return new WP_Error( 'sf_tidy', 'Not a product adopted from Qikink.', array( 'status' => 400 ) );
+	}
+	$gallery = array_filter( array_merge( array( (int) $product->get_image_id() ), array_map( 'intval', $product->get_gallery_image_ids() ) ) );
+	$by_colour = array();
+	$children  = array();
+	foreach ( $product->get_children() as $child_id ) {
+		$variation = wc_get_product( $child_id );
+		if ( ! $variation ) {
+			continue;
+		}
+		$colour     = (string) $variation->get_meta( 'attribute_pa_color' );
+		$colour     = '' !== $colour ? $colour : (string) get_post_meta( $child_id, 'attribute_pa_color', true );
+		$children[] = array( $variation, $colour );
+		if ( in_array( (int) $variation->get_image_id(), $gallery, true ) && empty( $by_colour[ $colour ] ) ) {
+			$by_colour[ $colour ] = (int) $variation->get_image_id();
+		}
+	}
+	$changed = 0;
+	foreach ( $children as $row ) {
+		list( $variation, $colour ) = $row;
+		if ( ! empty( $by_colour[ $colour ] ) && (int) $variation->get_image_id() !== $by_colour[ $colour ] ) {
+			$variation->set_image_id( $by_colour[ $colour ] );
+			$variation->save();
+			++$changed;
+		}
+	}
+	wc_delete_product_transients( $product->get_id() );
+	return rest_ensure_response( array( 'id' => $product->get_id(), 'colours' => count( $by_colour ), 'changed' => $changed ) );
+}
 
 /**
  * Qikink colour names → our colour term slug, with a swatch colour for terms we do not have yet.
@@ -214,6 +265,11 @@ function store_features_adopt_qikink_product( $request ) {
 		delete_post_meta( $variation->get_id(), 'attribute_' . $color_key );
 		delete_post_meta( $variation->get_id(), 'attribute_' . $size_key );
 		$variation->set_attributes( array( 'pa_color' => $cs, 'pa_size' => $ss ) );
+		// Qikink uploads a copy of the photo per variation; one photo per colour lets the
+		// gallery jump to that colour's slide when a colour is picked.
+		if ( ! empty( $photos[ $cs ] ) ) {
+			$variation->set_image_id( $photos[ $cs ] );
+		}
 		$variation->save();
 	}
 	$log[] = count( $variations ) . ' variations on store colours/sizes';
