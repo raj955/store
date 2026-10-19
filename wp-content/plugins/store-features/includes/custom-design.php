@@ -755,19 +755,22 @@ function store_features_custom_assets() {
 	}
 	$defaults = $product->is_type( 'variable' ) ? $product->get_default_attributes() : array();
 
+	// Photo blanks (made from Qikink's garment photos) when they exist, else the drawn ones.
+	$photo = function_exists( 'store_features_photo_blank_area' ) ? store_features_photo_blank_area( $style['code'], $style['colours'][0] ?? 'black' ) : null;
+
 	wp_localize_script(
 		'store-features-custom',
 		'sfCustom',
 		array(
 			'style'        => $style['code'],
 			'area'         => array(
-				'x'   => $style['x'],
-				'y'   => $style['y'],
-				'ppi' => $style['ppi'],
+				'x'   => $photo ? $photo['x'] : $style['x'],
+				'y'   => $photo ? $photo['y'] : $style['y'],
+				'ppi' => $photo ? $photo['ppi'] : $style['ppi'],
 				'w'   => $style['w_in'],
 				'h'   => $style['h_in'],
 			),
-			'blankUrl'     => $base . 'blanks/' . $style['code'] . '-',
+			'blankUrl'     => $photo ? $photo['url'] : $base . 'blanks/' . $style['code'] . '-',
 			'colours'      => $colours,
 			'colour'       => isset( $defaults['pa_color'] ) ? $defaults['pa_color'] : ( $style['colours'][0] ?? 'black' ),
 			'fonts'        => $fonts,
