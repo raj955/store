@@ -135,3 +135,30 @@ function store_features_move_domain( $request ) {
 		)
 	);
 }
+
+/**
+ * The old test address sends people to the store's own domain (pages, products, wp-admin).
+ * Machine endpoints (REST, WooCommerce API, cron, admin-ajax) and non-GET requests are left
+ * alone, so Qikink and other integrations keep working until they use the new address.
+ */
+add_action(
+	'init',
+	function () {
+		$host = isset( $_SERVER['HTTP_HOST'] ) ? strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) ) : '';
+		if ( ! in_array( $host, array( 'theonlinefood.com', 'www.theonlinefood.com' ), true ) ) {
+			return;
+		}
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
+		$uri    = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! in_array( $method, array( 'GET', 'HEAD' ), true ) || preg_match( '~^/(wp-json|wc-api)(/|$)|[?&](wc-api|rest_route)=|wp-cron\.php|xmlrpc\.php|admin-ajax\.php~', $uri ) ) {
+			return;
+		}
+		$home = untrailingslashit( home_url() );
+		if ( false !== strpos( $home, 'theonlinefood.com' ) ) {
+			return;
+		}
+		wp_redirect( $home . $uri, 301 ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
+		exit;
+	},
+	0
+);
