@@ -480,10 +480,14 @@ add_filter( 'render_block_woocommerce/checkout', 'store_features_custom_block_no
  * @param WC_Order_Item_Product $item   Order line.
  * @param string                $key    Cart item key.
  * @param array                 $values Cart item.
+ * @param WC_Order|null         $order  Order being made.
  */
-function store_features_custom_order_line( $item, $key, $values ) {
+function store_features_custom_order_line( $item, $key, $values, $order = null ) {
 	if ( empty( $values['sf_custom'] ) ) {
 		return;
+	}
+	if ( $order instanceof WC_Order ) {
+		$order->update_meta_data( '_sf_has_custom', 'yes' ); // For the Custom designs list.
 	}
 	$design = $values['sf_custom'];
 	$token  = $design['token'];
@@ -498,7 +502,7 @@ function store_features_custom_order_line( $item, $key, $values ) {
 	$item->update_meta_data( '_sf_design_h', $design['h'] );
 	$item->update_meta_data( __( 'Design', 'store-features' ), $design['summary'] ? $design['summary'] : __( 'Your own design', 'store-features' ) );
 }
-add_action( 'woocommerce_checkout_create_order_line_item', 'store_features_custom_order_line', 10, 3 );
+add_action( 'woocommerce_checkout_create_order_line_item', 'store_features_custom_order_line', 10, 4 );
 
 /**
  * The print file details of a custom order line, for Qikink.

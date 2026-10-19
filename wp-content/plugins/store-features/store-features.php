@@ -293,6 +293,7 @@ require_once STORE_FEATURES_DIR . 'includes/google-login.php';
 require_once STORE_FEATURES_DIR . 'includes/tracking.php';
 require_once STORE_FEATURES_DIR . 'includes/quick-add.php';
 require_once STORE_FEATURES_DIR . 'includes/product-page.php';
+require_once STORE_FEATURES_DIR . 'includes/custom-admin.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
