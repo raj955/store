@@ -174,6 +174,34 @@ function store_features_qikink_sku( $product ) {
 }
 
 /**
+ * Is this one of our own products (set up for this connection), rather than one pushed from the
+ * Qikink dashboard?
+ *
+ * @param WC_Product $parent Parent product.
+ * @return bool
+ */
+function store_features_qikink_is_ours( $parent ) {
+	return $parent instanceof WC_Product && '' !== (string) $parent->get_meta( '_sf_qikink_style' );
+}
+
+/**
+ * Does the order contain any of our own products?
+ *
+ * @param WC_Order $order Order.
+ * @return bool
+ */
+function store_features_qikink_order_has_ours( $order ) {
+	foreach ( $order->get_items() as $item ) {
+		$product = $item->get_product();
+		$parent  = $product && $product->get_parent_id() ? wc_get_product( $product->get_parent_id() ) : $product;
+		if ( $parent && store_features_qikink_is_ours( $parent ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Build the Qikink "create order" request for a WooCommerce order.
  *
  * @param WC_Order $order Order.
@@ -189,6 +217,12 @@ function store_features_qikink_payload( $order ) {
 			return new WP_Error( 'qikink_product', sprintf( 'Order line "%s" no longer has a product.', $item->get_name() ) );
 		}
 		$parent = $product->get_parent_id() ? wc_get_product( $product->get_parent_id() ) : $product;
+
+		// Products pushed from the Qikink dashboard ("Push to My Store") are sent by Qikink's own
+		// plugin, so they are left out here and never sent twice.
+		if ( ! store_features_qikink_is_ours( $parent ) ) {
+			continue;
+		}
 
 		$sku = store_features_qikink_sku( $product );
 		if ( is_wp_error( $sku ) ) {
@@ -236,7 +270,7 @@ function store_features_qikink_payload( $order ) {
 	}
 
 	if ( ! $items ) {
-		return new WP_Error( 'qikink_empty', 'The order has no products.' );
+		return new WP_Error( 'qikink_none', 'Nothing for this connection to send: the products were pushed from the Qikink dashboard, so Qikink\'s own plugin sends them.' );
 	}
 
 	$phone = preg_replace( '/\D/', '', (string) ( $order->get_shipping_phone() ? $order->get_shipping_phone() : $order->get_billing_phone() ) );
@@ -426,6 +460,10 @@ function store_features_qikink_maybe_queue( $order_id ) {
 	}
 	if ( 'yes' !== store_features_qikink_setting( 'auto_send', 'no' ) || '' === store_features_qikink_base_url() ) {
 		return;
+	}
+	$order = wc_get_order( $order_id );
+	if ( ! $order || ! store_features_qikink_order_has_ours( $order ) ) {
+		return; // Only products pushed from Qikink: its own plugin handles the order.
 	}
 	if ( function_exists( 'as_enqueue_async_action' ) ) {
 		as_enqueue_async_action( 'store_features_qikink_send_async', array( 'order_id' => (int) $order_id ), 'store-features' );
