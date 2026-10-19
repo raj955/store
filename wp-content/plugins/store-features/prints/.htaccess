@@ -1,0 +1,6 @@
+# Print files are public; let Qikink's dashboard read them in the browser (for uploading designs).
+<IfModule mod_headers.c>
+	<FilesMatch "\.png$">
+		Header set Access-Control-Allow-Origin "*"
+	</FilesMatch>
+</IfModule>
