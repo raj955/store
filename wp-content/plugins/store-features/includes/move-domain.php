@@ -137,39 +137,10 @@ function store_features_move_domain( $request ) {
 }
 
 /**
- * Qikink knows this store by the address it was linked with ("https://theonlinefood.com"), and its
- * dashboard has no way to change that address short of unlinking (which risks the product mappings).
- * So order webhooks sent to Qikink keep naming the linked address as their source, exactly as before
- * the move. The old address still serves the REST API, so Qikink's calls back to the store work too.
- *
- * Option store_features_qikink_source: the address Qikink has on file. Set it to '' once Qikink has
- * the store under https://panuwear.com, and webhooks go out with the real address again.
- */
-add_filter(
-	'http_request_args',
-	function ( $args, $url ) {
-		// WooCommerce sets this header after its own webhook filter, so it is swapped here, just before sending.
-		if ( empty( $args['headers'] ) || ! is_array( $args['headers'] ) || ! isset( $args['headers']['X-WC-Webhook-Source'] ) ) {
-			return $args;
-		}
-		$host = wp_parse_url( $url, PHP_URL_HOST );
-		if ( ! $host || ! preg_match( '~(^|\.)qikink\.com$~i', $host ) ) {
-			return $args;
-		}
-		$source = (string) get_option( 'store_features_qikink_source', 'https://theonlinefood.com/' );
-		if ( '' !== $source ) {
-			$args['headers']['X-WC-Webhook-Source'] = trailingslashit( $source );
-		}
-		return $args;
-	},
-	10,
-	2
-);
-
-/**
  * The old test address sends people to the store's own domain (pages, products, wp-admin).
- * Machine endpoints (REST, WooCommerce API, cron, admin-ajax) and non-GET requests are left
- * alone, so Qikink and other integrations keep working until they use the new address.
+ * Machine endpoints (REST, WooCommerce API, cron, admin-ajax) and non-GET requests are left alone.
+ * Qikink was linked again under https://panuwear.com on 20 October, so nothing depends on the old
+ * address any more; this only catches old bookmarks.
  */
 add_action(
 	'init',
