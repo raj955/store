@@ -470,7 +470,7 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   .single-product table.variations td { display: block; width: 100%; }
   /* All sizes on one row where they fit, evenly spaced */
   .single-product table.variations .cfvsw-swatches-container.cfvsw-product-container:has(.cfvsw-label-option) {
-    display: grid !important; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px;
+    display: grid !important; width: 100% !important; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px;
   }
   .single-product table.variations .cfvsw-swatches-container .cfvsw-label-option { min-width: 0 !important; width: auto !important; margin: 0 !important; }
 }
