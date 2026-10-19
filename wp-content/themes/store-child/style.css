@@ -464,6 +464,10 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
 #mobile-header .header-cart-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
 .single-product .sf-size-link { min-height: 40px; }
 @media (max-width: 480px) {
+  /* The options table stacks, so the swatch rows get the full width */
+  .single-product table.variations, .single-product table.variations tbody,
+  .single-product table.variations tr, .single-product table.variations th,
+  .single-product table.variations td { display: block; width: 100%; }
   /* All sizes on one row where they fit, evenly spaced */
   .single-product table.variations .cfvsw-swatches-container.cfvsw-product-container:has(.cfvsw-label-option) {
     display: grid !important; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px;

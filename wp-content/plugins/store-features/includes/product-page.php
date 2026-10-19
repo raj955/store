@@ -95,7 +95,7 @@ function store_features_product_sections() {
 	if ( empty( $tabs ) ) {
 		return;
 	}
-	echo '<div class="sf-sections woocommerce-tabs">';
+	echo '<div class="sf-sections">';
 	$first = true;
 	foreach ( $tabs as $key => $tab ) {
 		if ( empty( $tab['callback'] ) ) {
