@@ -336,3 +336,31 @@ function store_features_adopt_qikink_product( $request ) {
 		)
 	);
 }
+
+/**
+ * One-time tidy of the products adopted before the one-photo-per-colour rule (19 Oct 2026).
+ */
+add_action(
+	'admin_init',
+	function () {
+		if ( '1' === get_option( 'store_features_qikink_tidy' ) || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		update_option( 'store_features_qikink_tidy', '1', false );
+		$ids = get_posts(
+			array(
+				'post_type'   => 'product',
+				'post_status' => 'any',
+				'numberposts' => 50,
+				'fields'      => 'ids',
+				'meta_key'    => '_sf_from_qikink', // phpcs:ignore WordPress.DB.SlowDBQuery
+				'meta_value'  => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery
+			)
+		);
+		foreach ( $ids as $id ) {
+			$request = new WP_REST_Request( 'POST' );
+			$request->set_param( 'id', $id );
+			store_features_qikink_photos_tidy( $request );
+		}
+	}
+);
