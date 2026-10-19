@@ -2,7 +2,7 @@
  Theme Name:   Store Child
  Description:  Store design on top of Kadence: indigo and white, Anek Devanagari, product grid, product page, home page sections. Deployed from GitHub; edit in the repo, not on the server.
  Template:     kadence
- Version:      0.2.4
+ Version:      0.2.5
  Requires PHP: 7.4
  Text Domain:  store-child
 */
@@ -473,4 +473,15 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
     display: grid !important; width: 100% !important; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px;
   }
   .single-product table.variations .cfvsw-swatches-container .cfvsw-label-option { min-width: 0 !important; width: auto !important; margin: 0 !important; }
+}
+
+/* ---------------------------------------------------------------- Track your order */
+/* Our page has its own intro, so WooCommerce's longer one is hidden */
+.woocommerce-form-track-order > p:first-child { display: none; }
+.woocommerce-form-track-order .input-text { min-height: 48px; }
+.woocommerce-form-track-order .button { min-height: 48px; padding-left: 28px; padding-right: 28px; }
+@media (max-width: 600px) {
+  .woocommerce-form-track-order .form-row-first,
+  .woocommerce-form-track-order .form-row-last { float: none; width: 100%; }
+  .woocommerce-form-track-order .button { width: 100%; }
 }
