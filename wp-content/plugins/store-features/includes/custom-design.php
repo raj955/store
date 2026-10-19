@@ -301,6 +301,10 @@ function store_features_custom_validate_add( $passed, $product_id, $quantity = 1
 	if ( ! $passed || ! store_features_is_custom_product( $product ) ) {
 		return $passed;
 	}
+	if ( ! store_features_custom_orders_open() ) {
+		wc_add_notice( store_features_custom_paused_text(), 'error' );
+		return false;
+	}
 	$design = store_features_custom_posted_design( $product );
 	if ( is_wp_error( $design ) ) {
 		wc_add_notice( $design->get_error_message(), 'error' );
@@ -431,6 +435,38 @@ function store_features_custom_cart_has_design() {
 		}
 	}
 	return false;
+}
+
+/**
+ * Custom pieces are paid online, so they can be ordered only while an online gateway
+ * (Razorpay or similar) is switched on. Cash on delivery, bank transfer and cheque don't count.
+ *
+ * @return bool
+ */
+function store_features_custom_orders_open() {
+	static $open = null;
+	if ( null !== $open ) {
+		return $open;
+	}
+	$open = false;
+	if ( function_exists( 'WC' ) && WC()->payment_gateways() ) {
+		foreach ( WC()->payment_gateways()->payment_gateways() as $id => $gateway ) {
+			if ( ! in_array( $id, array( 'cod', 'bacs', 'cheque' ), true ) && 'yes' === $gateway->enabled ) {
+				$open = true;
+				break;
+			}
+		}
+	}
+	return (bool) apply_filters( 'store_features_custom_orders_open', $open );
+}
+
+/**
+ * What a shopper reads while custom orders wait for online payment.
+ *
+ * @return string
+ */
+function store_features_custom_paused_text() {
+	return __( 'Custom orders open soon, as soon as online payment is live. You can try your design here now. Ready designs can be ordered today with cash on delivery.', 'store-features' );
 }
 
 /**
@@ -616,6 +652,9 @@ add_action( 'woocommerce_email_order_meta', 'store_features_custom_admin_email',
 function store_features_custom_body_class( $classes ) {
 	if ( is_product() && store_features_is_custom_product( get_queried_object_id() ) ) {
 		$classes[] = 'sf-custom-product';
+		if ( ! store_features_custom_orders_open() ) {
+			$classes[] = 'sf-custom-paused';
+		}
 	}
 	return $classes;
 }
@@ -709,6 +748,12 @@ function store_features_custom_panel() {
  * The "I've checked my design" box, just above Add to cart.
  */
 function store_features_custom_agree() {
+	if ( ! store_features_custom_orders_open() ) {
+		?>
+		<p class="sf-cz-paused" role="note"><?php echo esc_html( store_features_custom_paused_text() ); ?> <a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>"><?php esc_html_e( 'See ready designs', 'store-features' ); ?></a></p>
+		<?php
+		return;
+	}
 	?>
 	<div class="sf-cz-agree-wrap">
 		<label class="sf-cz-agree"><input type="checkbox" name="sf_agree" value="1" class="sf-cz-agree-input"> <span><?php esc_html_e( 'I have checked my design. It is made just for me, so it can\'t be returned or exchanged.', 'store-features' ); ?></span></label>

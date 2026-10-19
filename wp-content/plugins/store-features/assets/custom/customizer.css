@@ -63,6 +63,12 @@
 .sf-cz-error { margin: 10px 0 0; padding: 10px 12px; border-left: 3px solid #A3122F; background: #FBEFF1; color: #7D0E24; font-size: 14px; }
 .sf-cz-error[hidden] { display: none; }
 
+/* Custom orders wait for online payment: show the note, hide quantity and Add to cart. */
+.sf-cz-paused { flex-basis: 100%; width: 100%; margin: 0 0 14px; padding: 12px 14px; border-left: 3px solid var(--neel, #1E2650); background: #EEF0F7; color: var(--ink, #2B3150); font-size: 14.5px; line-height: 1.5; }
+.sf-cz-paused a { color: var(--neel, #1E2650); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+body.sf-custom-paused .single_variation_wrap .quantity,
+body.sf-custom-paused .single_add_to_cart_button { display: none !important; }
+
 @media (max-width: 767px) {
 	.sf-cz-panel { padding: 16px 14px 14px; }
 	.sf-cz-font__sample { font-size: 18px; }
