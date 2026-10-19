@@ -96,10 +96,17 @@
       place(x, tf, tint(await asset(S.shirt.src), hex), { ...S.shirt, o: 1 });
       place(x, tf, await asset(S.shadow.src), S.shadow);
     }
-    for (const r of S.over || []) {
-      const img = await asset(r.src);
-      if (photo && r.tint) continue;
-      place(x, tf, r.tint ? tint(img, hex) : img, r);
+    // Things that hang over the print (hoodie strings) also go on their own layer, so
+    // compose() can put them back on top of the print.
+    if ((S.over || []).length) {
+      const ov = canvas(W, H), ovx = ov.getContext('2d');
+      for (const r of S.over) {
+        const img = await asset(r.src);
+        if (photo && r.tint) continue;
+        place(ovx, tf, r.tint ? tint(img, hex) : img, r);
+      }
+      x.drawImage(ov, 0, 0);
+      c._over = ov;
     }
     return c;
   }
@@ -133,6 +140,7 @@
     ax.putImageData(ad, 0, 0);
     const out = canvas(W, H), ox = out.getContext('2d');
     ox.drawImage(g, 0, 0); ox.drawImage(a, bx, by);
+    if (g._over) ox.drawImage(g._over, 0, 0);
     return out;
   }
 
