@@ -167,6 +167,7 @@ function store_features_quick_add_data( $product ) {
 		'sizes'      => $sizes,
 		'variations' => $variations,
 		'colour'     => $defaults['pa_color'] ?? ( $colours[0]['slug'] ?? '' ),
+		'fit'        => function_exists( 'store_features_size_fit' ) ? store_features_size_fit( $product ) : array(),
 	);
 }
 
@@ -240,7 +241,7 @@ function store_features_quick_add_script() {
 			'<div><h2 class="sf-qa__name" id="sf-qa-name"></h2><p class="sf-qa__price"></p>' +
 			'<a class="sf-qa__details">View details</a></div></div>' +
 			'<fieldset class="sf-qa__group"><legend class="sf-qa__legend">Colour: <span class="sf-qa__colour-name"></span></legend><div class="sf-qa__colours"></div></fieldset>' +
-			'<fieldset class="sf-qa__group"><legend class="sf-qa__legend sf-qa__legend--row">Size <a class="sf-qa__chart" href="/size-guide/">Size chart</a></legend><div class="sf-qa__sizes"></div></fieldset>' +
+			'<fieldset class="sf-qa__group"><legend class="sf-qa__legend sf-qa__legend--row">Size <a class="sf-qa__chart" href="/size-guide/">Size chart</a></legend><div class="sf-qa__sizes"></div><p class="sf-qa__fit" aria-live="polite"></p></fieldset>' +
 			'<p class="sf-qa__msg" role="alert" hidden></p>' +
 			'<button type="button" class="button sf-qa__add">Add to cart</button>' +
 			'</div>';
@@ -280,6 +281,8 @@ function store_features_quick_add_script() {
 		var img = (v && v.img) || current.img;
 		if (img) { dialog.querySelector('.sf-qa__img').src = img; }
 		dialog.querySelector('.sf-qa__price').textContent = (variation() && variation().price) || current.price;
+		var size = current.sizes.filter(function (s) { return s.slug === state.size; })[0];
+		dialog.querySelector('.sf-qa__fit').innerHTML = size && window.sfFitText ? window.sfFitText(current.fit, size.slug, size.name) : '';
 	}
 
 	function open(btn) {
@@ -432,6 +435,9 @@ li.product .sf-card-btn--design:hover { background: var(--neel, #1E2650); color:
 .sf-qa__size input:checked + span { border-color: var(--neel, #1E2650); background: var(--neel, #1E2650); color: #fff; }
 .sf-qa__size input:focus-visible + span { outline: 2px solid var(--neel, #1E2650); outline-offset: 2px; }
 .sf-qa__size.is-out span { color: var(--subtle, #8B90A6); text-decoration: line-through; cursor: not-allowed; }
+.sf-qa__fit { margin: 10px 0 0; color: var(--ink, #2B3150); font-size: 14px; }
+.sf-qa__fit:empty { display: none; }
+.sf-qa__fit strong { color: var(--heading, #171C3A); }
 .sf-qa__msg { margin: 14px 0 0; color: #A3122F; font-size: 14px; font-weight: 600; }
 .sf-qa__msg[hidden] { display: none; }
 .sf-qa__add.button { width: 100%; min-height: 50px; margin-top: 18px; font-size: 16px; }

@@ -2,7 +2,7 @@
  Theme Name:   Store Child
  Description:  Store design on top of Kadence: indigo and white, Anek Devanagari, product grid, product page, home page sections. Deployed from GitHub; edit in the repo, not on the server.
  Template:     kadence
- Version:      0.2.3
+ Version:      0.2.4
  Requires PHP: 7.4
  Text Domain:  store-child
 */
@@ -457,3 +457,16 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
 #mobile-drawer .mobile-navigation ul.menu > li > a { padding-top: 12px; padding-bottom: 12px; font-size: 18px; }
 #mobile-drawer .mobile-navigation ul.menu > li:nth-child(7) { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
 #mobile-drawer .mobile-navigation ul.menu > li:nth-child(n+7) > a { font-size: 16px; color: var(--muted); padding-top: 9px; padding-bottom: 9px; }
+
+/* ---------------------------------------------------------------- Touch targets and narrow phones */
+#mobile-header .menu-toggle-open,
+#mobile-header .search-toggle-open,
+#mobile-header .header-cart-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+.single-product .sf-size-link { min-height: 40px; }
+@media (max-width: 480px) {
+  /* All sizes on one row where they fit, evenly spaced */
+  .single-product table.variations .cfvsw-swatches-container.cfvsw-product-container:has(.cfvsw-label-option) {
+    display: grid !important; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px;
+  }
+  .single-product table.variations .cfvsw-swatches-container .cfvsw-label-option { min-width: 0 !important; width: auto !important; margin: 0 !important; }
+}
