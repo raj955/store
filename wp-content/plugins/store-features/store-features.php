@@ -257,7 +257,9 @@ function store_features_contact_shortcode( $atts, $content, $tag ) {
 		case 'store_name':
 			return esc_html( get_bloginfo( 'name' ) );
 		case 'store_owner':
-			return esc_html( get_option( 'store_features_owner', '' ) );
+			// Until the owner's name is filled in, the store's own name stands in, so no sentence is left half-empty.
+			$owner = trim( (string) get_option( 'store_features_owner', '' ) );
+			return esc_html( '' !== $owner ? $owner : get_bloginfo( 'name' ) );
 		case 'store_email':
 			$email = sanitize_email( get_option( 'store_features_email', '' ) );
 			if ( ! $email ) {
