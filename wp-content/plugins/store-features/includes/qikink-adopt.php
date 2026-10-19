@@ -12,6 +12,7 @@
  *  - turns the older product into a draft (nothing is deleted).
  *
  * Admin only: POST /wp-json/store-features/v1/adopt-qikink { new_id, old_id, colour }.
+ * Brand-new products: POST /wp-json/store-features/v1/finish-qikink-new (see below).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -364,3 +365,128 @@ add_action(
 		}
 	}
 );
+
+/**
+ * Finish brand-new products pushed from Qikink (no older copy to take words from).
+ *
+ * Admin only: POST /wp-json/store-features/v1/finish-qikink-new
+ * {
+ *   template_from: 1034,                       // product whose description is the template
+ *   short_tail: "100% super-combed cotton…",    // fabric line after the design line
+ *   category_ids: [17], tag_ids: [55], menu_order_start: 11, colour: "black",
+ *   items: [ { name, slug, line } ]             // name = the name saved in Qikink
+ * }
+ * For each item: finds the pushed product by name, adopts it (store colours and sizes, one photo
+ * per colour), writes the description (template with this design's line first), short
+ * description, category, tag, URL and order, publishes it and fills photo alt text.
+ * Products still waiting for photos are skipped and reported, so the call can simply be repeated.
+ */
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'store-features/v1',
+			'/finish-qikink-new',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => function () {
+					return current_user_can( 'manage_woocommerce' );
+				},
+				'callback'            => 'store_features_finish_qikink_new',
+			)
+		);
+	}
+);
+
+/**
+ * The REST callback.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
+ */
+function store_features_finish_qikink_new( $request ) {
+	$items = (array) $request['items'];
+	if ( ! $items ) {
+		return new WP_Error( 'sf_finish', 'No items.', array( 'status' => 400 ) );
+	}
+	$template = wc_get_product( absint( $request['template_from'] ) );
+	$base     = $template ? $template->get_description() : '';
+	// Everything after the first paragraph (fabric, size chart, printing, care) is shared.
+	$shared   = preg_replace( '~^\s*<p>.*?</p>\s*~s', '', $base, 1 );
+	$tail     = trim( (string) $request['short_tail'] );
+	$cats     = array_map( 'absint', (array) $request['category_ids'] );
+	$tags     = array_map( 'absint', (array) $request['tag_ids'] );
+	$order    = (int) $request['menu_order_start'];
+	$colour   = sanitize_title( (string) ( $request['colour'] ? $request['colour'] : 'black' ) );
+	$out      = array();
+
+	foreach ( $items as $i => $item ) {
+		$name  = sanitize_text_field( $item['name'] ?? '' );
+		$line  = trim( wp_strip_all_tags( (string) ( $item['line'] ?? '' ) ) );
+		$found = get_posts(
+			array(
+				'post_type'   => 'product',
+				'post_status' => array( 'publish', 'draft', 'pending', 'private' ),
+				'title'       => $name,
+				'numberposts' => 5,
+				'orderby'     => 'ID',
+				'order'       => 'DESC',
+			)
+		);
+		if ( ! $found ) {
+			$out[] = array( $name, 'not in the store yet (push it from Qikink)' );
+			continue;
+		}
+		$product = wc_get_product( $found[0]->ID );
+		$done    = 'yes' === $product->get_meta( '_sf_from_qikink' );
+
+		if ( ! $done ) {
+			// Wait until Qikink has sent the photos (they arrive after the product itself).
+			$with_photo = 0;
+			foreach ( $product->get_children() as $child_id ) {
+				if ( get_post_thumbnail_id( $child_id ) ) {
+					++$with_photo;
+				}
+			}
+			if ( $with_photo < count( $product->get_children() ) ) {
+				$out[] = array( $name, sprintf( 'photos still arriving (%d of %d)', $with_photo, count( $product->get_children() ) ) );
+				continue;
+			}
+			$adopt = new WP_REST_Request( 'POST' );
+			$adopt->set_param( 'new_id', $product->get_id() );
+			$adopt->set_param( 'old_id', 0 );
+			$adopt->set_param( 'colour', $colour );
+			$result = store_features_adopt_qikink_product( $adopt );
+			if ( is_wp_error( $result ) ) {
+				$out[] = array( $name, 'adopt failed: ' . $result->get_error_message() );
+				continue;
+			}
+			$product = wc_get_product( $product->get_id() );
+		}
+
+		$product->set_description( '<p>' . esc_html( $line ) . '</p>' . "\n" . $shared );
+		$product->set_short_description( esc_html( $line ) . ( $tail ? ' ' . esc_html( $tail ) : '' ) );
+		if ( $cats ) {
+			$product->set_category_ids( $cats );
+		}
+		if ( $tags ) {
+			$product->set_tag_ids( $tags );
+		}
+		if ( ! empty( $item['slug'] ) ) {
+			$product->set_slug( sanitize_title( $item['slug'] ) );
+		}
+		$product->set_menu_order( $order + $i );
+		$product->set_status( 'publish' );
+		$product->save();
+		wc_delete_product_transients( $product->get_id() );
+		$out[] = array( $name, 'live', $product->get_id(), get_permalink( $product->get_id() ) );
+	}
+
+	$alt = function_exists( 'store_features_seo_fill_alt' ) ? store_features_seo_fill_alt() : null;
+	return rest_ensure_response(
+		array(
+			'items' => $out,
+			'alt'   => $alt,
+		)
+	);
+}
