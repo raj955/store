@@ -340,7 +340,37 @@ add_action( 'woocommerce_checkout_create_order', 'store_features_offer_remember_
  * @return string
  */
 function store_features_offer_line() {
-	return __( 'Free shipping & cash on delivery across India | Tees from ₹499', 'store-features' );
+	$from = store_features_lowest_price();
+	return $from
+		/* translators: %s: lowest price */
+		? sprintf( __( 'Free shipping & cash on delivery across India | Tees from ₹%s', 'store-features' ), number_format_i18n( $from ) )
+		: __( 'Free shipping & cash on delivery across India', 'store-features' );
+}
+
+/**
+ * Lowest price of a ready design on sale right now (cached for an hour, cleared when a product is saved).
+ *
+ * @return int
+ */
+function store_features_lowest_price() {
+	$cached = get_transient( 'store_features_lowest_price' );
+	if ( false !== $cached ) {
+		return (int) $cached;
+	}
+	$min = 0;
+	if ( function_exists( 'wc_get_products' ) ) {
+		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 100 ) ) as $product ) {
+			if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
+				continue;
+			}
+			$p = (float) ( $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price() );
+			if ( $p > 0 && ( ! $min || $p < $min ) ) {
+				$min = $p;
+			}
+		}
+	}
+	set_transient( 'store_features_lowest_price', (int) round( $min ), HOUR_IN_SECONDS );
+	return (int) round( $min );
 }
 
 /**
@@ -483,3 +513,10 @@ JS;
 	wp_add_inline_script( 'store-features', $js );
 }
 add_action( 'wp_enqueue_scripts', 'store_features_offer_assets', 35 );
+
+add_action(
+	'woocommerce_update_product',
+	function () {
+		delete_transient( 'store_features_lowest_price' );
+	}
+);

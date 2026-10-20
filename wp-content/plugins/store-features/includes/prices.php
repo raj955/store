@@ -3,10 +3,11 @@
  * Store prices, set from code (agreed with the owner, 20 Oct 2026): light fabric (180 GSM) keeps
  * about ₹100 a piece after Qikink's cost; good fabric (240/300 GSM) keeps ₹200–230.
  *
- *   Front print only (the current designs): tee ₹499 · oversized ₹749 · sweatshirt ₹949 · hoodie ₹1,079
- *   Front + back print (new designs):       oversized ₹849 · sweatshirt ₹1,049 · hoodie ₹1,179
+ *   From Qikink's real costs (product + print, plus ₹64 shipping, ₹127 for fleece):
+ *   Front print only: tee ₹529 · oversized ₹719 · sweatshirt ₹849 · hoodie ₹1,029
+ *   Front + back print (new designs, set in Qikink when pushed): oversized ₹779
  *   Women's crop top ₹449.
- *   Design your own: same as the front-print price of that garment (online payment only).
+ *   Design your own: a little above the ready price (bigger print area, checked by hand).
  *
  * Version 2 also takes text-heavy designs (and ones printed with the old name) off the store.
  *
@@ -18,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_PRICES_VERSION = 4;
+const STORE_FEATURES_PRICES_VERSION = 5;
 
 /**
  * Category slug => price.
@@ -27,10 +28,10 @@ const STORE_FEATURES_PRICES_VERSION = 4;
  */
 function store_features_price_table() {
 	return array(
-		't-shirts'           => 499,
-		'oversized-t-shirts' => 749,
-		'sweatshirts'        => 949,
-		'hoodies'            => 1079,
+		't-shirts'           => 529,
+		'oversized-t-shirts' => 719,
+		'sweatshirts'        => 849,
+		'hoodies'            => 1029,
 	);
 }
 
@@ -83,7 +84,7 @@ function store_features_apply_prices() {
 		}
 	}
 	// Design your own: same rule, by garment.
-	foreach ( array( 'design-your-own-t-shirt' => 499, 'design-your-own-oversized-t-shirt' => 749, 'design-your-own-sweatshirt' => 949, 'design-your-own-hoodie' => 1079 ) as $slug => $price ) {
+	foreach ( array( 'design-your-own-t-shirt' => 549, 'design-your-own-oversized-t-shirt' => 749, 'design-your-own-sweatshirt' => 899, 'design-your-own-hoodie' => 1079 ) as $slug => $price ) {
 		$post    = get_page_by_path( $slug, OBJECT, 'product' );
 		$product = $post ? wc_get_product( $post->ID ) : null;
 		if ( ! $product ) {
