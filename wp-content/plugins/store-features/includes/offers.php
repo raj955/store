@@ -1,0 +1,331 @@
+<?php
+/**
+ * Offers and buying help, the way the big Indian tee stores do it:
+ *
+ * - Bundle offer: 2 ready-design pieces in the cart = 10% off them, 3 or more = 15% off.
+ *   Applied automatically as a discount line; "Design your own" pieces don't count.
+ * - First-order code PEHLA100: ₹100 off a first order of ₹599 or more (ready designs).
+ * - The offer in the top bar, under Add to cart, and a nudge in the cart ("add 1 more").
+ * - "Not sure about size?" helper on product pages: height and weight in, a size out.
+ *
+ * Percentages and the code live in store_features_offer_config() so they are easy to change.
+ *
+ * @package store-features
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * The offer settings.
+ *
+ * @return array
+ */
+function store_features_offer_config() {
+	return apply_filters(
+		'store_features_offer_config',
+		array(
+			'tiers'       => array(
+				3 => 15,
+				2 => 10,
+			),
+			'coupon'      => 'pehla100',
+			'coupon_off'  => 100,
+			'coupon_min'  => 599,
+		)
+	);
+}
+
+/**
+ * Is this cart line a ready design (not a custom piece)?
+ *
+ * @param array $item Cart item.
+ * @return bool
+ */
+function store_features_offer_counts( $item ) {
+	if ( isset( $item['sf_custom'] ) ) {
+		return false;
+	}
+	$product = $item['data'] ?? null;
+	if ( ! $product instanceof WC_Product ) {
+		return false;
+	}
+	return ! ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) );
+}
+
+/**
+ * Pieces and value of ready designs in the cart.
+ *
+ * @return array{0:int,1:float}
+ */
+function store_features_offer_cart_count() {
+	$count = 0;
+	$value = 0.0;
+	if ( function_exists( 'WC' ) && WC()->cart ) {
+		foreach ( WC()->cart->get_cart() as $item ) {
+			if ( store_features_offer_counts( $item ) ) {
+				$count += (int) $item['quantity'];
+				$value += (float) $item['line_subtotal'];
+			}
+		}
+	}
+	return array( $count, $value );
+}
+
+/**
+ * The bundle percentage for a number of pieces (0 when none applies).
+ *
+ * @param int $count Pieces.
+ * @return int
+ */
+function store_features_offer_percent( $count ) {
+	foreach ( store_features_offer_config()['tiers'] as $min => $percent ) {
+		if ( $count >= $min ) {
+			return (int) $percent;
+		}
+	}
+	return 0;
+}
+
+/**
+ * The bundle discount, as a negative fee line ("Bundle offer: 3 pieces, 15% off").
+ *
+ * @param WC_Cart $cart Cart.
+ */
+function store_features_offer_fee( $cart ) {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return;
+	}
+	list( $count, $value ) = store_features_offer_cart_count();
+	$percent               = store_features_offer_percent( $count );
+	if ( ! $percent || $value <= 0 ) {
+		return;
+	}
+	$amount = round( $value * $percent / 100 );
+	/* translators: 1: pieces, 2: percent */
+	$cart->add_fee( sprintf( __( 'Bundle offer: %1$d pieces, %2$d%% off', 'store-features' ), $count, $percent ), -$amount, false );
+}
+add_action( 'woocommerce_cart_calculate_fees', 'store_features_offer_fee' );
+
+/**
+ * PEHLA100 exists without being created in the admin.
+ *
+ * @param mixed  $data Coupon data (false when unknown).
+ * @param string $code Code.
+ * @return mixed
+ */
+function store_features_offer_coupon_data( $data, $code ) {
+	$c = store_features_offer_config();
+	if ( strtolower( (string) $code ) !== $c['coupon'] ) {
+		return $data;
+	}
+	return array(
+		'code'                 => $c['coupon'],
+		'discount_type'        => 'fixed_cart',
+		'amount'               => $c['coupon_off'],
+		'minimum_amount'       => $c['coupon_min'],
+		'individual_use'       => false,
+		'usage_limit_per_user' => 1,
+		'exclude_product_ids'  => function_exists( 'store_features_custom_product_ids' ) ? store_features_custom_product_ids() : array(),
+	);
+}
+add_filter( 'woocommerce_get_shop_coupon_data', 'store_features_offer_coupon_data', 10, 2 );
+
+/**
+ * PEHLA100 only on a first order: no earlier order from this email or account.
+ *
+ * @param bool      $valid  Valid so far.
+ * @param WC_Coupon $coupon Coupon.
+ * @return bool
+ * @throws Exception When it is not a first order.
+ */
+function store_features_offer_first_order( $valid, $coupon ) {
+	if ( ! $valid || strtolower( $coupon->get_code() ) !== store_features_offer_config()['coupon'] ) {
+		return $valid;
+	}
+	$emails = array();
+	if ( function_exists( 'WC' ) && WC()->customer ) {
+		$emails[] = WC()->customer->get_billing_email();
+	}
+	if ( is_user_logged_in() ) {
+		$emails[] = wp_get_current_user()->user_email;
+	}
+	foreach ( array_unique( array_filter( array_map( 'sanitize_email', $emails ) ) ) as $email ) {
+		$earlier = wc_get_orders(
+			array(
+				'billing_email' => $email,
+				'status'        => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
+				'limit'         => 1,
+				'return'        => 'ids',
+			)
+		);
+		if ( $earlier ) {
+			throw new Exception( esc_html__( 'PEHLA100 is for your first order only. The bundle offer still applies.', 'store-features' ) );
+		}
+	}
+	if ( is_user_logged_in() ) {
+		$earlier = wc_get_orders(
+			array(
+				'customer_id' => get_current_user_id(),
+				'status'      => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
+				'limit'       => 1,
+				'return'      => 'ids',
+			)
+		);
+		if ( $earlier ) {
+			throw new Exception( esc_html__( 'PEHLA100 is for your first order only. The bundle offer still applies.', 'store-features' ) );
+		}
+	}
+	return $valid;
+}
+add_filter( 'woocommerce_coupon_is_valid', 'store_features_offer_first_order', 10, 2 );
+
+/**
+ * The short offer line used in the top bar.
+ *
+ * @return string
+ */
+function store_features_offer_line() {
+	return __( 'Free shipping & COD | Buy 2, save 10% | Buy 3+, save 15%', 'store-features' );
+}
+
+/**
+ * Top bar: the offer instead of the plain shipping line (custom product pages keep theirs).
+ *
+ * @param mixed $mods Theme settings.
+ * @return mixed
+ */
+function store_features_offer_topbar( $mods ) {
+	if ( is_admin() || ! did_action( 'wp' ) || ! function_exists( 'store_features_custom_fix_strings' ) ) {
+		return $mods;
+	}
+	if ( function_exists( 'is_product' ) && is_product() && function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( get_queried_object_id() ) ) {
+		return $mods;
+	}
+	return store_features_custom_fix_strings(
+		$mods,
+		function ( $text ) {
+			return 0 === stripos( trim( wp_strip_all_tags( $text ) ), 'Free shipping and cash on delivery' ) && strlen( $text ) < 120
+				? store_features_offer_line()
+				: $text;
+		}
+	);
+}
+add_filter( 'option_theme_mods_' . get_option( 'stylesheet' ), 'store_features_offer_topbar', 11 );
+
+/**
+ * Under Add to cart: the offer and the first-order code.
+ */
+function store_features_offer_product_note() {
+	global $product;
+	if ( ! $product instanceof WC_Product || ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) ) {
+		return;
+	}
+	$c = store_features_offer_config();
+	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html__( 'Buy 2, save 10%. Buy 3 or more, save 15%.', 'store-features' ) . '</strong> ' . esc_html__( 'Mix any designs and sizes; the discount shows in the cart.', 'store-features' ) . '</p>';
+	/* translators: 1: code, 2: amount, 3: minimum */
+	echo '<p class="sf-offer__code">' . sprintf( esc_html__( 'First order? Use %1$s for ₹%2$d off (orders from ₹%3$d).', 'store-features' ), '<code>' . esc_html( strtoupper( $c['coupon'] ) ) . '</code>', (int) $c['coupon_off'], (int) $c['coupon_min'] ) . '</p></div>';
+}
+add_action( 'woocommerce_single_product_summary', 'store_features_offer_product_note', 31 );
+
+/**
+ * Cart and checkout nudge: how close the next saving is.
+ *
+ * @return string
+ */
+function store_features_offer_nudge_html() {
+	list( $count ) = store_features_offer_cart_count();
+	if ( $count < 1 ) {
+		return '';
+	}
+	$percent = store_features_offer_percent( $count );
+	if ( $count >= 3 ) {
+		/* translators: %d: percent */
+		$text = sprintf( __( 'Bundle offer on: %d%% off your designs.', 'store-features' ), $percent );
+	} else {
+		$next = 1 === $count ? 10 : 15;
+		/* translators: %d: percent */
+		$text = sprintf( __( 'Add 1 more design to get %d%% off.', 'store-features' ), $next );
+		if ( $percent ) {
+			/* translators: 1: current percent, 2: next percent */
+			$text = sprintf( __( '%1$d%% off is on. Add 1 more design to make it %2$d%%.', 'store-features' ), $percent, $next );
+		}
+	}
+	$shop = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/' );
+	return '<div class="sf-offer sf-offer--cart" role="note"><p class="sf-offer__main"><strong>' . esc_html( $text ) . '</strong>'
+		. ( $count < 3 ? ' <a href="' . esc_url( $shop ) . '">' . esc_html__( 'See designs', 'store-features' ) . '</a>' : '' ) . '</p></div>';
+}
+
+/**
+ * Put the nudge above the cart and checkout blocks.
+ *
+ * @param string $content Block HTML.
+ * @return string
+ */
+function store_features_offer_block_nudge( $content ) {
+	return store_features_offer_nudge_html() . $content;
+}
+add_filter( 'render_block_woocommerce/cart', 'store_features_offer_block_nudge', 20 );
+add_filter( 'render_block_woocommerce/checkout', 'store_features_offer_block_nudge', 20 );
+
+/**
+ * "Not sure about size?" on ready-design product pages.
+ */
+function store_features_size_helper() {
+	global $product;
+	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) || ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) ) {
+		return;
+	}
+	$oversized = has_term( array( 'oversized-t-shirts' ), 'product_cat', $product->get_id() ) || false !== stripos( $product->get_name(), 'oversized' );
+	?>
+	<details class="sf-sizehelp" data-oversized="<?php echo $oversized ? '1' : '0'; ?>">
+		<summary><?php esc_html_e( 'Not sure about your size? We\'ll suggest one', 'store-features' ); ?></summary>
+		<div class="sf-sizehelp__body">
+			<label><?php esc_html_e( 'Height (cm)', 'store-features' ); ?> <input type="number" inputmode="numeric" min="130" max="210" class="sf-sizehelp__h" placeholder="170"></label>
+			<label><?php esc_html_e( 'Weight (kg)', 'store-features' ); ?> <input type="number" inputmode="numeric" min="35" max="150" class="sf-sizehelp__w" placeholder="65"></label>
+			<p class="sf-sizehelp__out" aria-live="polite"></p>
+		</div>
+	</details>
+	<?php
+}
+add_action( 'woocommerce_single_product_summary', 'store_features_size_helper', 32 );
+
+/**
+ * Styles and the size helper script.
+ */
+function store_features_offer_assets() {
+	if ( is_admin() ) {
+		return;
+	}
+	$css = '.sf-offer{margin:14px 0;padding:12px 14px;border:1px dashed var(--rani,#C2185B);border-radius:10px;background:#FFF5F9;color:var(--ink,#2B3150);font-size:14.5px;line-height:1.5}'
+		. '.sf-offer p{margin:0}.sf-offer p+p{margin-top:6px}.sf-offer code{padding:1px 6px;border-radius:4px;background:#fff;border:1px solid #F3C2D6;color:var(--rani,#C2185B);font-weight:700;font-family:inherit}'
+		. '.sf-offer a{color:var(--neel,#1E2650);font-weight:600;text-decoration:underline;text-underline-offset:3px}'
+		. '.sf-offer--cart{max-width:1100px;margin:0 auto 16px}'
+		. '.sf-sizehelp{margin:6px 0 14px;font-size:14.5px}.sf-sizehelp summary{cursor:pointer;color:var(--neel,#1E2650);font-weight:600;text-decoration:underline;text-underline-offset:3px}'
+		. '.sf-sizehelp__body{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end;padding:12px 0 0}.sf-sizehelp label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--muted,#565D7A)}'
+		. '.sf-sizehelp input{width:110px;padding:8px 10px;border:1px solid #C9CCDA;border-radius:8px;font-size:16px}.sf-sizehelp__out{flex-basis:100%;margin:2px 0 0;color:var(--ink,#2B3150)}';
+	wp_add_inline_style( 'store-features', $css );
+	$js = <<<'JS'
+(function () {
+	function pick(h, w) {
+		var sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+		var i = w <= 50 ? 0 : w <= 58 ? 1 : w <= 67 ? 2 : w <= 77 ? 3 : w <= 88 ? 4 : 5;
+		if (h >= 183 && i < 5) { i++; }
+		if (h <= 160 && i > 0) { i--; }
+		return sizes[i];
+	}
+	document.addEventListener('input', function (e) {
+		var box = e.target.closest && e.target.closest('.sf-sizehelp');
+		if (!box) { return; }
+		var h = parseFloat(box.querySelector('.sf-sizehelp__h').value), w = parseFloat(box.querySelector('.sf-sizehelp__w').value);
+		var out = box.querySelector('.sf-sizehelp__out');
+		if (!(h >= 130 && h <= 210 && w >= 35 && w <= 150)) { out.textContent = ''; return; }
+		var s = pick(h, w), sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'], down = sizes[Math.max(0, sizes.indexOf(s) - 1)];
+		out.innerHTML = box.dataset.oversized === '1'
+			? 'Take <strong>' + s + '</strong> for the relaxed oversized look' + (down !== s ? ', or <strong>' + down + '</strong> for a closer fit.' : '.')
+			: 'Take <strong>' + s + '</strong>. Between two sizes? Go one up for comfort.';
+	});
+})();
+JS;
+	wp_add_inline_script( 'store-features', $js );
+}
+add_action( 'wp_enqueue_scripts', 'store_features_offer_assets', 35 );
