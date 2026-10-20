@@ -73,7 +73,7 @@ function store_features_owner_on_contact( $content ) {
 		return $content;
 	}
 	$owner = trim( (string) get_option( 'store_features_owner', '' ) );
-	if ( '' === $owner || false !== stripos( wp_strip_all_tags( $content ), $owner ) ) {
+	if ( '' === $owner || false !== stripos( wp_strip_all_tags( $content ), 'grievance' ) ) {
 		return $content;
 	}
 	$email = sanitize_email( (string) get_option( 'store_features_email', '' ) );
