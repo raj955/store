@@ -198,7 +198,7 @@ function store_features_zoom_assets() {
 		. '.sf-zoom-btn{position:absolute;top:12px;right:12px;z-index:9;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border:0;border-radius:999px;background:rgba(18,18,20,.85);color:#F3EEE4;font:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}'
 		. '.sf-zoom-btn:hover{background:#121214;color:#FFA41B}'
 		. '.sf-zoom-btn svg{width:18px;height:18px}'
-		. '.sf-zoom-hint{margin:10px 0 0;font-size:14px;line-height:1.45;color:var(--muted,#565D7A);text-align:center}'
+		. '.woocommerce-product-gallery .sf-zoom-hint{order:100;margin:0;padding:8px 14px 12px;font-size:13.5px;line-height:1.45;color:#4A4740;text-align:center;width:100%}'
 		. '.woocommerce div.product div.images .flex-control-thumbs{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:8px 0 2px;margin:0;scrollbar-width:thin}'
 		. '.woocommerce div.product div.images .flex-control-thumbs li{flex:0 0 72px;width:72px!important;margin:0!important;float:none!important}'
 		. '.woocommerce div.product div.images .flex-control-thumbs li img{border-radius:8px}'
