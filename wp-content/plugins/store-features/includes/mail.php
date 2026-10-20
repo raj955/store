@@ -42,6 +42,30 @@ function store_features_min_password_strength() {
 add_filter( 'woocommerce_min_password_strength', 'store_features_min_password_strength' );
 
 /**
+ * One sender for every email (WordPress's own "wordpress@…" ones too): the WooCommerce sender,
+ * "Panuwear <orders@panuwear.com>". The domain's SPF and DKIM records make Gmail trust it.
+ *
+ * @param string $from Address.
+ * @return string
+ */
+function store_features_mail_from( $from ) {
+	$woo = sanitize_email( (string) get_option( 'woocommerce_email_from_address', '' ) );
+	return ( $woo && 0 === strpos( $from, 'wordpress@' ) ) ? $woo : $from;
+}
+add_filter( 'wp_mail_from', 'store_features_mail_from' );
+
+/**
+ * Sender name for WordPress's own emails.
+ *
+ * @param string $name Name.
+ * @return string
+ */
+function store_features_mail_from_name( $name ) {
+	return 'WordPress' === $name ? wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) : $name;
+}
+add_filter( 'wp_mail_from_name', 'store_features_mail_from_name' );
+
+/**
  * Write failed emails to the WooCommerce log.
  *
  * @param WP_Error $error Error.
