@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_PRICES_VERSION = 6;
+const STORE_FEATURES_PRICES_VERSION = 7;
 
 /**
  * Category slug => price (fallback for products not in the slug list below).
@@ -32,7 +32,9 @@ function store_features_price_table() {
 		'oversized-t-shirts' => 699,
 		'sweatshirts'        => 849,
 		'hoodies'            => 1029,
-		'crop-tops'          => 449,
+		'women'              => 449,
+		'mugs'               => 299,
+		'tote-bags'          => 349,
 	);
 }
 
@@ -71,6 +73,24 @@ function store_features_price_by_slug() {
 		'khilti-raho-crop-top'              => 449,
 		'udaan-baaki-hai-crop-top'          => 449,
 		'one-of-a-kind-crop-top'            => 449,
+		'dhoop-si-raho-crop-top'            => 449,
+		'radha-rani-crop-top'               => 449,
+		'chai-kitaab-crop-top'              => 449,
+		'cat-mom-crop-top'                  => 449,
+		// Women's oversized 240 GSM, front print (Qikink ₹399 + ₹64)
+		'sab-theek-ho-jayega-oversized-tee' => 699,
+		'udaan-baaki-hai-oversized-tee'     => 699,
+		// Mugs 11 oz (Qikink ₹121–189 + ₹64) and tote bags (+ ₹64)
+		'chai-over-everything-mug'          => 299,
+		'sab-theek-ho-jayega-mug'           => 299,
+		'chai-kitaab-mug'                   => 299,
+		'radhe-radhe-mug'                   => 299,
+		'har-har-mahadev-black-mug'         => 349,
+		'never-settle-black-mug'            => 349,
+		'khilti-raho-tote-bag'              => 349,
+		'dhoop-si-raho-tote-bag'            => 349,
+		'chai-kitaab-tote-bag'              => 349,
+		'cat-mom-tote-bag'                  => 349,
 	);
 }
 

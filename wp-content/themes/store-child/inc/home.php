@@ -17,9 +17,11 @@ function store_child_home_collections() {
 	return array(
 		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM, ढीली boxy fit', '#161618' ),
 		't-shirts'           => array( 'T-shirts', '180 GSM, रोज़ वाली regular fit', '#1C2340' ),
-		'crop-tops'          => array( 'Women crop tops', '180 GSM, soft रंग, छोटी cropped fit', '#4B3566' ),
+		'women'              => array( 'Women', 'Crop tops और oversized, soft रंगों में', '#4B3566' ),
 		'sweatshirts'        => array( 'Sweatshirts', '300 GSM brushed fleece', '#4A3426' ),
 		'hoodies'            => array( 'Hoodies', '300 GSM, पहाड़ की ठंड के लिए', '#2F4A36' ),
+		'mugs'               => array( 'Mugs', 'सुबह की चाय, अपने design में', '#5A3A1E' ),
+		'tote-bags'          => array( 'Tote bags', 'रोज़ के काम का थैला', '#2E4C5C' ),
 		'design-your-own'    => array( 'अपना design', 'अपनी line या photo, अपनी tee', '#3A1D2A' ),
 	);
 }
