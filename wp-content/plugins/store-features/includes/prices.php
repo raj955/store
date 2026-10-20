@@ -120,7 +120,37 @@ add_action(
 				litespeed_finish_request();
 			}
 		}
-		store_features_apply_prices();
+		try {
+			store_features_apply_prices();
+		} catch ( Throwable $e ) {
+			update_option( 'store_features_prices_error', $e->getMessage() . ' @ ' . basename( $e->getFile() ) . ':' . $e->getLine(), false );
+			delete_transient( 'store_features_prices_lock' );
+		}
 	},
 	97
+);
+
+/**
+ * Read-only status of the price update (version and last error), for checking a deploy.
+ */
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'store-features/v1',
+			'/prices-status',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'callback'            => function () {
+					return array(
+						'code_version' => STORE_FEATURES_PRICES_VERSION,
+						'done'         => (int) get_option( 'store_features_prices_done', 0 ),
+						'locked'       => (bool) get_transient( 'store_features_prices_lock' ),
+						'error'        => (string) get_option( 'store_features_prices_error', '' ),
+					);
+				},
+			)
+		);
+	}
 );
