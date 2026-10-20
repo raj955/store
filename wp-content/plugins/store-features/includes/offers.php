@@ -340,7 +340,7 @@ add_action( 'woocommerce_checkout_create_order', 'store_features_offer_remember_
  * @return string
  */
 function store_features_offer_line() {
-	return __( 'Free shipping & cash on delivery across India | Tees from ₹449', 'store-features' );
+	return __( 'Free shipping & cash on delivery across India | Tees from ₹499', 'store-features' );
 }
 
 /**
