@@ -312,6 +312,7 @@ require_once STORE_FEATURES_DIR . 'includes/cancellation.php';
 require_once STORE_FEATURES_DIR . 'includes/order-hold.php';
 require_once STORE_FEATURES_DIR . 'includes/prices.php';
 require_once STORE_FEATURES_DIR . 'includes/card-colours.php';
+require_once STORE_FEATURES_DIR . 'includes/reviews.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
