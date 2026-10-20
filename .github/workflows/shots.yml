@@ -75,9 +75,9 @@ jobs:
                   await page.waitForTimeout(800);
                   await page.screenshot({ path: `${out}/${slug}-${v.name}.png`, fullPage: true });
                   if (v.name === 'desk') fs.writeFileSync(`${out}/${slug}.html`, await page.content());
-                  if (v.name === 'desk' && process.env.PROBE) {
-                    try { log.push(`[probe] ${p}: ` + JSON.stringify(await page.evaluate(process.env.PROBE))); }
-                    catch (e) { log.push(`[probe] ${p} ERROR ${e.message}`); }
+                  if (process.env.PROBE) {
+                    try { log.push(`[probe ${v.name}] ${p}: ` + JSON.stringify(await page.evaluate(process.env.PROBE))); }
+                    catch (e) { log.push(`[probe ${v.name}] ${p} ERROR ${e.message}`); }
                   }
                   const ow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
                   if (ow > 1) log.push(`[${v.name}] ${p} horizontal overflow ${ow}px`);
