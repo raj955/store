@@ -19,20 +19,81 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_PRICES_VERSION = 5;
+const STORE_FEATURES_PRICES_VERSION = 5; // bump to 6 after the new products are in
 
 /**
- * Category slug => price.
+ * Category slug => price (fallback for products not in the slug list below).
  *
  * @return array
  */
 function store_features_price_table() {
 	return array(
-		't-shirts'           => 529,
-		'oversized-t-shirts' => 719,
+		't-shirts'           => 499,
+		'oversized-t-shirts' => 699,
 		'sweatshirts'        => 849,
 		'hoodies'            => 1029,
+		'crop-tops'          => 449,
 	);
+}
+
+/**
+ * Exact price per product (slug => price), from each product's Qikink cost + shipping:
+ * light fabric keeps about ₹100, good fabric ₹200–230.
+ *
+ * @return array
+ */
+function store_features_price_by_slug() {
+	return array(
+		// Oversized 240 GSM, front print (Qikink ₹399 + ₹64 shipping)
+		'chill-maar-oversized-tee'          => 699,
+		'moh-maya-oversized-tee'            => 699,
+		// Oversized 240 GSM, chest + back print (Qikink ₹462 + ₹64)
+		'har-har-mahadev-oversized-tee'     => 749,
+		'radhe-radhe-oversized-tee'         => 749,
+		'pahadi-raste-oversized-tee'        => 749,
+		'azaad-oversized-tee'               => 749,
+		'no-excuses-oversized-tee'          => 749,
+		'never-settle-oversized-tee'        => 749,
+		'chai-over-everything-oversized-tee' => 749,
+		// T-shirts 180 GSM
+		'dheere-chalo-tee'                  => 499,
+		'kal-karenge-tee'                   => 499,
+		'azaad-tee'                         => 499,
+		'chai-over-everything-tee'          => 499,
+		// Fleece 300 GSM (shipping ₹127)
+		'sardi-hai-sweatshirt'              => 849,
+		'never-settle-sweatshirt'           => 939,
+		'pahad-hoodie'                      => 1029,
+		'har-har-mahadev-hoodie'            => 1079,
+		'pahadi-raste-hoodie'               => 1079,
+		// Women's crop tops 180 GSM (Qikink ₹231–262 + ₹64)
+		'sab-theek-ho-jayega-crop-top'      => 449,
+		'khilti-raho-crop-top'              => 449,
+		'udaan-baaki-hai-crop-top'          => 449,
+		'one-of-a-kind-crop-top'            => 449,
+	);
+}
+
+/**
+ * Set one product (and its variations) to a price.
+ *
+ * @param WC_Product $product Product.
+ * @param int        $price   Price.
+ */
+function store_features_set_product_price( $product, $price ) {
+	$targets = $product->is_type( 'variable' ) ? array_filter( array_map( 'wc_get_product', $product->get_children() ) ) : array( $product );
+	foreach ( $targets as $item ) {
+		if ( (string) $item->get_regular_price() === (string) $price && '' === (string) $item->get_sale_price() ) {
+			continue;
+		}
+		$item->set_regular_price( (string) $price );
+		$item->set_sale_price( '' );
+		$item->save();
+	}
+	if ( $product->is_type( 'variable' ) ) {
+		WC_Product_Variable::sync( $product->get_id() );
+		wc_delete_product_transients( $product->get_id() );
+	}
 }
 
 /**
@@ -55,6 +116,15 @@ function store_features_apply_prices() {
 			$log[] = $slug . ' drafted';
 		}
 	}
+	$by_slug = store_features_price_by_slug();
+	foreach ( $by_slug as $slug => $price ) {
+		$post    = get_page_by_path( $slug, OBJECT, 'product' );
+		$product = $post ? wc_get_product( $post->ID ) : null;
+		if ( $product ) {
+			store_features_set_product_price( $product, $price );
+			$log[] = $slug . ' = ' . $price;
+		}
+	}
 	foreach ( store_features_price_table() as $slug => $price ) {
 		$products = wc_get_products(
 			array(
@@ -67,8 +137,8 @@ function store_features_apply_prices() {
 			if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
 				continue;
 			}
-			if ( 'both' === $product->get_meta( '_sf_print_sides' ) ) {
-				continue; // Front-and-back designs are priced when they are added.
+			if ( isset( $by_slug[ $product->get_slug() ] ) ) {
+				continue; // Priced exactly above.
 			}
 			$targets = $product->is_type( 'variable' ) ? array_filter( array_map( 'wc_get_product', $product->get_children() ) ) : array( $product );
 			foreach ( $targets as $item ) {

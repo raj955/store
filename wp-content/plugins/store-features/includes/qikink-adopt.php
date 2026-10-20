@@ -413,6 +413,9 @@ function store_features_finish_qikink_new( $request ) {
 	$base     = $template ? $template->get_description() : '';
 	// Everything after the first paragraph (fabric, size chart, printing, care) is shared.
 	$shared   = preg_replace( '~^\s*<p>.*?</p>\s*~s', '', $base, 1 );
+	if ( ! empty( $request['shared_html'] ) ) {
+		$shared = wp_kses_post( (string) $request['shared_html'] ); // A garment with no template yet.
+	}
 	$tail     = trim( (string) $request['short_tail'] );
 	$cats     = array_map( 'absint', (array) $request['category_ids'] );
 	$tags     = array_map( 'absint', (array) $request['tag_ids'] );
