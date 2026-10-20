@@ -358,7 +358,7 @@
 .pw2 .wc-block-grid__product { width: auto !important; max-width: none !important; flex: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; text-align: left; position: relative; }
 .pw2 .wc-block-grid__product .woocommerce-loop-image-link { display: block; overflow: hidden; }
 .pw2 .wc-block-grid__product img { width: 100%; height: auto; display: block; }
-.pw2 .wc-block-grid__product .product-details { padding: 12px 0 0; }
+.pw2 .wc-block-grid__product .product-details { padding: 12px 0 0 !important; }
 .pw2 .wc-block-grid__product-title { font-weight: 700; font-size: 16px; }
 .pw2 .wc-block-grid__product-price { font-weight: 800; margin: 2px 0 10px; }
 .pw2 .wc-block-grid__product-add-to-cart .wp-block-button__link { font-size: 14px; padding: 9px 16px; }
