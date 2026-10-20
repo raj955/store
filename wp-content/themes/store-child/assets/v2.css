@@ -385,3 +385,5 @@
 .pw-m-account { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: #F3EEE4 !important; }
 .pw-m-account:hover { color: var(--pw-haldi) !important; }
 .pw-m-account svg { width: 22px; height: 22px; }
+.pw2 .wc-block-grid__product .product-details { border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+.pw2 .wc-block-grid__product a { text-decoration: none !important; }
