@@ -66,6 +66,20 @@ function store_features_mail_from_name( $name ) {
 add_filter( 'wp_mail_from_name', 'store_features_mail_from_name' );
 
 /**
+ * The bounce address matches the sender's domain, so the domain's SPF record covers the email
+ * (Gmail checks SPF against the bounce address; without this it is the server's own name).
+ *
+ * @param PHPMailer\PHPMailer\PHPMailer $phpmailer Mailer.
+ */
+function store_features_mail_envelope( $phpmailer ) {
+	$host = wp_parse_url( home_url(), PHP_URL_HOST );
+	if ( $phpmailer->From && $host && str_ends_with( strtolower( $phpmailer->From ), '@' . strtolower( preg_replace( '/^www\./', '', $host ) ) ) ) {
+		$phpmailer->Sender = $phpmailer->From;
+	}
+}
+add_action( 'phpmailer_init', 'store_features_mail_envelope' );
+
+/**
  * Write failed emails to the WooCommerce log.
  *
  * @param WP_Error $error Error.
