@@ -187,6 +187,9 @@ function store_features_zoom_assets() {
 	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
+	if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( get_queried_object_id() ) ) {
+		return; // The design-your-own preview is a live editor, not a photo to zoom.
+	}
 	$hint = wp_is_mobile()
 		? __( 'Photo पर tap करो, फिर दो उँगलियों से zoom करो। दूसरी photo में print पास से दिखता है।', 'store-features' )
 		: __( 'Photo पर mouse रखो तो zoom होगा, click करो तो पूरी screen पर खुलेगी। दूसरी photo में print पास से दिखता है।', 'store-features' );
