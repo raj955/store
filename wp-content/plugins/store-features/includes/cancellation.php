@@ -27,10 +27,10 @@ function store_features_cancellation_html() {
 
 	return '<h2 id="cancellation" class="wp-block-heading">' . esc_html__( 'Cancellation and refund policy', 'store-features' ) . '</h2>'
 		. '<ul class="wp-block-list">'
-		. '<li>' . esc_html__( 'Every piece is printed after you order. You can cancel within 12 hours of placing the order, before printing starts:', 'store-features' ) . ' ' . $how . ' ' . esc_html__( 'with your order number.', 'store-features' ) . '</li>'
-		. '<li>' . esc_html__( 'Once printing has started, the order can\'t be cancelled. Damaged, misprinted or wrong items are replaced or refunded as described above.', 'store-features' ) . '</li>'
-		. '<li>' . esc_html__( 'Custom (design your own) orders can\'t be cancelled after you confirm the design.', 'store-features' ) . '</li>'
-		. '<li>' . esc_html__( 'Refunds for cancelled prepaid orders go back to the original payment method within 5 to 7 working days. Cash on delivery orders are simply not shipped, so nothing is charged.', 'store-features' ) . '</li>'
+		. '<li>' . esc_html__( 'Every piece is made to order and goes for printing as soon as you place the order, so orders can\'t be cancelled once placed.', 'store-features' ) . '</li>'
+		. '<li>' . esc_html__( 'Made a mistake in size, colour or address? Tell us right away:', 'store-features' ) . ' ' . $how . '. ' . esc_html__( 'If printing hasn\'t started yet, we\'ll fix it.', 'store-features' ) . '</li>'
+		. '<li>' . esc_html__( 'Damaged, misprinted or wrong items are replaced free, or refunded in full if a replacement isn\'t possible, as described above.', 'store-features' ) . '</li>'
+		. '<li>' . esc_html__( 'Refunds for prepaid orders go back to the original payment method within 5 to 7 working days. Cash on delivery refunds go to your bank account or UPI ID.', 'store-features' ) . '</li>'
 		. '<li>' . esc_html__( 'If a cash on delivery parcel is refused at the door without a valid reason, we may ask for advance payment on future orders.', 'store-features' ) . '</li>'
 		. '</ul>';
 }

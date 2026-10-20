@@ -24,13 +24,19 @@ defined( 'ABSPATH' ) || exit;
 const STORE_FEATURES_HOLD_HOURS = 12;
 
 /**
+ * Switched off on 20 Oct 2026 at the owner's request: orders go to Qikink at once, so delivery
+ * isn't delayed. Set to true to bring the 12-hour window back.
+ */
+const STORE_FEATURES_HOLD_ENABLED = false;
+
+/**
  * Should this order wait out the cancellation window?
  *
  * @param WC_Order $order Order.
  * @return bool
  */
 function store_features_hold_applies( $order ) {
-	if ( ! $order instanceof WC_Order ) {
+	if ( ! STORE_FEATURES_HOLD_ENABLED || ! $order instanceof WC_Order ) {
 		return false;
 	}
 	if ( function_exists( 'store_features_custom_order_has_design' ) && store_features_custom_order_has_design( $order ) ) {
@@ -249,14 +255,14 @@ function store_features_hold_manual_release( $order_id, $order = null ) {
 add_action( 'woocommerce_order_status_processing', 'store_features_hold_manual_release', 5, 2 );
 
 /**
- * Cancelled after it already went to Qikink: tell the owner to cancel it there too.
+ * Cancelled after it already went to Qikink (it was Processing): tell the owner to cancel it there too.
  *
  * @param int      $order_id Order ID.
  * @param WC_Order $order    Order.
  */
 function store_features_hold_late_cancel( $order_id, $order = null ) {
 	$order = $order instanceof WC_Order ? $order : wc_get_order( $order_id );
-	if ( ! $order || 'yes' !== $order->get_meta( '_sf_qikink_released' ) ) {
+	if ( ! $order ) {
 		return;
 	}
 	$to = get_option( 'woocommerce_new_order_settings' );
@@ -266,11 +272,11 @@ function store_features_hold_late_cancel( $order_id, $order = null ) {
 		/* translators: %s: order number */
 		sprintf( __( 'Cancel order #%s in Qikink too', 'store-features' ), $order->get_order_number() ),
 		/* translators: %s: order number */
-		sprintf( __( "Order #%s was cancelled on the website, but it had already gone to Qikink.\n\nOpen the Qikink dashboard → Orders and cancel it there now, before it is printed.", 'store-features' ), $order->get_order_number() )
+		sprintf( __( "Order #%s was cancelled on the website, but it had already gone to Qikink.\n\nOpen the Qikink dashboard, Orders, and cancel it there now if it isn't printed yet.", 'store-features' ), $order->get_order_number() )
 	);
 	$order->add_order_note( __( 'Cancelled after it went to Qikink: owner emailed to cancel it in Qikink too.', 'store-features' ) );
 }
-add_action( 'woocommerce_order_status_cancelled', 'store_features_hold_late_cancel', 10, 2 );
+add_action( 'woocommerce_order_status_processing_to_cancelled', 'store_features_hold_late_cancel', 10, 2 );
 
 /**
  * My account: a Cancel button while the window runs.
@@ -280,7 +286,7 @@ add_action( 'woocommerce_order_status_cancelled', 'store_features_hold_late_canc
  * @return array
  */
 function store_features_hold_customer_cancel( $statuses, $order = null ) {
-	if ( $order instanceof WC_Order && store_features_hold_active( $order ) && (int) $order->get_meta( '_sf_hold_until' ) > time() ) {
+	if ( STORE_FEATURES_HOLD_ENABLED && $order instanceof WC_Order && store_features_hold_active( $order ) && (int) $order->get_meta( '_sf_hold_until' ) > time() ) {
 		$statuses[] = 'on-hold';
 	}
 	return $statuses;
@@ -294,7 +300,7 @@ add_filter( 'woocommerce_valid_order_statuses_for_cancel', 'store_features_hold_
  * @return array
  */
 function store_features_hold_status_label( $statuses ) {
-	if ( isset( $statuses['wc-on-hold'] ) ) {
+	if ( STORE_FEATURES_HOLD_ENABLED && isset( $statuses['wc-on-hold'] ) ) {
 		$statuses['wc-on-hold'] = _x( 'Confirmed', 'Order status', 'store-features' );
 	}
 	return $statuses;
@@ -310,7 +316,7 @@ add_filter( 'wc_order_statuses', 'store_features_hold_status_label' );
  * @return string
  */
 function store_features_hold_email_text( $translated, $text, $domain ) {
-	if ( 'woocommerce' === $domain && false !== stripos( $text, 'on-hold until we confirm' ) ) {
+	if ( STORE_FEATURES_HOLD_ENABLED && 'woocommerce' === $domain && false !== stripos( $text, 'on-hold until we confirm' ) ) {
 		/* translators: %d: hours */
 		return sprintf( __( 'Thanks for your order! It is confirmed, and printing starts in %d hours. Want to change or cancel it? Reply to this email or message us on WhatsApp before then.', 'store-features' ), STORE_FEATURES_HOLD_HOURS );
 	}
