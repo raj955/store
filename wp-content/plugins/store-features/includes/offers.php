@@ -359,7 +359,7 @@ function store_features_lowest_price() {
 	}
 	$min = 0;
 	if ( function_exists( 'wc_get_products' ) ) {
-		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 100 ) ) as $product ) {
+		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 100, 'category' => array( 't-shirts', 'oversized-t-shirts', 'women' ) ) ) as $product ) {
 			if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
 				continue;
 			}
@@ -459,6 +459,9 @@ function store_features_size_helper() {
 	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) || ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) ) {
 		return;
 	}
+	if ( function_exists( 'store_features_is_wearable' ) && ! store_features_is_wearable( $product ) ) {
+		return; // Mugs and bags have no clothing size.
+	}
 	$oversized = has_term( array( 'oversized-t-shirts' ), 'product_cat', $product->get_id() ) || false !== stripos( $product->get_name(), 'oversized' );
 	?>
 	<details class="sf-sizehelp" data-oversized="<?php echo $oversized ? '1' : '0'; ?>">
@@ -520,3 +523,14 @@ add_action(
 		delete_transient( 'store_features_lowest_price' );
 	}
 );
+
+/**
+ * Clothes (not mugs or bags): only these get size help and size chart lines.
+ *
+ * @param WC_Product|int $product Product.
+ * @return bool
+ */
+function store_features_is_wearable( $product ) {
+	$id = $product instanceof WC_Product ? $product->get_id() : (int) $product;
+	return ! has_term( array( 'mugs', 'tote-bags' ), 'product_cat', $id );
+}

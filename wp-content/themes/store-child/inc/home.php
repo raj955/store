@@ -60,28 +60,38 @@ function store_child_home_term_image( $term ) {
  * @return WC_Product[]
  */
 function store_child_home_products( $limit = 8 ) {
-	$args = array(
-		'status'     => 'publish',
-		'limit'      => $limit,
-		'visibility' => 'catalog',
-		'orderby'    => array(
-			'menu_order' => 'ASC',
-			'date'       => 'DESC',
-		),
-		'stock_status' => 'instock',
-	);
-	$custom = get_term_by( 'slug', 'design-your-own', 'product_cat' );
-	if ( $custom ) {
-		$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-			array(
-				'taxonomy' => 'product_cat',
-				'field'    => 'term_id',
-				'terms'    => array( $custom->term_id ),
-				'operator' => 'NOT IN',
-			),
-		);
+	// A mix across the range, in this order, so every kind of shopper sees something for them.
+	$plan = array( 'oversized-t-shirts', 'women', 'hoodies', 'oversized-t-shirts', 'women', 'sweatshirts', 't-shirts', 'mugs', 'oversized-t-shirts', 'tote-bags', 'hoodies', 'women' );
+	$pools = array();
+	$picked = array();
+	foreach ( $plan as $slug ) {
+		if ( count( $picked ) >= $limit ) {
+			break;
+		}
+		if ( ! isset( $pools[ $slug ] ) ) {
+			$pools[ $slug ] = wc_get_products(
+				array(
+					'status'       => 'publish',
+					'limit'        => 6,
+					'visibility'   => 'catalog',
+					'stock_status' => 'instock',
+					'category'     => array( $slug ),
+					'orderby'      => array(
+						'menu_order' => 'ASC',
+						'date'       => 'DESC',
+					),
+				)
+			);
+		}
+		while ( $pools[ $slug ] ) {
+			$product = array_shift( $pools[ $slug ] );
+			if ( ! isset( $picked[ $product->get_id() ] ) ) {
+				$picked[ $product->get_id() ] = $product;
+				break;
+			}
+		}
 	}
-	return wc_get_products( $args );
+	return array_values( $picked );
 }
 
 /**

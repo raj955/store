@@ -290,3 +290,25 @@ function store_features_product_page_script() {
 })(jQuery);
 JS;
 }
+
+/**
+ * Mugs and bags: no size chart lines or links.
+ *
+ * @param array $classes Body classes.
+ * @return array
+ */
+function store_features_not_wearable_class( $classes ) {
+	if ( function_exists( 'is_product' ) && is_product() && function_exists( 'store_features_is_wearable' ) && ! store_features_is_wearable( get_queried_object_id() ) ) {
+		$classes[] = 'sf-not-wearable';
+	}
+	return $classes;
+}
+add_filter( 'body_class', 'store_features_not_wearable_class' );
+
+add_action(
+	'wp_enqueue_scripts',
+	function () {
+		wp_add_inline_style( 'store-features', '.sf-not-wearable li:has(a[href*="size-chart"]),.sf-not-wearable a[href="#size-chart"],.sf-not-wearable .sf-sizehelp{display:none!important}' );
+	},
+	40
+);
