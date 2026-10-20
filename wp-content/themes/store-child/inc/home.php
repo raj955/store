@@ -269,12 +269,12 @@ function store_child_home() {
 			<ul class="pw-bundle__tiers">
 				<li><span class="pw-bundle__qty">1 oversized tee</span><span class="pw-bundle__price"><?php echo esc_html( store_child_rupees( $price ) ); ?></span></li>
 				<?php
-				foreach ( $tiers as $qty => $pct ) :
+				foreach ( $tiers as $qty => $amount ) :
 					$full = $price * $qty;
-					$off  = round( $full * $pct / 100 );
+					$off  = (int) $amount;
 					?>
 					<li class="<?php echo $qty === $last ? 'is-best' : ''; ?>">
-						<span class="pw-bundle__qty"><?php echo esc_html( $qty . ( $qty === $last ? '+' : '' ) . ' tees, ' . $pct . '% off' ); ?></span>
+						<span class="pw-bundle__qty"><?php echo esc_html( $qty . ( $qty === $last ? '+' : '' ) . ' tees, ₹' . $off . ' off' ); ?></span>
 						<span class="pw-bundle__price"><?php echo esc_html( store_child_rupees( $full - $off ) ); ?></span>
 						<span class="pw-bundle__save"><?php echo esc_html( store_child_rupees( $off ) . ' बचे' ); ?></span>
 					</li>

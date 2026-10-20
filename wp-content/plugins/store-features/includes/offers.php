@@ -2,8 +2,8 @@
 /**
  * Offers and buying help, the way the big Indian tee stores do it:
  *
- * - Bundle offer: 2 ready-design pieces in the cart = 10% off them, 3 or more = 15% off.
- *   Applied automatically as a discount line; "Design your own" pieces don't count.
+ * - Bundle offer: 2 ready-design pieces in the cart = ₹100 off, 3 or more = ₹200 off (flat, so every
+ *   order stays in profit). Applied automatically as a discount line; "Design your own" pieces don't count.
  * - First-order code PEHLA100: ₹100 off a first order of ₹599 or more (ready designs).
  * - The offer in the top bar, under Add to cart, and a nudge in the cart ("add 1 more").
  * - "Not sure about size?" helper on product pages: height and weight in, a size out.
@@ -24,9 +24,10 @@ function store_features_offer_config() {
 	return apply_filters(
 		'store_features_offer_config',
 		array(
+			// pieces => rupees off the whole order
 			'tiers'       => array(
-				3 => 15,
-				2 => 10,
+				3 => 200,
+				2 => 100,
 			),
 			'coupon'      => 'pehla100',
 			'coupon_off'  => 100,
@@ -72,22 +73,39 @@ function store_features_offer_cart_count() {
 }
 
 /**
- * The bundle percentage for a number of pieces (0 when none applies).
+ * The bundle saving in rupees for a number of pieces (0 when none applies).
  *
  * @param int $count Pieces.
  * @return int
  */
-function store_features_offer_percent( $count ) {
-	foreach ( store_features_offer_config()['tiers'] as $min => $percent ) {
+function store_features_offer_amount( $count ) {
+	foreach ( store_features_offer_config()['tiers'] as $min => $amount ) {
 		if ( $count >= $min ) {
-			return (int) $percent;
+			return (int) $amount;
 		}
 	}
 	return 0;
 }
 
 /**
- * The bundle discount, as a negative fee line ("Bundle offer: 3 pieces, 15% off").
+ * The next tier above a number of pieces: array( pieces, rupees ), or null at the top.
+ *
+ * @param int $count Pieces.
+ * @return array|null
+ */
+function store_features_offer_next( $count ) {
+	$tiers = store_features_offer_config()['tiers'];
+	ksort( $tiers );
+	foreach ( $tiers as $min => $amount ) {
+		if ( $count < $min ) {
+			return array( (int) $min, (int) $amount );
+		}
+	}
+	return null;
+}
+
+/**
+ * The bundle discount, as a negative fee line ("Bundle offer: 3 pieces, ₹200 off").
  *
  * @param WC_Cart $cart Cart.
  */
@@ -96,13 +114,12 @@ function store_features_offer_fee( $cart ) {
 		return;
 	}
 	list( $count, $value ) = store_features_offer_cart_count();
-	$percent               = store_features_offer_percent( $count );
-	if ( ! $percent || $value <= 0 ) {
+	$amount                = min( store_features_offer_amount( $count ), (int) floor( $value ) );
+	if ( $amount <= 0 ) {
 		return;
 	}
-	$amount = round( $value * $percent / 100 );
-	/* translators: 1: pieces, 2: percent */
-	$cart->add_fee( sprintf( __( 'Bundle offer: %1$d pieces, %2$d%% off', 'store-features' ), $count, $percent ), -$amount, false );
+	/* translators: 1: pieces, 2: rupees */
+	$cart->add_fee( sprintf( __( 'Bundle offer: %1$d pieces, ₹%2$d off', 'store-features' ), $count, $amount ), -$amount, false );
 }
 add_action( 'woocommerce_cart_calculate_fees', 'store_features_offer_fee' );
 
@@ -131,7 +148,85 @@ function store_features_offer_coupon_data( $data, $code ) {
 add_filter( 'woocommerce_get_shop_coupon_data', 'store_features_offer_coupon_data', 10, 2 );
 
 /**
- * PEHLA100 only on a first order: no earlier order from this email or account.
+ * Last 10 digits of a phone number ("" when it doesn't look like one).
+ *
+ * @param string $phone Phone.
+ * @return string
+ */
+function store_features_phone10( $phone ) {
+	$digits = preg_replace( '/\D/', '', (string) $phone );
+	return strlen( $digits ) >= 10 ? substr( $digits, -10 ) : '';
+}
+
+/**
+ * Has this person ordered before? Checks the account, every email and the phone number,
+ * so a code used as a guest can't be used again after signing up (or the other way round).
+ *
+ * @param array $who Keys: user_id, emails (array), phone.
+ * @return bool
+ */
+function store_features_offer_has_ordered( $who ) {
+	$statuses = array_diff( array_keys( wc_get_order_statuses() ), array( 'wc-cancelled', 'wc-failed', 'wc-pending', 'wc-checkout-draft' ) );
+	$base     = array(
+		'status' => $statuses,
+		'limit'  => 1,
+		'return' => 'ids',
+	);
+	if ( ! empty( $who['user_id'] ) && wc_get_orders( $base + array( 'customer_id' => (int) $who['user_id'] ) ) ) {
+		return true;
+	}
+	foreach ( array_unique( array_filter( array_map( 'sanitize_email', (array) ( $who['emails'] ?? array() ) ) ) ) as $email ) {
+		if ( wc_get_orders( $base + array( 'billing_email' => $email ) ) ) {
+			return true;
+		}
+	}
+	$p10 = store_features_phone10( $who['phone'] ?? '' );
+	if ( $p10 ) {
+		if ( wc_get_orders( $base + array( 'meta_key' => '_sf_phone10', 'meta_value' => $p10 ) ) ) { // phpcs:ignore WordPress.DB.SlowDBQuery
+			return true;
+		}
+		foreach ( array( $p10, '+91' . $p10, '91' . $p10, '0' . $p10, '+91 ' . $p10, '+91 ' . substr( $p10, 0, 5 ) . ' ' . substr( $p10, 5 ) ) as $variant ) {
+			if ( wc_get_orders( $base + array( 'billing_phone' => $variant ) ) ) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * Who is shopping right now, from the cart's customer and the login.
+ *
+ * @return array
+ */
+function store_features_offer_current_shopper() {
+	$who = array(
+		'user_id' => get_current_user_id(),
+		'emails'  => array(),
+		'phone'   => '',
+	);
+	if ( function_exists( 'WC' ) && WC()->customer ) {
+		$who['emails'][] = WC()->customer->get_billing_email();
+		$who['phone']    = WC()->customer->get_billing_phone();
+	}
+	if ( is_user_logged_in() ) {
+		$who['emails'][] = wp_get_current_user()->user_email;
+	}
+	return $who;
+}
+
+/**
+ * The message shown when the code was already used.
+ *
+ * @return string
+ */
+function store_features_offer_used_message() {
+	/* translators: %s: code */
+	return sprintf( __( '%s is for your first order only. The bundle offer still applies.', 'store-features' ), strtoupper( store_features_offer_config()['coupon'] ) );
+}
+
+/**
+ * In the cart: PEHLA100 only on a first order.
  *
  * @param bool      $valid  Valid so far.
  * @param WC_Coupon $coupon Coupon.
@@ -142,42 +237,94 @@ function store_features_offer_first_order( $valid, $coupon ) {
 	if ( ! $valid || strtolower( $coupon->get_code() ) !== store_features_offer_config()['coupon'] ) {
 		return $valid;
 	}
-	$emails = array();
-	if ( function_exists( 'WC' ) && WC()->customer ) {
-		$emails[] = WC()->customer->get_billing_email();
-	}
-	if ( is_user_logged_in() ) {
-		$emails[] = wp_get_current_user()->user_email;
-	}
-	foreach ( array_unique( array_filter( array_map( 'sanitize_email', $emails ) ) ) as $email ) {
-		$earlier = wc_get_orders(
-			array(
-				'billing_email' => $email,
-				'status'        => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
-				'limit'         => 1,
-				'return'        => 'ids',
-			)
-		);
-		if ( $earlier ) {
-			throw new Exception( esc_html__( 'PEHLA100 is for your first order only. The bundle offer still applies.', 'store-features' ) );
-		}
-	}
-	if ( is_user_logged_in() ) {
-		$earlier = wc_get_orders(
-			array(
-				'customer_id' => get_current_user_id(),
-				'status'      => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
-				'limit'       => 1,
-				'return'      => 'ids',
-			)
-		);
-		if ( $earlier ) {
-			throw new Exception( esc_html__( 'PEHLA100 is for your first order only. The bundle offer still applies.', 'store-features' ) );
-		}
+	if ( store_features_offer_has_ordered( store_features_offer_current_shopper() ) ) {
+		throw new Exception( esc_html( store_features_offer_used_message() ) );
 	}
 	return $valid;
 }
 add_filter( 'woocommerce_coupon_is_valid', 'store_features_offer_first_order', 10, 2 );
+
+/**
+ * Does an order carry the first-order code?
+ *
+ * @param WC_Order $order Order.
+ * @return bool
+ */
+function store_features_offer_order_has_code( $order ) {
+	$code = store_features_offer_config()['coupon'];
+	foreach ( $order->get_coupon_codes() as $c ) {
+		if ( strtolower( $c ) === $code ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * At checkout (block checkout), check again with the email and phone the customer typed,
+ * before the order is placed. Also remember the phone's last 10 digits on every order.
+ *
+ * @param WC_Order        $order   Order being placed.
+ * @param WP_REST_Request $request Request.
+ * @throws \Automattic\WooCommerce\StoreApi\Exceptions\RouteException When the code was used before.
+ */
+function store_features_offer_checkout_guard( $order, $request = null ) {
+	$p10 = store_features_phone10( $order->get_billing_phone() ?: $order->get_shipping_phone() );
+	if ( $p10 ) {
+		$order->update_meta_data( '_sf_phone10', $p10 );
+	}
+	if ( ! store_features_offer_order_has_code( $order ) ) {
+		return;
+	}
+	$who = array(
+		'user_id' => $order->get_customer_id() ?: get_current_user_id(),
+		'emails'  => array( $order->get_billing_email(), is_user_logged_in() ? wp_get_current_user()->user_email : '' ),
+		'phone'   => $order->get_billing_phone() ?: $order->get_shipping_phone(),
+	);
+	if ( store_features_offer_has_ordered( $who ) ) {
+		$message = store_features_offer_used_message() . ' ' . __( 'Remove the code and place the order again.', 'store-features' );
+		if ( class_exists( '\Automattic\WooCommerce\StoreApi\Exceptions\RouteException' ) ) {
+			throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException( 'sf_first_order_code_used', esc_html( $message ), 400 );
+		}
+		throw new Exception( esc_html( $message ) );
+	}
+}
+add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'store_features_offer_checkout_guard', 10, 2 );
+
+/**
+ * Classic checkout: the same check, as a checkout error.
+ *
+ * @param array    $data   Posted data.
+ * @param WP_Error $errors Errors.
+ */
+function store_features_offer_classic_guard( $data, $errors ) {
+	$applied = function_exists( 'WC' ) && WC()->cart ? array_map( 'strtolower', WC()->cart->get_applied_coupons() ) : array();
+	if ( ! in_array( store_features_offer_config()['coupon'], $applied, true ) ) {
+		return;
+	}
+	$who = array(
+		'user_id' => get_current_user_id(),
+		'emails'  => array( $data['billing_email'] ?? '', is_user_logged_in() ? wp_get_current_user()->user_email : '' ),
+		'phone'   => $data['billing_phone'] ?? '',
+	);
+	if ( store_features_offer_has_ordered( $who ) ) {
+		$errors->add( 'sf_first_order_code_used', store_features_offer_used_message() );
+	}
+}
+add_action( 'woocommerce_after_checkout_validation', 'store_features_offer_classic_guard', 10, 2 );
+
+/**
+ * Classic checkout: remember the phone's last 10 digits on the order too.
+ *
+ * @param WC_Order $order Order.
+ */
+function store_features_offer_remember_phone( $order ) {
+	$p10 = store_features_phone10( $order->get_billing_phone() ?: $order->get_shipping_phone() );
+	if ( $p10 && ! $order->get_meta( '_sf_phone10' ) ) {
+		$order->update_meta_data( '_sf_phone10', $p10 );
+	}
+}
+add_action( 'woocommerce_checkout_create_order', 'store_features_offer_remember_phone' );
 
 /**
  * The short offer line used in the top bar.
@@ -185,7 +332,7 @@ add_filter( 'woocommerce_coupon_is_valid', 'store_features_offer_first_order', 1
  * @return string
  */
 function store_features_offer_line() {
-	return __( 'Free shipping & COD | Buy 2, save 10% | Buy 3+, save 15%', 'store-features' );
+	return __( 'Free shipping & COD | Buy 2, save ₹100 | Buy 3+, save ₹200', 'store-features' );
 }
 
 /**
@@ -221,7 +368,7 @@ function store_features_offer_product_note() {
 		return;
 	}
 	$c = store_features_offer_config();
-	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html__( 'Buy 2, save 10%. Buy 3 or more, save 15%.', 'store-features' ) . '</strong> ' . esc_html__( 'Mix any designs and sizes; the discount shows in the cart.', 'store-features' ) . '</p>';
+	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html__( 'Buy 2, save ₹100. Buy 3 or more, save ₹200.', 'store-features' ) . '</strong> ' . esc_html__( 'Mix any designs and sizes; the discount shows in the cart.', 'store-features' ) . '</p>';
 	/* translators: 1: code, 2: amount, 3: minimum */
 	echo '<p class="sf-offer__code">' . sprintf( esc_html__( 'First order? Use %1$s for ₹%2$d off (orders from ₹%3$d).', 'store-features' ), '<code>' . esc_html( strtoupper( $c['coupon'] ) ) . '</code>', (int) $c['coupon_off'], (int) $c['coupon_min'] ) . '</p></div>';
 }
@@ -237,22 +384,21 @@ function store_features_offer_nudge_html() {
 	if ( $count < 1 ) {
 		return '';
 	}
-	$percent = store_features_offer_percent( $count );
-	if ( $count >= 3 ) {
-		/* translators: %d: percent */
-		$text = sprintf( __( 'Bundle offer on: %d%% off your designs.', 'store-features' ), $percent );
+	$amount = store_features_offer_amount( $count );
+	$next   = store_features_offer_next( $count );
+	if ( ! $next ) {
+		/* translators: %d: rupees */
+		$text = sprintf( __( 'Bundle offer on: ₹%d off your order.', 'store-features' ), $amount );
+	} elseif ( $amount ) {
+		/* translators: 1: rupees now, 2: pieces to add, 3: rupees next */
+		$text = sprintf( __( '₹%1$d off is on. Add %2$d more to save ₹%3$d.', 'store-features' ), $amount, $next[0] - $count, $next[1] );
 	} else {
-		$next = 1 === $count ? 10 : 15;
-		/* translators: %d: percent */
-		$text = sprintf( __( 'Add 1 more design to get %d%% off.', 'store-features' ), $next );
-		if ( $percent ) {
-			/* translators: 1: current percent, 2: next percent */
-			$text = sprintf( __( '%1$d%% off is on. Add 1 more design to make it %2$d%%.', 'store-features' ), $percent, $next );
-		}
+		/* translators: 1: pieces to add, 2: rupees */
+		$text = sprintf( __( 'Add %1$d more design to save ₹%2$d.', 'store-features' ), $next[0] - $count, $next[1] );
 	}
 	$shop = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/' );
 	return '<div class="sf-offer sf-offer--cart" role="note"><p class="sf-offer__main"><strong>' . esc_html( $text ) . '</strong>'
-		. ( $count < 3 ? ' <a href="' . esc_url( $shop ) . '">' . esc_html__( 'See designs', 'store-features' ) . '</a>' : '' ) . '</p></div>';
+		. ( $next ? ' <a href="' . esc_url( $shop ) . '">' . esc_html__( 'See designs', 'store-features' ) . '</a>' : '' ) . '</p></div>';
 }
 
 /**
