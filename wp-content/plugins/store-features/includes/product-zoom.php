@@ -212,7 +212,7 @@ function store_features_zoom_assets() {
 		. 'function open(g){var t=g.find(".woocommerce-product-gallery__trigger");if(t.length){t.trigger("click");return;}var a=g.find(".flex-active-slide a").first();if(!a.length){a=g.find(".woocommerce-product-gallery__image a").first();}a.trigger("click");}'
 		. 'function setup(){$(".woocommerce-product-gallery").each(function(){var g=$(this);if(g.data("sfZoom")){return;}g.data("sfZoom",1);'
 		. 'var b=$(\'<button type="button" class="sf-zoom-btn" aria-label="Photo बड़ी करके देखो">\'+ICON+\'<span>Zoom</span></button>\');b.on("click",function(e){e.preventDefault();open(g);});g.append(b);'
-		. 'g.append($(\'<p class="sf-zoom-hint"></p>\').text(cfg.hint));});}'
+		. 'var h=$(\'<p class="sf-zoom-hint"></p>\').text(cfg.hint),th=g.find(".flex-control-thumbs");if(th.length){th.before(h);}else{g.append(h);}});}'
 		. '$(window).on("load",setup);$(document.body).on("wc-product-gallery-after-init",function(){setTimeout(setup,0);});'
 		. 'if(window.wc_single_product_params&&wc_single_product_params.zoom_enabled==="1"){$(document).on("click",".woocommerce-product-gallery__image",function(e){if($(e.target).closest(".sf-zoom-btn").length){return;}e.preventDefault();open($(this).closest(".woocommerce-product-gallery"));});}'
 		. '})(window.jQuery);'
