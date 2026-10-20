@@ -116,6 +116,42 @@ function store_child_home_example_price( $products ) {
 }
 
 /**
+ * Lowest live price in each category, for the price band.
+ *
+ * @return array[] name, gsm, price, url
+ */
+function store_child_price_ladder() {
+	$rows = array(
+		't-shirts'           => array( 'T-shirt', '180 GSM' ),
+		'oversized-t-shirts' => array( 'Oversized', '240 GSM' ),
+		'sweatshirts'        => array( 'Sweatshirt', '300 GSM' ),
+		'hoodies'            => array( 'Hoodie', '300 GSM' ),
+	);
+	$out = array();
+	foreach ( $rows as $slug => $row ) {
+		$min = 0;
+		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 20, 'category' => array( $slug ) ) ) as $product ) {
+			if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
+				continue;
+			}
+			$p = (float) ( $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price() );
+			if ( $p > 0 && ( ! $min || $p < $min ) ) {
+				$min = $p;
+			}
+		}
+		if ( $min ) {
+			$out[] = array(
+				'name'  => $row[0],
+				'gsm'   => $row[1],
+				'price' => $min,
+				'url'   => store_child_cat_url( $slug ),
+			);
+		}
+	}
+	return $out;
+}
+
+/**
  * Plain rupee amount, e.g. ₹1,618.
  *
  * @param float $amount Amount.
@@ -259,29 +295,37 @@ function store_child_home() {
 	</section>
 	<?php endif; ?>
 
-	<?php if ( $tiers && $price > 0 ) : ?>
+	<?php $ladder = store_child_price_ladder(); ?>
+	<?php if ( $ladder ) : ?>
 	<section class="pw-bundle" aria-labelledby="pw-bundle-title">
 		<div class="pw-wrap pw-bundle__inner">
 			<div class="pw-bundle__copy">
-				<h2 id="pw-bundle-title" class="pw-h2">जितनी ज़्यादा,<br>उतना सस्ता।</h2>
-				<p>कोई भी design, कोई भी size मिलाओ। Discount cart में अपने-आप लगता है, कोई code नहीं।</p>
+				<h2 id="pw-bundle-title" class="pw-h2">मोटा कपड़ा,<br>सही दाम।</h2>
+				<p>हर दाम में free shipping और cash on delivery शामिल।</p>
 			</div>
 			<ul class="pw-bundle__tiers">
-				<li><span class="pw-bundle__qty">1 oversized tee</span><span class="pw-bundle__price"><?php echo esc_html( store_child_rupees( $price ) ); ?></span></li>
-				<?php
-				foreach ( $tiers as $qty => $amount ) :
-					$full = $price * $qty;
-					$off  = (int) $amount;
-					?>
-					<li class="<?php echo $qty === $last ? 'is-best' : ''; ?>">
-						<span class="pw-bundle__qty"><?php echo esc_html( $qty . ( $qty === $last ? '+' : '' ) . ' tees, ₹' . $off . ' off' ); ?></span>
-						<span class="pw-bundle__price"><?php echo esc_html( store_child_rupees( $full - $off ) ); ?></span>
-						<span class="pw-bundle__save"><?php echo esc_html( store_child_rupees( $off ) . ' बचे' ); ?></span>
+				<?php foreach ( $ladder as $i => $row ) : ?>
+					<li>
+						<a href="<?php echo esc_url( $row['url'] ); ?>" class="pw-bundle__link">
+							<span class="pw-bundle__qty"><?php echo esc_html( $row['name'] . ' · ' . $row['gsm'] ); ?></span>
+							<span class="pw-bundle__price"><?php echo esc_html( store_child_rupees( $row['price'] ) ); ?></span>
+						</a>
 					</li>
 				<?php endforeach; ?>
 			</ul>
-			<?php if ( ! empty( $offer['coupon'] ) ) : ?>
-				<p class="pw-bundle__code">पहला order? Code <strong><?php echo esc_html( strtoupper( $offer['coupon'] ) ); ?></strong> से <?php echo esc_html( store_child_rupees( $offer['coupon_off'] ) ); ?> और कम (<?php echo esc_html( store_child_rupees( $offer['coupon_min'] ) ); ?> या ज़्यादा के order पर)।</p>
+			<?php if ( $tiers ) : ?>
+				<p class="pw-bundle__code">
+					<?php
+					$bits = array();
+					foreach ( $tiers as $qty => $amount ) {
+						$bits[] = $qty . ( $qty === $last ? ' या ज़्यादा' : '' ) . ' लो तो ' . store_child_rupees( $amount ) . ' कम';
+					}
+					echo esc_html( implode( ', ', $bits ) . '।' );
+					if ( ! empty( $offer['coupon'] ) ) {
+						echo ' पहला order? Code <strong>' . esc_html( strtoupper( $offer['coupon'] ) ) . '</strong> से ' . esc_html( store_child_rupees( $offer['coupon_off'] ) ) . ' और कम।';
+					}
+					?>
+				</p>
 			<?php endif; ?>
 		</div>
 	</section>

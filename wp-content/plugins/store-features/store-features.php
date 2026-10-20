@@ -310,6 +310,7 @@ require_once STORE_FEATURES_DIR . 'includes/offers.php';
 require_once STORE_FEATURES_DIR . 'includes/product-zoom.php';
 require_once STORE_FEATURES_DIR . 'includes/cancellation.php';
 require_once STORE_FEATURES_DIR . 'includes/order-hold.php';
+require_once STORE_FEATURES_DIR . 'includes/prices.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you

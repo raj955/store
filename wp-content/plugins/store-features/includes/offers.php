@@ -2,7 +2,7 @@
 /**
  * Offers and buying help, the way the big Indian tee stores do it:
  *
- * - Bundle offer: 2 ready-design pieces in the cart = ₹100 off, 3 or more = ₹200 off (flat, so every
+ * - Bundle offer: 2 ready-design pieces in the cart = ₹20 off, 3 or more = ₹30 off (flat, so every
  *   order stays in profit). Applied automatically as a discount line; "Design your own" pieces don't count.
  * - First-order code PEHLA20: ₹20 off a first order of ₹599 or more (ready designs).
  * - Any other coupon (made by hand in WooCommerce for one customer) replaces the bundle offer,
@@ -28,8 +28,8 @@ function store_features_offer_config() {
 		array(
 			// pieces => rupees off the whole order
 			'tiers'       => array(
-				3 => 200,
-				2 => 100,
+				3 => 30,
+				2 => 20,
 			),
 			'coupon'      => 'pehla20',
 			'coupon_off'  => 20,
@@ -340,7 +340,7 @@ add_action( 'woocommerce_checkout_create_order', 'store_features_offer_remember_
  * @return string
  */
 function store_features_offer_line() {
-	return __( 'Free shipping & COD | Buy 2, save ₹100 | Buy 3+, save ₹200', 'store-features' );
+	return __( 'Free shipping & cash on delivery across India | Tees from ₹449', 'store-features' );
 }
 
 /**
@@ -376,7 +376,7 @@ function store_features_offer_product_note() {
 		return;
 	}
 	$c = store_features_offer_config();
-	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html__( 'Buy 2, save ₹100. Buy 3 or more, save ₹200.', 'store-features' ) . '</strong> ' . esc_html__( 'Mix any designs and sizes; the discount shows in the cart.', 'store-features' ) . '</p>';
+	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html__( 'Buy 2, save ₹20. Buy 3 or more, save ₹30.', 'store-features' ) . '</strong> ' . esc_html__( 'Mix any designs and sizes; the discount shows in the cart.', 'store-features' ) . '</p>';
 	/* translators: 1: code, 2: amount, 3: minimum */
 	echo '<p class="sf-offer__code">' . sprintf( esc_html__( 'First order? Use %1$s for ₹%2$d off (orders from ₹%3$d).', 'store-features' ), '<code>' . esc_html( strtoupper( $c['coupon'] ) ) . '</code>', (int) $c['coupon_off'], (int) $c['coupon_min'] ) . '</p></div>';
 }
