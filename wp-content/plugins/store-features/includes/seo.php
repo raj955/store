@@ -26,7 +26,9 @@ defined( 'ABSPATH' ) || exit;
  * @return string
  */
 function store_features_seo_clip( $text, $max = 158 ) {
-	$text = wp_strip_all_tags( strip_shortcodes( (string) $text ) );
+	// Fill in the store's own [store_*] tags first, so a description never reads "run by , , India".
+	$text = preg_replace_callback( '/\[store_[a-z]+\]/', function ( $m ) { return do_shortcode( $m[0] ); }, (string) $text );
+	$text = wp_strip_all_tags( strip_shortcodes( $text ) );
 	$text = trim( preg_replace( '/\s+/u', ' ', html_entity_decode( $text, ENT_QUOTES, 'UTF-8' ) ) );
 	if ( mb_strlen( $text ) <= $max ) {
 		return $text;
