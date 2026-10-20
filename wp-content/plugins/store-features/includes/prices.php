@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_PRICES_VERSION = 5; // bump to 6 after the new products are in
+const STORE_FEATURES_PRICES_VERSION = 6;
 
 /**
  * Category slug => price (fallback for products not in the slug list below).
