@@ -48,3 +48,41 @@ function store_features_cancellation_on_returns( $content ) {
 	return $content . store_features_cancellation_html();
 }
 add_filter( 'the_content', 'store_features_cancellation_on_returns', 20 );
+
+/**
+ * The owner's legal name: from the setting, or the proprietor's name when the setting is empty.
+ *
+ * @param mixed $value Saved value.
+ * @return string
+ */
+function store_features_owner_fallback( $value ) {
+	return '' !== trim( (string) $value ) ? $value : 'Rajendra Singh Panu';
+}
+add_filter( 'option_store_features_owner', 'store_features_owner_fallback' );
+add_filter( 'default_option_store_features_owner', 'store_features_owner_fallback' );
+
+/**
+ * Contact page: who runs the store, and the grievance officer (payment providers and Indian
+ * consumer rules ask for both).
+ *
+ * @param string $content Page content.
+ * @return string
+ */
+function store_features_owner_on_contact( $content ) {
+	if ( is_admin() || ! in_the_loop() || ! is_main_query() || ! is_page( array( 'contact', 'contact-us' ) ) ) {
+		return $content;
+	}
+	$owner = trim( (string) get_option( 'store_features_owner', '' ) );
+	if ( '' === $owner || false !== stripos( wp_strip_all_tags( $content ), $owner ) ) {
+		return $content;
+	}
+	$email = sanitize_email( (string) get_option( 'store_features_email', '' ) );
+	$phone = trim( (string) get_option( 'store_features_phone', '' ) );
+	$html  = '<h2 class="wp-block-heading">' . esc_html__( 'Who runs Panuwear', 'store-features' ) . '</h2>';
+	/* translators: %s: owner name */
+	$html .= '<p>' . esc_html( sprintf( __( 'Panuwear is owned and run by %s (sole proprietor), Haldwani, Uttarakhand.', 'store-features' ), $owner ) ) . '</p>';
+	/* translators: 1: owner, 2: email, 3: phone */
+	$html .= '<p>' . esc_html( sprintf( __( 'Grievance officer: %1$s. Email %2$s, phone %3$s. We reply within 48 hours and resolve complaints within 30 days.', 'store-features' ), $owner, $email, $phone ) ) . '</p>';
+	return $content . $html;
+}
+add_filter( 'the_content', 'store_features_owner_on_contact', 20 );

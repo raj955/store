@@ -127,7 +127,7 @@ function store_features_contact_fields() {
 		'store_features_owner' => array(
 			'label'   => __( 'Owner and grievance officer', 'store-features' ),
 			'type'    => 'text',
-			'default' => '',
+			'default' => 'Rajendra Singh Panu',
 		),
 		'store_features_email' => array(
 			'label'   => __( 'Support email', 'store-features' ),
@@ -309,6 +309,7 @@ require_once STORE_FEATURES_DIR . 'includes/mail.php';
 require_once STORE_FEATURES_DIR . 'includes/offers.php';
 require_once STORE_FEATURES_DIR . 'includes/product-zoom.php';
 require_once STORE_FEATURES_DIR . 'includes/cancellation.php';
+require_once STORE_FEATURES_DIR . 'includes/order-hold.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you

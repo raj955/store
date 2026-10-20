@@ -148,3 +148,21 @@ function store_child_footer_about( $content, $block ) {
 	return $content;
 }
 add_filter( 'render_block', 'store_child_footer_about', 10, 2 );
+
+/**
+ * Footer copyright line also names the owner (payment providers check for it).
+ *
+ * @param mixed $mods Theme settings.
+ * @return mixed
+ */
+function store_child_footer_owner( $mods ) {
+	if ( is_admin() || ! is_array( $mods ) || empty( $mods['footer_html_content'] ) ) {
+		return $mods;
+	}
+	$owner = trim( (string) get_option( 'store_features_owner', '' ) );
+	if ( $owner && false === stripos( $mods['footer_html_content'], $owner ) ) {
+		$mods['footer_html_content'] = str_replace( 'Made in India.', 'Made in India. Owned by ' . esc_html( $owner ) . '.', $mods['footer_html_content'] );
+	}
+	return $mods;
+}
+add_filter( 'option_theme_mods_store-child', 'store_child_footer_owner', 12 );
