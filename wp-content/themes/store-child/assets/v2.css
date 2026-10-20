@@ -387,3 +387,29 @@
 .pw-m-account svg { width: 22px; height: 22px; }
 .pw2 .wc-block-grid__product .product-details { border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
 .pw2 .wc-block-grid__product a { text-decoration: none !important; }
+
+/* Header and footer are dark: give them a dark palette of their own, so every Kadence
+   item inside (cart, search, account, menu toggle, any future item) is light on dark. */
+.pw2 #masthead, .pw2 .site-header, .pw2 #mobile-header, .pw2 .site-footer {
+  --global-palette1: #FFA41B;
+  --global-palette2: #FFB64A;
+  --global-palette3: #F3EEE4;
+  --global-palette4: #ECE6DB;
+  --global-palette5: #E4DED3;
+  --global-palette6: #B8B3AA;
+  --global-palette7: #2E2E33;
+  --global-palette8: #1C1C20;
+  --global-palette9: #141416;
+  --global-palette9rgb: 20, 20, 22;
+  --global-palette-highlight: #FFA41B;
+  --global-palette-highlight-alt: #FFB64A;
+}
+.pw2 #masthead .header-cart-wrap .header-cart-button,
+.pw2 #mobile-header .header-cart-wrap .header-cart-button,
+.pw2 #masthead .header-mobile-cart-wrap .header-cart-button,
+.pw2 #mobile-header .header-mobile-cart-wrap .header-cart-button,
+.pw2 #masthead .search-toggle-open-container .search-toggle-open,
+.pw2 #mobile-header .search-toggle-open-container .search-toggle-open,
+.pw2 #mobile-header .mobile-toggle-open-container .menu-toggle-open { color: #F3EEE4 !important; }
+.pw2 #masthead .header-cart-wrap .header-cart-button:hover,
+.pw2 #mobile-header .header-mobile-cart-wrap .header-cart-button:hover { color: #FFA41B !important; }
