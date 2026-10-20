@@ -305,6 +305,7 @@ require_once STORE_FEATURES_DIR . 'includes/qikink-assets.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-adopt.php';
 require_once STORE_FEATURES_DIR . 'includes/move-domain.php';
 require_once STORE_FEATURES_DIR . 'includes/seo.php';
+require_once STORE_FEATURES_DIR . 'includes/mail.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
