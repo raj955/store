@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_PRICES_VERSION = 3;
+const STORE_FEATURES_PRICES_VERSION = 4;
 
 /**
  * Category slug => price.
@@ -87,6 +87,7 @@ function store_features_apply_prices() {
 		$post    = get_page_by_path( $slug, OBJECT, 'product' );
 		$product = $post ? wc_get_product( $post->ID ) : null;
 		if ( ! $product ) {
+			$log[] = $slug . ' not found';
 			continue;
 		}
 		$targets = $product->is_type( 'variable' ) ? array_filter( array_map( 'wc_get_product', $product->get_children() ) ) : array( $product );
@@ -102,6 +103,7 @@ function store_features_apply_prices() {
 		$log[] = $slug . ' = ' . $price;
 	}
 	update_option( 'store_features_prices_done', STORE_FEATURES_PRICES_VERSION, false );
+	update_option( 'store_features_prices_log', implode( '; ', $log ), false );
 	delete_transient( 'store_features_prices_lock' );
 	if ( function_exists( 'wc_get_logger' ) ) {
 		wc_get_logger()->info( 'Prices set: ' . implode( '; ', $log ), array( 'source' => 'store-features-prices' ) );
@@ -148,6 +150,7 @@ add_action(
 						'done'         => (int) get_option( 'store_features_prices_done', 0 ),
 						'locked'       => (bool) get_transient( 'store_features_prices_lock' ),
 						'error'        => (string) get_option( 'store_features_prices_error', '' ),
+						'log'          => (string) get_option( 'store_features_prices_log', '' ),
 					);
 				},
 			)
