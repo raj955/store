@@ -160,7 +160,7 @@
 /* Hero */
 .pw-hero__inner { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-top: 56px; padding-bottom: 80px; }
 .pw-hero__kicker { display: inline-block; margin: 0 0 16px; font-size: 26px; color: var(--pw-haldi); transform: rotate(-2deg); }
-.pw-hero__title { margin: 0; font-size: clamp(54px, 7.6vw, 112px); line-height: .98; color: var(--pw-paper); }
+.pw-hero__title { margin: 0; font-size: clamp(50px, 6.6vw, 100px); line-height: .98; color: var(--pw-paper); }
 .pw-hero__title span { color: var(--pw-rani); }
 .pw-hero__lede { margin: 24px 0 0; font-size: 20px; line-height: 1.55; color: #CFC9BE; max-width: 36ch; }
 .pw-hero__actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
@@ -246,7 +246,7 @@
 }
 @media (max-width: 600px) {
   .pw-wrap { padding-left: 16px; padding-right: 16px; }
-  .pw-hero__title { font-size: clamp(48px, 14vw, 64px); }
+  .pw-hero__title { font-size: clamp(40px, 11.5vw, 58px); }
   .pw-hero__lede { font-size: 18px; }
   .pw-hero__actions .pw-btn { flex: 1 1 100%; }
   .pw-hero__note { font-size: 18px; }
@@ -454,3 +454,8 @@
 .pw2.woocommerce-cart .entry-content-wrap .alignwide,
 .pw2.woocommerce-checkout .entry-content-wrap .alignwide,
 .pw2.woocommerce-account .entry-content-wrap .alignwide { margin-left: 0 !important; margin-right: 0 !important; width: auto !important; max-width: 100% !important; }
+
+/* Account icon in the phone header (added next to the cart) */
+.pw-m-account { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--pw-paper) !important; }
+.pw-m-account:hover { color: var(--pw-haldi) !important; }
+.pw-m-account svg { width: 22px; height: 22px; }

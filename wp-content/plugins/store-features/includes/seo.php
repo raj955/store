@@ -67,20 +67,20 @@ function store_features_seo_sentences( $text, $max ) {
 function store_features_seo_category_copy() {
 	return array(
 		'oversized-t-shirts' => array(
-			__( 'Hindi Oversized T-shirts', 'store-features' ),
-			__( 'Boxy oversized tees with Hindi words and desi phrases, in 240 GSM super-combed cotton. Free shipping and cash on delivery across India.', 'store-features' ),
+			__( 'Printed Oversized T-shirts', 'store-features' ),
+			__( 'Boxy oversized tees with graphic prints and desi lines, in 240 GSM super-combed cotton. Free shipping and cash on delivery across India.', 'store-features' ),
 		),
 		't-shirts'           => array(
-			__( 'Hindi T-shirts', 'store-features' ),
-			__( 'Regular-fit tees with Hindi words and desi phrases, in 180 GSM super-combed cotton. Free shipping and cash on delivery across India.', 'store-features' ),
+			__( 'Printed T-shirts', 'store-features' ),
+			__( 'Regular-fit tees with graphic prints and desi lines, in 180 GSM super-combed cotton. Free shipping and cash on delivery across India.', 'store-features' ),
 		),
 		'sweatshirts'        => array(
-			__( 'Hindi Sweatshirts', 'store-features' ),
-			__( 'Crew neck sweatshirts with Hindi words, in warm 300 GSM brushed fleece. Free shipping and cash on delivery across India.', 'store-features' ),
+			__( 'Printed Sweatshirts', 'store-features' ),
+			__( 'Crew neck sweatshirts with graphic prints and desi lines, in warm 300 GSM brushed fleece. Free shipping and cash on delivery across India.', 'store-features' ),
 		),
 		'hoodies'            => array(
-			__( 'Hindi Hoodies', 'store-features' ),
-			__( 'Hoodies with Hindi words, in warm 300 GSM brushed fleece. Free shipping and cash on delivery across India.', 'store-features' ),
+			__( 'Printed Hoodies', 'store-features' ),
+			__( 'Hoodies with graphic prints and desi lines, in warm 300 GSM brushed fleece. Free shipping and cash on delivery across India.', 'store-features' ),
 		),
 		'design-your-own'    => array(
 			__( 'Design Your Own T-shirt, Hoodie or Sweatshirt', 'store-features' ),
@@ -144,12 +144,12 @@ function store_features_seo_context() {
 	);
 
 	if ( is_front_page() ) {
-		$context['description'] = __( 'Hindi word T-shirts, oversized tees, sweatshirts and hoodies on heavyweight cotton, or your own design. Free shipping and cash on delivery across India.', 'store-features' );
+		$context['description'] = __( 'Printed T-shirts, oversized tees, sweatshirts and hoodies with our own graphics and desi lines, or your own design printed for you. Free shipping and cash on delivery across India.', 'store-features' );
 		$context['url']         = home_url( '/' );
 	} elseif ( function_exists( 'is_shop' ) && is_shop() ) {
 		$context['description'] = sprintf(
 			/* translators: %s: store name */
-			__( 'All %s designs: T-shirts, oversized tees, sweatshirts and hoodies with Hindi words and desi phrases. Free shipping and cash on delivery across India.', 'store-features' ),
+			__( 'All %s designs: T-shirts, oversized tees, sweatshirts and hoodies with our own graphic prints and desi lines. Free shipping and cash on delivery across India.', 'store-features' ),
 			$site
 		);
 		$context['url'] = get_permalink( wc_get_page_id( 'shop' ) );
@@ -219,9 +219,9 @@ function store_features_seo_context() {
  */
 function store_features_seo_title_parts( $parts ) {
 	if ( is_front_page() ) {
-		$parts['tagline'] = __( 'Hindi T-shirts, Oversized Tees and Hoodies', 'store-features' );
+		$parts['tagline'] = __( 'Printed Oversized Tees, Hoodies and Custom T-shirts', 'store-features' );
 	} elseif ( function_exists( 'is_shop' ) && is_shop() ) {
-		$parts['title'] = __( 'Shop Hindi T-shirts, Oversized Tees and Hoodies', 'store-features' );
+		$parts['title'] = __( 'Shop Printed T-shirts, Oversized Tees and Hoodies', 'store-features' );
 	} elseif ( function_exists( 'is_product_category' ) && is_product_category() ) {
 		$term  = get_queried_object();
 		$given = trim( (string) get_term_meta( $term->term_id, 'sf_seo_title', true ) );

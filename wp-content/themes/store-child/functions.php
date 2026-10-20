@@ -107,3 +107,44 @@ function store_child_light_logo( $attr, $attachment ) {
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'store_child_light_logo', 10, 2 );
+
+/**
+ * Phones get an account icon in the header, beside the cart: login and sign-up are one tap away.
+ * Kadence's phone header has no account item, so a small script puts the link in place.
+ */
+function store_child_mobile_account_icon() {
+	if ( ! store_child_v2() || ! function_exists( 'wc_get_page_permalink' ) ) {
+		return;
+	}
+	$label = is_user_logged_in() ? 'My account' : 'Login or register';
+	$link  = '<a class="pw-m-account" href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '" aria-label="' . esc_attr( $label ) . '">'
+		. '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20.5c1.4-3.6 4.4-5.5 8-5.5s6.6 1.9 8 5.5" stroke-linecap="round"/></svg></a>';
+	?>
+	<script>
+	(function () {
+		var cart = document.querySelector('#mobile-header [data-section="kadence_customizer_mobile_cart"]');
+		if (!cart || document.querySelector('.pw-m-account')) { return; }
+		var item = document.createElement('div');
+		item.className = 'site-header-item site-header-focus-item';
+		item.innerHTML = <?php echo wp_json_encode( $link ); ?>;
+		cart.parentNode.insertBefore(item, cart);
+	})();
+	</script>
+	<?php
+}
+add_action( 'wp_footer', 'store_child_mobile_account_icon', 5 );
+
+/**
+ * Footer blurb: Panuwear is graphics, lines and your own design, not words only.
+ *
+ * @param string $content Block HTML.
+ * @param array  $block   Block.
+ * @return string
+ */
+function store_child_footer_about( $content, $block ) {
+	if ( store_child_v2() && 'core/paragraph' === ( $block['blockName'] ?? '' ) && false !== strpos( $content, 'footer-about' ) ) {
+		$content = preg_replace( '/(<p[^>]*footer-about[^>]*>).*?(<\/p>)/s', '$1' . esc_html__( 'Printed tees, hoodies and sweatshirts with our own graphics and desi lines, or your own design printed for you. Delivered anywhere in India.', 'store-child' ) . '$2', $content );
+	}
+	return $content;
+}
+add_filter( 'render_block', 'store_child_footer_about', 10, 2 );

@@ -183,11 +183,11 @@ function store_child_home() {
 	<section class="pw-hero" aria-labelledby="pw-hero-title">
 		<div class="pw-wrap pw-hero__inner">
 			<div class="pw-hero__copy">
-				<p class="pw-hand pw-hero__kicker">अपनी बोली वाली tees</p>
-				<h1 id="pw-hero-title" class="pw-hero__title">बोली अपनी,<br><span>style</span> भी।</h1>
-				<p class="pw-hero__lede">वो Hindi और Hinglish lines जो तुम रोज़ बोलते हो, अब oversized tees, hoodies और sweatshirts पर। पूरे India में free shipping, cash on delivery भी।</p>
+				<p class="pw-hand pw-hero__kicker">Printed tees, hoodies और sweatshirts</p>
+				<h1 id="pw-hero-title" class="pw-hero__title">Design चुनो,<br>या <span>अपना</span> बनाओ।</h1>
+				<p class="pw-hero__lede">हमारे अपने graphic prints और देसी lines, oversized tees, hoodies और sweatshirts पर। पसंद का design न मिले तो अपनी photo, logo या line डालो, हम वही छाप देंगे। Free shipping, cash on delivery भी।</p>
 				<div class="pw-hero__actions">
-					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">सारे designs देखो</a>
+					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">Designs देखो</a>
 					<a class="pw-btn pw-btn--ghost" href="<?php echo esc_url( $custom ); ?>">अपना design बनाओ</a>
 				</div>
 				<ul class="pw-hero__facts">
@@ -291,7 +291,7 @@ function store_child_home() {
 		<div class="pw-wrap">
 			<h2 id="pw-why-title" class="pw-h2">Panuwear ही क्यों?</h2>
 			<ul class="pw-why__grid">
-				<li><h3>अपनी lines</h3><p>हर design हमारा अपना है। किसी film, meme या brand की नकल नहीं।</p></li>
+				<li><h3>अपने designs</h3><p>हर print हमारा अपना है, graphic हो या line। किसी film, meme या brand की नकल नहीं।</p></li>
 				<li><h3>Order पर छपती है</h3><p>तुम्हारी tee तुम्हारे order के बाद छपती है, गोदाम में पड़ी नहीं रहती।</p></li>
 				<li><h3>Free shipping और COD</h3><p>पूरे India में। ज़्यादातर orders 5 से 7 working days में पहुँचते हैं।</p></li>
 				<li><h3>गड़बड़ हुई? हम बदलेंगे</h3><p>Damage या गलत print हो तो 7 दिन में unboxing video भेजो, free में बदल देंगे।</p></li>
@@ -308,7 +308,7 @@ function store_child_home() {
 			<div class="pw-story__mark"><?php echo $story ? $story : '<img src="' . esc_url( get_stylesheet_directory_uri() . '/assets/brand/panuwear-icon-512.png' ) . '" alt="" width="256" height="256" loading="lazy">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 			<div>
 				<h2 id="pw-story-title" class="pw-h2">हल्द्वानी से,<br>पूरे India तक।</h2>
-				<p>Panuwear पहाड़ में शुरू हुआ, उन बातों के साथ जो हम घर पर, बस में और चाय पर बोलते हैं। हर tee पर एक बात, जिसे पढ़कर कोई मुस्कुराए या पूछे, "इसका मतलब?"</p>
+				<p>Panuwear पहाड़ में शुरू हुआ। हमारे prints में पहाड़, रोज़ की ज़िंदगी और चाय वाली बातें हैं, कहीं तस्वीर में, कहीं शब्दों में। और जो design तुम्हारे दिमाग में है, वो भी हम छाप देते हैं।</p>
 				<a class="pw-link pw-link--light" href="<?php echo esc_url( $shop ); ?>">Collection देखो</a>
 			</div>
 		</div>

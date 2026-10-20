@@ -60,7 +60,7 @@ function store_features_choice_html( $current = '', $compact = false ) {
 			'url'   => wc_get_page_permalink( 'shop' ),
 			'img'   => store_features_product_image_by_slug( 'befikr-oversized-tee' ),
 			'title' => __( 'Ready designs', 'store-features' ),
-			'text'  => __( 'Our Hindi prints, ready to order. Cash on delivery.', 'store-features' ),
+			'text'  => __( 'Our own graphics and lines, ready to order. Cash on delivery.', 'store-features' ),
 			'cta'   => __( 'Shop designs', 'store-features' ),
 		),
 		'own'   => array(
