@@ -449,3 +449,8 @@
 /* Old home page pieces, in case the editor page is shown again */
 .pw2 .hero { background: var(--pw-night-2); }
 .pw2 .fits { background: var(--pw-navy); }
+
+/* Wide blocks stay inside the paper panel (the cart block is "wide" and used to spill off the page) */
+.pw2.woocommerce-cart .entry-content-wrap .alignwide,
+.pw2.woocommerce-checkout .entry-content-wrap .alignwide,
+.pw2.woocommerce-account .entry-content-wrap .alignwide { margin-left: 0 !important; margin-right: 0 !important; width: auto !important; max-width: 100% !important; }
