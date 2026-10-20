@@ -161,3 +161,46 @@ add_action(
 		);
 	}
 );
+
+/**
+ * The business mailbox (20 Oct 2026): every store email goes here, and customers' replies too.
+ */
+const STORE_FEATURES_BUSINESS_EMAIL = 'contactpanuwear@gmail.com';
+
+/**
+ * Point every owner notification at the business mailbox, once.
+ */
+function store_features_business_mailbox() {
+	if ( 'yes' === get_option( 'store_features_mailbox_v1' ) ) {
+		return;
+	}
+	$to = STORE_FEATURES_BUSINESS_EMAIL;
+	foreach ( array( 'woocommerce_new_order_settings', 'woocommerce_cancelled_order_settings', 'woocommerce_failed_order_settings' ) as $key ) {
+		$settings = get_option( $key, array() );
+		if ( ! is_array( $settings ) ) {
+			$settings = array();
+		}
+		$settings['recipient'] = $to;
+		update_option( $key, $settings );
+	}
+	update_option( 'woocommerce_stock_email_recipient', $to );
+	update_option( 'admin_email', $to );
+	update_option( 'store_features_email', $to );
+	update_option( 'store_features_mailbox_v1', 'yes', false );
+}
+add_action( 'init', 'store_features_business_mailbox', 30 );
+
+/**
+ * Customer emails: replies go to the business mailbox.
+ *
+ * @param string $headers Headers.
+ * @param string $id      Email ID.
+ * @return string
+ */
+function store_features_reply_to_business( $headers, $id = '' ) {
+	if ( false === stripos( (string) $headers, 'Reply-to' ) && 0 === strpos( (string) $id, 'customer_' ) ) {
+		$headers .= 'Reply-to: Panuwear <' . STORE_FEATURES_BUSINESS_EMAIL . ">\r\n";
+	}
+	return $headers;
+}
+add_filter( 'woocommerce_email_headers', 'store_features_reply_to_business', 20, 2 );
