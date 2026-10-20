@@ -1,0 +1,95 @@
+# Takes screenshots and saves the HTML of live store pages, so design changes can be checked.
+# Results are committed to the "shots" branch (nothing is deployed).
+
+name: Page screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: "Space-separated paths to capture, e.g. / /shop/"
+        default: "/ /shop/"
+      tag:
+        description: "Folder name for this run"
+        default: "run"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shots
+  cancel-in-progress: false
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Playwright
+        run: |
+          mkdir pw && cd pw && npm init -y >/dev/null
+          npm i playwright@1.48.2 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Capture
+        env:
+          PATHS: ${{ inputs.paths }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          cd pw
+          cat > shot.js <<'EOF'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const base = 'https://panuwear.com';
+          const out = process.argv[2];
+          const paths = process.env.PATHS.split(/\s+/).filter(Boolean);
+          (async () => {
+            const browser = await chromium.launch();
+            const views = [
+              { name: 'desk', width: 1440, height: 900, mobile: false },
+              { name: 'mob', width: 390, height: 844, mobile: true },
+            ];
+            const log = [];
+            for (const v of views) {
+              const ctx = await browser.newContext({ viewport: { width: v.width, height: v.height }, isMobile: v.mobile, deviceScaleFactor: v.mobile ? 2 : 1, userAgent: v.mobile ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' : undefined });
+              const page = await ctx.newPage();
+              page.on('console', m => { if (m.type() === 'error') log.push(`[${v.name}] console: ${m.text()}`); });
+              page.on('pageerror', e => log.push(`[${v.name}] pageerror: ${e.message}`));
+              for (const p of paths) {
+                const slug = (p.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home').slice(0, 60);
+                const sep = p.includes('?') ? '&' : '?';
+                try {
+                  const res = await page.goto(base + p + sep + 'nocache=' + Date.now(), { waitUntil: 'networkidle', timeout: 60000 });
+                  log.push(`[${v.name}] ${p} -> ${res.status()}`);
+                  await page.waitForTimeout(1200);
+                  // scroll to load lazy images
+                  await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 120)); } window.scrollTo(0, 0); });
+                  await page.waitForTimeout(800);
+                  await page.screenshot({ path: `${out}/${slug}-${v.name}.png`, fullPage: true });
+                  if (v.name === 'desk') fs.writeFileSync(`${out}/${slug}.html`, await page.content());
+                  const ow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+                  if (ow > 1) log.push(`[${v.name}] ${p} horizontal overflow ${ow}px`);
+                } catch (e) { log.push(`[${v.name}] ${p} ERROR ${e.message}`); }
+              }
+              await ctx.close();
+            }
+            fs.writeFileSync(`${out}/log.txt`, log.join('\n') + '\n');
+            await browser.close();
+          })();
+          EOF
+          mkdir -p "../out/$TAG"
+          node shot.js "../out/$TAG"
+          cat "../out/$TAG/log.txt"
+      - name: Commit to shots branch
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          cd out
+          git init -q -b shots
+          git config user.name "shots-bot"
+          git config user.email "shots-bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "Screenshots: $TAG"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" shots:shots
