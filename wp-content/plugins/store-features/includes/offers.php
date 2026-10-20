@@ -4,7 +4,9 @@
  *
  * - Bundle offer: 2 ready-design pieces in the cart = ₹100 off, 3 or more = ₹200 off (flat, so every
  *   order stays in profit). Applied automatically as a discount line; "Design your own" pieces don't count.
- * - First-order code PEHLA100: ₹100 off a first order of ₹599 or more (ready designs).
+ * - First-order code PEHLA20: ₹20 off a first order of ₹599 or more (ready designs).
+ * - Any other coupon (made by hand in WooCommerce for one customer) replaces the bundle offer,
+ *   so two discounts never stack into a loss.
  * - The offer in the top bar, under Add to cart, and a nudge in the cart ("add 1 more").
  * - "Not sure about size?" helper on product pages: height and weight in, a size out.
  *
@@ -29,8 +31,8 @@ function store_features_offer_config() {
 				3 => 200,
 				2 => 100,
 			),
-			'coupon'      => 'pehla100',
-			'coupon_off'  => 100,
+			'coupon'      => 'pehla20',
+			'coupon_off'  => 20,
 			'coupon_min'  => 599,
 		)
 	);
@@ -113,6 +115,12 @@ function store_features_offer_fee( $cart ) {
 	if ( is_admin() && ! wp_doing_ajax() ) {
 		return;
 	}
+	$own = store_features_offer_config()['coupon'];
+	foreach ( $cart->get_applied_coupons() as $code ) {
+		if ( strtolower( $code ) !== $own ) {
+			return; // A hand-made coupon is in use: it replaces the bundle offer.
+		}
+	}
 	list( $count, $value ) = store_features_offer_cart_count();
 	$amount                = min( store_features_offer_amount( $count ), (int) floor( $value ) );
 	if ( $amount <= 0 ) {
@@ -124,7 +132,7 @@ function store_features_offer_fee( $cart ) {
 add_action( 'woocommerce_cart_calculate_fees', 'store_features_offer_fee' );
 
 /**
- * PEHLA100 exists without being created in the admin.
+ * PEHLA20 exists without being created in the admin.
  *
  * @param mixed  $data Coupon data (false when unknown).
  * @param string $code Code.
@@ -226,7 +234,7 @@ function store_features_offer_used_message() {
 }
 
 /**
- * In the cart: PEHLA100 only on a first order.
+ * In the cart: PEHLA20 only on a first order.
  *
  * @param bool      $valid  Valid so far.
  * @param WC_Coupon $coupon Coupon.
