@@ -166,3 +166,30 @@ function store_child_footer_owner( $mods ) {
 	return $mods;
 }
 add_filter( 'option_theme_mods_store-child', 'store_child_footer_owner', 12 );
+
+/**
+ * Small fit label on product cards ("Oversized fit", "Crop fit"...), like the big stores show.
+ */
+function store_child_card_fit_badge() {
+	global $product;
+	if ( ! store_child_v2() || ! $product instanceof WC_Product ) {
+		return;
+	}
+	$id    = $product->get_id();
+	$label = '';
+	if ( has_term( 'design-your-own', 'product_cat', $id ) ) {
+		$label = 'अपना design';
+	} elseif ( false !== stripos( $product->get_name(), 'crop top' ) ) {
+		$label = 'Crop fit';
+	} elseif ( has_term( 'oversized-t-shirts', 'product_cat', $id ) ) {
+		$label = 'Oversized fit';
+	} elseif ( has_term( array( 'hoodies', 'sweatshirts' ), 'product_cat', $id ) ) {
+		$label = '300 GSM fleece';
+	} elseif ( has_term( 't-shirts', 'product_cat', $id ) ) {
+		$label = 'Regular fit';
+	}
+	if ( $label ) {
+		echo '<span class="pw-fit">' . esc_html( $label ) . '</span>';
+	}
+}
+add_action( 'woocommerce_before_shop_loop_item', 'store_child_card_fit_badge', 5 );

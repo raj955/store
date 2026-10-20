@@ -414,3 +414,22 @@
 .pw2 #mobile-header .mobile-toggle-open-container .menu-toggle-open { color: #F3EEE4 !important; }
 .pw2 #masthead .header-cart-wrap .header-cart-button:hover,
 .pw2 #mobile-header .header-mobile-cart-wrap .header-cart-button:hover { color: #FFA41B !important; }
+
+/* Category strip at the top of the home page */
+.pw-cats { background: #fff; border-bottom: 1px solid var(--pw-rule); }
+.pw-cats__row { list-style: none; margin: 0 auto; padding: 18px 16px 14px; display: flex; gap: 22px; justify-content: center; max-width: 1240px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pw-cats__row::-webkit-scrollbar { display: none; }
+.pw-cats__row > li { flex: 0 0 auto; }
+.pw-cat { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 96px; color: var(--pw-ink) !important; text-decoration: none !important; }
+.pw-cat__img { display: block; width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: #EFEAE1; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--pw-rule); transition: box-shadow .2s ease; }
+.pw-cat:hover .pw-cat__img, .pw-cat:focus-visible .pw-cat__img { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--pw-haldi); }
+.pw-cat__img img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; transform: scale(1.35); }
+.pw-cat__name { font-size: 13.5px; font-weight: 700; line-height: 1.2; text-align: center; }
+@media (max-width: 960px) { .pw-cats__row { justify-content: flex-start; gap: 14px; padding: 14px 16px 12px; } .pw-cat { width: 74px; } .pw-cat__img { width: 66px; height: 66px; } .pw-cat__name { font-size: 12.5px; } }
+
+/* Fit badge on product cards */
+.woocommerce ul.products li.product { position: relative; }
+.pw-fit { position: absolute; top: 10px; left: 10px; z-index: 3; padding: 4px 9px; border-radius: 6px; background: rgba(255,255,255,.92); color: var(--pw-ink); font-size: 11px; font-weight: 800; letter-spacing: .02em; line-height: 1.3; pointer-events: none; }
+
+/* A colour row with a single colour says nothing: hide it */
+.cfvsw-shop-container:not(:has(.cfvsw-swatches-option + .cfvsw-swatches-option)) { display: none !important; }

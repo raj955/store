@@ -61,7 +61,7 @@ function store_child_home_term_image( $term ) {
  */
 function store_child_home_products( $limit = 8 ) {
 	// A mix across the range, in this order, so every kind of shopper sees something for them.
-	$plan = array( 'oversized-t-shirts', 'women', 'hoodies', 'oversized-t-shirts', 'women', 'sweatshirts', 't-shirts', 'mugs', 'oversized-t-shirts', 'tote-bags', 'hoodies', 'women' );
+	$plan = array( 'oversized-t-shirts', 'women', 'hoodies', 'oversized-t-shirts', 'women', 'sweatshirts', 't-shirts', 'oversized-t-shirts', 'hoodies', 'women', 't-shirts', 'oversized-t-shirts' );
 	$pools = array();
 	$picked = array();
 	foreach ( $plan as $slug ) {
@@ -229,6 +229,25 @@ function store_child_home() {
 	?>
 	<div id="primary" class="content-area pw-home">
 
+	<nav class="pw-cats" aria-label="Categories">
+		<ul class="pw-cats__row">
+			<?php
+			foreach ( store_child_home_collections() as $slug => $card ) :
+				$term = get_term_by( 'slug', $slug, 'product_cat' );
+				if ( ! $term || ( ! $term->count && 'design-your-own' !== $slug ) ) {
+					continue;
+				}
+				?>
+				<li>
+					<a class="pw-cat" href="<?php echo esc_url( get_term_link( $term ) ); ?>">
+						<span class="pw-cat__img"><?php echo store_child_home_term_image( $term ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+						<span class="pw-cat__name"><?php echo esc_html( $card[0] ); ?></span>
+					</a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</nav>
+
 	<section class="pw-hero" aria-labelledby="pw-hero-title">
 		<div class="pw-wrap pw-hero__inner">
 			<div class="pw-hero__copy">
@@ -255,30 +274,6 @@ function store_child_home() {
 				<p class="pw-hand pw-hero__note">पहन के देखो, फिर बोलना</p>
 			</div>
 			<?php endif; ?>
-		</div>
-	</section>
-
-	<section class="pw-moods" aria-labelledby="pw-moods-title">
-		<div class="pw-wrap">
-			<h2 id="pw-moods-title" class="pw-h2">आज का mood?</h2>
-			<p class="pw-sub">Fit चुनो, design हम दिखाते हैं।</p>
-			<ul class="pw-moods__grid">
-				<?php
-				foreach ( store_child_home_collections() as $slug => $card ) :
-					$term = get_term_by( 'slug', $slug, 'product_cat' );
-					if ( ! $term || ( ! $term->count && 'design-your-own' !== $slug ) ) {
-						continue;
-					}
-					?>
-					<li>
-						<a class="pw-mood" href="<?php echo esc_url( get_term_link( $term ) ); ?>" style="--card:<?php echo esc_attr( $card[2] ); ?>">
-							<span class="pw-mood__img"><?php echo store_child_home_term_image( $term ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-							<span class="pw-mood__name"><?php echo esc_html( $card[0] ); ?></span>
-							<span class="pw-mood__line"><?php echo esc_html( $card[1] ); ?></span>
-						</a>
-					</li>
-				<?php endforeach; ?>
-			</ul>
 		</div>
 	</section>
 
