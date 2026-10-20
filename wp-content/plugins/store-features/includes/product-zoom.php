@@ -181,36 +181,41 @@ function store_features_photoswipe_options( $options ) {
 add_filter( 'woocommerce_single_product_photoswipe_options', 'store_features_photoswipe_options' );
 
 /**
- * A short hint under the photos.
- */
-function store_features_zoom_hint() {
-	$text = wp_is_mobile()
-		? __( 'Photo पर tap करो, फिर दो उँगलियों से zoom करो।', 'store-features' )
-		: __( 'Photo पर mouse रखो zoom के लिए, click करो बड़ा देखने के लिए।', 'store-features' );
-	echo '<p class="sf-zoom-hint">' . esc_html( $text ) . '</p>';
-}
-add_action( 'woocommerce_product_thumbnails', 'store_features_zoom_hint', 99 );
-
-/**
- * Computer: a click on the photo opens the full-screen viewer too (not only the small icon).
+ * Zoom button, hint and click-to-open, added to the gallery once WooCommerce has built it.
  */
 function store_features_zoom_assets() {
 	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
+	$hint = wp_is_mobile()
+		? __( 'Photo पर tap करो, फिर दो उँगलियों से zoom करो। दूसरी photo में print पास से दिखता है।', 'store-features' )
+		: __( 'Photo पर mouse रखो तो zoom होगा, click करो तो पूरी screen पर खुलेगी। दूसरी photo में print पास से दिखता है।', 'store-features' );
 	wp_add_inline_style(
 		'store-features',
-		'.woocommerce-product-gallery__image{cursor:zoom-in}'
-		. '.woocommerce-product-gallery .woocommerce-product-gallery__trigger{width:auto!important;height:40px!important;padding:0 14px 0 38px!important;border-radius:999px!important;background:rgba(18,18,20,.82)!important;color:#F3EEE4!important;font-size:14px!important;font-weight:700;line-height:40px;text-indent:0!important;display:flex!important;align-items:center;top:12px!important;right:12px!important;z-index:9}'
-		. '.woocommerce-product-gallery .woocommerce-product-gallery__trigger::after{content:"Zoom";position:static;display:inline;border:0;background:none;width:auto;height:auto;transform:none;color:inherit}'
-		. '.woocommerce-product-gallery .woocommerce-product-gallery__trigger::before{left:12px!important;top:11px!important;border-color:#F3EEE4!important}'
-		. '.woocommerce-product-gallery .woocommerce-product-gallery__trigger img,.woocommerce-product-gallery .woocommerce-product-gallery__trigger span{display:none}'
-		. '.sf-zoom-hint{margin:10px 0 0;font-size:14px;color:var(--muted,#565D7A);text-align:center;width:100%;clear:both}'
+		'.woocommerce-product-gallery{position:relative}'
+		. '.woocommerce-product-gallery__image{cursor:zoom-in}'
+		. '.woocommerce div.product div.images .woocommerce-product-gallery__trigger{display:none!important}'
+		. '.sf-zoom-btn{position:absolute;top:12px;right:12px;z-index:9;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border:0;border-radius:999px;background:rgba(18,18,20,.85);color:#F3EEE4;font:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}'
+		. '.sf-zoom-btn:hover{background:#121214;color:#FFA41B}'
+		. '.sf-zoom-btn svg{width:18px;height:18px}'
+		. '.sf-zoom-hint{margin:10px 0 0;font-size:14px;line-height:1.45;color:var(--muted,#565D7A);text-align:center}'
+		. '.woocommerce div.product div.images .flex-control-thumbs{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:8px 0 2px;margin:0;scrollbar-width:thin}'
+		. '.woocommerce div.product div.images .flex-control-thumbs li{flex:0 0 72px;width:72px!important;margin:0!important;float:none!important}'
+		. '.woocommerce div.product div.images .flex-control-thumbs li img{border-radius:8px}'
 		. '.pswp__bg{background:#121214}'
 	);
+	$data = wp_json_encode( array( 'hint' => $hint ) );
 	wp_add_inline_script(
 		'store-features',
-		"(function($){if(!$||!window.wc_single_product_params||wc_single_product_params.zoom_enabled!=='1'){return;}$(document).on('click','.woocommerce-product-gallery__image',function(e){var t=$(this).closest('.woocommerce-product-gallery').find('.woocommerce-product-gallery__trigger');if(t.length&&!$(e.target).closest('.woocommerce-product-gallery__trigger').length){e.preventDefault();t.trigger('click');}});})(window.jQuery);"
+		'(function($){if(!$){return;}var cfg=' . $data . ';'
+		. 'var ICON=\'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8v6M8 11h6" stroke-linecap="round"/></svg>\';'
+		. 'function open(g){var t=g.find(".woocommerce-product-gallery__trigger");if(t.length){t.trigger("click");return;}var a=g.find(".flex-active-slide a").first();if(!a.length){a=g.find(".woocommerce-product-gallery__image a").first();}a.trigger("click");}'
+		. 'function setup(){$(".woocommerce-product-gallery").each(function(){var g=$(this);if(g.data("sfZoom")){return;}g.data("sfZoom",1);'
+		. 'var b=$(\'<button type="button" class="sf-zoom-btn" aria-label="Photo बड़ी करके देखो">\'+ICON+\'<span>Zoom</span></button>\');b.on("click",function(e){e.preventDefault();open(g);});g.append(b);'
+		. 'g.append($(\'<p class="sf-zoom-hint"></p>\').text(cfg.hint));});}'
+		. '$(window).on("load",setup);$(document.body).on("wc-product-gallery-after-init",function(){setTimeout(setup,0);});'
+		. 'if(window.wc_single_product_params&&wc_single_product_params.zoom_enabled==="1"){$(document).on("click",".woocommerce-product-gallery__image",function(e){if($(e.target).closest(".sf-zoom-btn").length){return;}e.preventDefault();open($(this).closest(".woocommerce-product-gallery"));});}'
+		. '})(window.jQuery);'
 	);
 }
 add_action( 'wp_enqueue_scripts', 'store_features_zoom_assets', 35 );
