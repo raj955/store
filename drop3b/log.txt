@@ -1,0 +1,8 @@
+[desk] / -> 200
+[desk] console: Failed to load resource: the server responded with a status of 401 () @ https://panuwear.com/wp-json/yith/wishlist/v1/lists/?_locale=user
+[desk] /product/never-settle-black-mug/ -> 200
+[desk] console: Failed to load resource: the server responded with a status of 401 () @ https://panuwear.com/wp-json/yith/wishlist/v1/lists/?_locale=user
+[mob] / -> 200
+[mob] console: Failed to load resource: the server responded with a status of 401 () @ https://panuwear.com/wp-json/yith/wishlist/v1/lists/?_locale=user
+[mob] /product/never-settle-black-mug/ -> 200
+[mob] console: Failed to load resource: the server responded with a status of 401 () @ https://panuwear.com/wp-json/yith/wishlist/v1/lists/?_locale=user
