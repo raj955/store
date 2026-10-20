@@ -47,14 +47,19 @@ add_action( 'init', 'store_features_closeups_schedule' );
  * Add each close-up to the media library and put it second in its product's gallery.
  * Safe to run again: a product that already has its close-up is skipped.
  */
-function store_features_import_closeups() {
+function store_features_import_closeups( $limit = 0 ) {
 	if ( ! function_exists( 'wc_get_product' ) ) {
 		return;
 	}
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 
 	$all_done = true;
+	$added    = 0;
 	foreach ( store_features_closeup_files() as $slug => $path ) {
+		if ( $limit && $added >= $limit ) {
+			$all_done = false;
+			break;
+		}
 		$post = get_page_by_path( $slug, OBJECT, 'product' );
 		if ( ! $post ) {
 			continue; // Product not on this site (yet).
@@ -95,13 +100,45 @@ function store_features_import_closeups() {
 		array_unshift( $gallery, $id );
 		$product->set_gallery_image_ids( $gallery );
 		$product->save();
+		++$added;
 	}
 
 	if ( $all_done ) {
 		update_option( 'store_features_closeups_done', STORE_FEATURES_CLOSEUPS_VERSION, false );
 	}
 }
-add_action( 'store_features_import_closeups', 'store_features_import_closeups' );
+add_action(
+	'store_features_import_closeups',
+	function () {
+		if ( get_transient( 'store_features_closeups_lock' ) ) {
+			return;
+		}
+		set_transient( 'store_features_closeups_lock', 1, 300 );
+		store_features_import_closeups();
+		delete_transient( 'store_features_closeups_lock' );
+	}
+);
+
+/**
+ * In case WordPress's scheduled tasks don't run on this host: after a normal page has been sent
+ * to the visitor, add one close-up per request until all are in. A short lock stops overlaps.
+ */
+function store_features_closeups_on_shutdown() {
+	if ( is_admin() || wp_doing_ajax() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST )
+		|| (int) get_option( 'store_features_closeups_done', 0 ) >= STORE_FEATURES_CLOSEUPS_VERSION
+		|| get_transient( 'store_features_closeups_lock' ) ) {
+		return;
+	}
+	set_transient( 'store_features_closeups_lock', 1, 90 );
+	if ( function_exists( 'fastcgi_finish_request' ) ) {
+		fastcgi_finish_request();
+	} elseif ( function_exists( 'litespeed_finish_request' ) ) {
+		litespeed_finish_request();
+	}
+	store_features_import_closeups( 1 );
+	delete_transient( 'store_features_closeups_lock' );
+}
+add_action( 'shutdown', 'store_features_closeups_on_shutdown', 99 );
 
 /**
  * Phones: no in-place zoom box; a tap opens the full-screen viewer instead (WooCommerce does this
