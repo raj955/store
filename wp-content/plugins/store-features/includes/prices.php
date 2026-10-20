@@ -6,6 +6,7 @@
  *   Front print only (the current designs): tee ₹499 · oversized ₹749 · sweatshirt ₹949 · hoodie ₹1,079
  *   Front + back print (new designs):       oversized ₹849 · sweatshirt ₹1,049 · hoodie ₹1,179
  *   Women's crop top ₹449.
+ *   Design your own: same as the front-print price of that garment (online payment only).
  *
  * Version 2 also takes text-heavy designs (and ones printed with the old name) off the store.
  *
@@ -17,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_PRICES_VERSION = 2;
+const STORE_FEATURES_PRICES_VERSION = 3;
 
 /**
  * Category slug => price.
@@ -80,6 +81,25 @@ function store_features_apply_prices() {
 			}
 			$log[] = $product->get_name() . ' = ' . $price;
 		}
+	}
+	// Design your own: same rule, by garment.
+	foreach ( array( 'design-your-own-t-shirt' => 499, 'design-your-own-oversized-t-shirt' => 749, 'design-your-own-sweatshirt' => 949, 'design-your-own-hoodie' => 1079 ) as $slug => $price ) {
+		$post    = get_page_by_path( $slug, OBJECT, 'product' );
+		$product = $post ? wc_get_product( $post->ID ) : null;
+		if ( ! $product ) {
+			continue;
+		}
+		$targets = $product->is_type( 'variable' ) ? array_filter( array_map( 'wc_get_product', $product->get_children() ) ) : array( $product );
+		foreach ( $targets as $item ) {
+			$item->set_regular_price( (string) $price );
+			$item->set_sale_price( '' );
+			$item->save();
+		}
+		if ( $product->is_type( 'variable' ) ) {
+			WC_Product_Variable::sync( $product->get_id() );
+			wc_delete_product_transients( $product->get_id() );
+		}
+		$log[] = $slug . ' = ' . $price;
 	}
 	update_option( 'store_features_prices_done', STORE_FEATURES_PRICES_VERSION, false );
 	delete_transient( 'store_features_prices_lock' );
