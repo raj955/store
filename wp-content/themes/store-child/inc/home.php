@@ -17,7 +17,7 @@ function store_child_home_collections() {
 	return array(
 		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM, ढीली boxy fit', '#161618' ),
 		't-shirts'           => array( 'T-shirts', '180 GSM, रोज़ वाली regular fit', '#1C2340' ),
-		'women'              => array( "Women's fits", 'Crop tops और oversized fits', '#4B3566' ),
+		'women'              => array( 'Women', 'Crop tops और oversized, soft रंगों में', '#4B3566' ),
 		'sweatshirts'        => array( 'Sweatshirts', '300 GSM brushed fleece', '#4A3426' ),
 		'hoodies'            => array( 'Hoodies', '300 GSM, पहाड़ की ठंड के लिए', '#2F4A36' ),
 		'design-your-own'    => array( 'अपना design', 'अपनी line या photo, अपनी tee', '#3A1D2A' ),
@@ -249,11 +249,11 @@ function store_child_home() {
 	<section class="pw-hero" aria-labelledby="pw-hero-title">
 		<div class="pw-wrap pw-hero__inner">
 			<div class="pw-hero__copy">
-				<p class="pw-hero__kicker">PANUWEAR · EVERYDAY GRAPHIC STREETWEAR</p>
-				<h1 id="pw-hero-title" class="pw-hero__title">अपनी बात।<br>अपना <span>अंदाज़।</span></h1>
-				<p class="pw-hero__lede">Original graphic tees, oversized fits और hoodies—पहाड़ की vibe और रोज़मर्रा की बातों से inspired. अपना favourite print चुनो, या अपना design बनाओ।</p>
+				<p class="pw-hand pw-hero__kicker">Printed tees, hoodies और sweatshirts</p>
+				<h1 id="pw-hero-title" class="pw-hero__title">Design चुनो,<br>या <span>अपना</span> बनाओ।</h1>
+				<p class="pw-hero__lede">हमारे अपने graphic prints और देसी lines, oversized tees, hoodies और sweatshirts पर। पसंद का design न मिले तो अपनी photo, logo या line डालो, हम वही छाप देंगे। Free shipping, cash on delivery भी।</p>
 				<div class="pw-hero__actions">
-					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">कलेक्शन देखो</a>
+					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">Designs देखो</a>
 					<a class="pw-btn pw-btn--ghost" href="<?php echo esc_url( $custom ); ?>">अपना design बनाओ</a>
 				</div>
 				<ul class="pw-hero__facts">
@@ -279,7 +279,7 @@ function store_child_home() {
 	<section class="pw-new" aria-labelledby="pw-new-title">
 		<div class="pw-wrap">
 			<div class="pw-head">
-				<h2 id="pw-new-title" class="pw-h2">चुनिंदा designs</h2>
+				<h2 id="pw-new-title" class="pw-h2">सबके favourite</h2>
 				<a class="pw-link" href="<?php echo esc_url( $shop ); ?>">सारे designs देखो</a>
 			</div>
 			<div class="woocommerce columns-4">
