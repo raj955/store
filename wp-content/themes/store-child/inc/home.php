@@ -35,18 +35,24 @@ function store_child_home_term_image( $term ) {
 	if ( $thumb ) {
 		return wp_get_attachment_image( $thumb, 'woocommerce_thumbnail', false, array( 'alt' => '', 'loading' => 'lazy' ) );
 	}
-	$ids = wc_get_products(
+	$products = wc_get_products(
 		array(
-			'status'   => 'publish',
-			'limit'    => 1,
-			'category' => array( $term->slug ),
-			'orderby'  => 'menu_order',
-			'order'    => 'ASC',
-			'return'   => 'ids',
+			'status'       => 'publish',
+			'limit'        => 12,
+			'visibility'   => 'catalog',
+			'stock_status' => 'instock',
+			'category'     => array( $term->slug ),
+			'orderby'      => 'menu_order',
+			'order'        => 'ASC',
 		)
 	);
-	if ( $ids && has_post_thumbnail( $ids[0] ) ) {
-		return get_the_post_thumbnail( $ids[0], 'woocommerce_thumbnail', array( 'alt' => '', 'loading' => 'lazy' ) );
+	foreach ( $products as $product ) {
+		if ( function_exists( 'store_child_home_is_apparel_product' ) && ! store_child_home_is_apparel_product( $product ) ) {
+			continue;
+		}
+		if ( $product->get_image_id() ) {
+			return wp_get_attachment_image( $product->get_image_id(), 'woocommerce_thumbnail', false, array( 'alt' => '', 'loading' => 'lazy' ) );
+		}
 	}
 	return '';
 }
