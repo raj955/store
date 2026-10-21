@@ -386,7 +386,7 @@ function store_features_quick_add_style() {
 .sf-choice__card:hover { border-color: var(--neel, #1E2650); }
 .sf-choice__card:focus-visible { outline: 2px solid var(--neel, #1E2650); outline-offset: 2px; }
 .sf-choice__card[aria-current] { border-color: var(--neel, #1E2650); box-shadow: inset 0 0 0 1px var(--neel, #1E2650); }
-.sf-choice__img { flex: 0 0 auto; width: 120px; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 10px; background: var(--studio, #F0EEE8); }
+.sf-choice__img { flex: 0 0 auto; width: 120px; height: auto; aspect-ratio: 4 / 5; object-fit: contain; border-radius: 10px; background: var(--studio, #F0EEE8); }
 .sf-choice__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .sf-choice__title { color: var(--heading, #171C3A); font-size: 20px; font-weight: 700; line-height: 1.25; }
 .sf-choice__text { color: var(--muted, #565D7A); font-size: 15px; line-height: 1.45; }
