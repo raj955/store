@@ -1,0 +1,43 @@
+name: Live site smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wp-content/themes/store-child/**"
+      - "wp-content/plugins/store-features/**"
+      - ".github/workflows/live-smoke-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  homepage-http-check:
+    name: Check live homepage HTTP response
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Request live homepage
+        shell: bash
+        run: |
+          set +e
+          status="$(curl --silent --show-error --location --retry 2 --retry-all-errors --retry-delay 3 --connect-timeout 10 --max-time 30 \
+            --user-agent "Panuwear-live-smoke-test" \
+            --output /tmp/panuwear-homepage.html \
+            --write-out "%{http_code}" \
+            "https://panuwear.com/?_livecheck=${GITHUB_RUN_ID}")"
+          curl_exit=$?
+          echo "curl_exit_code=${curl_exit}"
+          echo "homepage_http_status=${status:-000}"
+          if [ "$curl_exit" -ne 0 ]; then
+            echo "::error::Could not complete HTTP request to panuwear.com."
+            head -c 1500 /tmp/panuwear-homepage.html 2>/dev/null || true
+            exit "$curl_exit"
+          fi
+          if [[ ! "$status" =~ ^[23][0-9][0-9]$ ]]; then
+            echo "::error::Live homepage returned HTTP ${status}, expected a successful response (2xx/3xx)."
+            head -c 1500 /tmp/panuwear-homepage.html 2>/dev/null || true
+            exit 1
+          fi
+          echo "Live homepage responded with HTTP ${status}."
