@@ -101,6 +101,89 @@ function store_features_wording( $translation, $text, $domain ) {
 add_filter( 'gettext', 'store_features_wording', 10, 3 );
 
 /**
+ * Accurate order-received copy for COD, paid orders and retryable online payments.
+ * A COD order must never tell the shopper their account has been charged.
+ *
+ * @param string        $text  Default message.
+ * @param WC_Order|bool $order Order.
+ * @return string
+ */
+function store_features_order_received_text( $text, $order ) {
+	if ( ! $order instanceof WC_Order ) {
+		return $text;
+	}
+
+	if ( 'cod' === $order->get_payment_method() ) {
+		$amount = wp_strip_all_tags( wc_price( $order->get_total() ) );
+		return sprintf(
+			/* translators: %s: order total */
+			esc_html__( 'Order confirmed. Pay %s in cash to the delivery partner when your parcel arrives. No online payment has been taken.', 'store-features' ),
+			$amount
+		);
+	}
+
+	if ( $order->is_paid() ) {
+		return esc_html__( 'Payment received. Your order is confirmed, and we will prepare it for dispatch.', 'store-features' );
+	}
+
+	if ( $order->needs_payment() && $order->has_status( array( 'pending', 'failed' ) ) ) {
+		return sprintf(
+			'%1$s <a class="button wc-forward" href="%2$s">%3$s</a>',
+			esc_html__( 'Payment has not been confirmed yet. Please do not create a duplicate order.', 'store-features' ),
+			esc_url( $order->get_checkout_payment_url() ),
+			esc_html__( 'Retry payment', 'store-features' )
+		);
+	}
+
+	if ( $order->has_status( 'cancelled' ) ) {
+		return sprintf(
+			'%1$s <a href="%2$s">%3$s</a>',
+			esc_html__( 'This order was cancelled; no payment should be assumed successful.', 'store-features' ),
+			esc_url( wc_get_page_permalink( 'shop' ) ),
+			esc_html__( 'Return to the shop', 'store-features' )
+		);
+	}
+
+	return esc_html__( 'Thank you. Your order has been received. We are checking the next step. Please do not place a duplicate order while its status is pending.', 'store-features' );
+}
+add_filter( 'woocommerce_thankyou_order_received_text', 'store_features_order_received_text', 10, 2 );
+
+/**
+ * Some payment plugins print a hard-coded success sentence on the receipt page even for COD.
+ * Replace only that exact sentence, and only when the current order really uses COD.
+ *
+ * @param string $translation Translated text.
+ * @param string $text        Original text.
+ * @param string $domain      Text domain.
+ * @return string
+ */
+function store_features_cod_receipt_copy( $translation, $text, $domain ) {
+	if ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() ) {
+		return $translation;
+	}
+
+	$order_id = absint( get_query_var( 'order-received' ) );
+	if ( ! $order_id ) {
+		return $translation;
+	}
+
+	$plain = trim( wp_strip_all_tags( (string) $text ) );
+	$incorrect = 'Your account has been charged and your transaction is successful. We will be processing your order soon.';
+	if ( 0 !== strcasecmp( $plain, $incorrect ) ) {
+		return $translation;
+	}
+
+	$order = wc_get_order( $order_id );
+	if ( $order && 'cod' === $order->get_payment_method() ) {
+		return 'This is a Cash on Delivery order. No online payment has been taken. Please pay the delivery partner when your parcel arrives.';
+	}
+
+	return $translation;
+}
+add_filter( 'gettext', 'store_features_cod_receipt_copy', 20, 3 );
+
+
+/**
  * A short reassurance line in the cart drawer, above the View cart and Checkout buttons.
  */
 function store_features_mini_cart_note() {

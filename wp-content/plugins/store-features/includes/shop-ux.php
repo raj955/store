@@ -118,7 +118,7 @@ function store_features_shop_ux_style() {
 li.product.sf-many-colours .cfvsw_variations_form { display: none; }
 .sf-colour-count { margin: 4px 0 0; color: var(--muted, #565D7A); font-size: 14px; }
 .single-product .reset_variations { display: none !important; }
-.single-product table.variations tr.sf-needs-choice .cfvsw-swatches-container { border-radius: var(--radius, 4px); box-shadow: 0 0 0 2px #C2185B, 0 0 0 6px #FBE3EC; }
+.single-product table.variations tr.sf-needs-choice .cfvsw-swatches-container { border-radius: var(--radius, 4px); box-shadow: 0 0 0 2px var(--pw-accent, #A96546), 0 0 0 5px var(--pw-accent-soft, #F3E9E1); }
 .sf-choice-msg { margin: 8px 0 0; color: #A3122F; font-size: 14px; font-weight: 600; }
 .wc-block-components-address-card__edit { flex: 0 0 auto; margin-left: 12px; white-space: nowrap; }
 .woocommerce-tabs .woocommerce-Tabs-panel--description > h2:first-child:empty { display: none; }
