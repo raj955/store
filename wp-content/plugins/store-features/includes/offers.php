@@ -149,7 +149,9 @@ function store_features_offer_coupon_data( $data, $code ) {
 		'amount'               => $c['coupon_off'],
 		'minimum_amount'       => $c['coupon_min'],
 		'individual_use'       => false,
-		'usage_limit_per_user' => 1,
+		// PEHLA20 is a virtual coupon, not a database coupon. WooCommerce Store API's
+		// per-user limit validator calls get_data_store(), which is null for this coupon.
+		// The custom first-order checks below enforce one-time eligibility instead.
 		'exclude_product_ids'  => function_exists( 'store_features_custom_product_ids' ) ? store_features_custom_product_ids() : array(),
 	);
 }
