@@ -35,73 +35,33 @@ function store_child_home_term_image( $term ) {
 	if ( $thumb ) {
 		return wp_get_attachment_image( $thumb, 'woocommerce_thumbnail', false, array( 'alt' => '', 'loading' => 'lazy' ) );
 	}
-	$products = wc_get_products(
+	$ids = wc_get_products(
 		array(
-			'status'       => 'publish',
-			'limit'        => 12,
-			'visibility'   => 'catalog',
-			'stock_status' => 'instock',
-			'category'     => array( $term->slug ),
-			'orderby'      => 'menu_order',
-			'order'        => 'ASC',
+			'status'   => 'publish',
+			'limit'    => 1,
+			'category' => array( $term->slug ),
+			'orderby'  => 'menu_order',
+			'order'    => 'ASC',
+			'return'   => 'ids',
 		)
 	);
-	foreach ( $products as $product ) {
-		if ( function_exists( 'store_child_home_is_apparel_product' ) && ! store_child_home_is_apparel_product( $product ) ) {
-			continue;
-		}
-		if ( $product->get_image_id() ) {
-			return wp_get_attachment_image( $product->get_image_id(), 'woocommerce_thumbnail', false, array( 'alt' => '', 'loading' => 'lazy' ) );
-		}
+	if ( $ids && has_post_thumbnail( $ids[0] ) ) {
+		return get_the_post_thumbnail( $ids[0], 'woocommerce_thumbnail', array( 'alt' => '', 'loading' => 'lazy' ) );
 	}
 	return '';
 }
 
 /**
- * Strict homepage eligibility: apparel only, with a usable product image and a real buy option.
- * This also protects the homepage when an accessory is accidentally tagged into a clothing category.
- *
- * @param mixed $product Candidate.
- * @return bool
- */
-function store_child_home_is_apparel_product( $product ) {
-	if ( ! $product instanceof WC_Product ) {
-		return false;
-	}
-
-	$id = $product->get_id();
-	$clothing_categories = array( 'oversized-t-shirts', 't-shirts', 'women', 'sweatshirts', 'hoodies' );
-	$non_clothing_categories = array( 'mugs', 'tote-bags', 'accessories', 'bags', 'home-lifestyle' );
-
-	if ( ! has_term( $clothing_categories, 'product_cat', $id ) || has_term( $non_clothing_categories, 'product_cat', $id ) ) {
-		return false;
-	}
-
-	// Guard against an accessory being incorrectly assigned to a clothing category.
-	if ( preg_match( '/\\b(?:mugs?|tote(?:\\s+bags?)?|bags?|bottles?|keychains?|posters?|cushions?|puzzles?|phone\\s+cases?)\\b/i', $product->get_name() ) ) {
-		return false;
-	}
-
-	return $product->is_visible() && $product->is_purchasable() && $product->is_in_stock() && (bool) $product->get_image_id();
-}
-
-/**
- * Ready-design apparel for the homepage. Accessories and unavailable/incomplete products never
- * appear in the hero or featured grid, even if they were miscategorised in WooCommerce.
+ * Ready-design products for the home page (no "Design your own" pieces).
  *
  * @param int $limit How many.
  * @return WC_Product[]
  */
 function store_child_home_products( $limit = 8 ) {
-	// Menu order remains the editorial ranking; this plan spreads the first row across apparel.
-	$plan = array(
-		'oversized-t-shirts', 'women', 'hoodies', 'oversized-t-shirts',
-		'women', 'sweatshirts', 't-shirts', 'oversized-t-shirts',
-		'hoodies', 'women', 't-shirts', 'sweatshirts',
-	);
-	$pools  = array();
+	// A mix across the range, in this order, so every kind of shopper sees something for them.
+	$plan = array( 'oversized-t-shirts', 'women', 'hoodies', 'oversized-t-shirts', 'women', 'sweatshirts', 't-shirts', 'oversized-t-shirts', 'hoodies', 'women', 't-shirts', 'oversized-t-shirts' );
+	$pools = array();
 	$picked = array();
-
 	foreach ( $plan as $slug ) {
 		if ( count( $picked ) >= $limit ) {
 			break;
@@ -110,52 +70,25 @@ function store_child_home_products( $limit = 8 ) {
 			$pools[ $slug ] = wc_get_products(
 				array(
 					'status'       => 'publish',
-					'limit'        => 18,
+					'limit'        => 6,
 					'visibility'   => 'catalog',
 					'stock_status' => 'instock',
 					'category'     => array( $slug ),
-					'orderby'      => 'menu_order',
-					'order'        => 'ASC',
+					'orderby'      => array(
+						'menu_order' => 'ASC',
+						'date'       => 'DESC',
+					),
 				)
 			);
 		}
 		while ( $pools[ $slug ] ) {
 			$product = array_shift( $pools[ $slug ] );
-			$id      = $product->get_id();
-			if ( isset( $picked[ $id ] ) || ! store_child_home_is_apparel_product( $product ) ) {
-				continue;
-			}
-			$picked[ $id ] = $product;
-			break;
-		}
-	}
-
-	// Fill any gaps from the rest of the clothing range without ever using accessories.
-	if ( count( $picked ) < $limit ) {
-		foreach ( array( 'oversized-t-shirts', 't-shirts', 'women', 'hoodies', 'sweatshirts' ) as $slug ) {
-			$candidates = wc_get_products(
-				array(
-					'status'       => 'publish',
-					'limit'        => 30,
-					'visibility'   => 'catalog',
-					'stock_status' => 'instock',
-					'category'     => array( $slug ),
-					'orderby'      => 'menu_order',
-					'order'        => 'ASC',
-				)
-			);
-			foreach ( $candidates as $product ) {
-				if ( count( $picked ) >= $limit ) {
-					break 2;
-				}
-				$id = $product->get_id();
-				if ( ! isset( $picked[ $id ] ) && store_child_home_is_apparel_product( $product ) ) {
-					$picked[ $id ] = $product;
-				}
+			if ( ! isset( $picked[ $product->get_id() ] ) ) {
+				$picked[ $product->get_id() ] = $product;
+				break;
 			}
 		}
 	}
-
 	return array_values( $picked );
 }
 
@@ -166,17 +99,20 @@ function store_child_home_products( $limit = 8 ) {
  * @return float
  */
 function store_child_home_example_price( $products ) {
-	// Use the first visible oversized garment in the curated grid, not a possibly miscategorised item.
-	foreach ( $products as $product ) {
-		if ( store_child_home_is_apparel_product( $product ) && has_term( 'oversized-t-shirts', 'product_cat', $product->get_id() ) && (float) $product->get_price() > 0 ) {
-			return (float) $product->get_price();
-		}
+	$oversized = wc_get_products(
+		array(
+			'status'   => 'publish',
+			'limit'    => 1,
+			'category' => array( 'oversized-t-shirts' ),
+			'orderby'  => 'menu_order',
+			'order'    => 'ASC',
+		)
+	);
+	if ( $oversized && (float) $oversized[0]->get_price() > 0 ) {
+		return (float) $oversized[0]->get_price();
 	}
 	$prices = array();
 	foreach ( $products as $product ) {
-		if ( ! store_child_home_is_apparel_product( $product ) ) {
-			continue;
-		}
 		$price = (float) $product->get_price();
 		if ( $price > 0 ) {
 			$key            = (string) $price;
@@ -205,8 +141,8 @@ function store_child_price_ladder() {
 	$out = array();
 	foreach ( $rows as $slug => $row ) {
 		$min = 0;
-		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 30, 'visibility' => 'catalog', 'stock_status' => 'instock', 'category' => array( $slug ), 'orderby' => 'menu_order', 'order' => 'ASC' ) ) as $product ) {
-			if ( ! store_child_home_is_apparel_product( $product ) || ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) ) {
+		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 20, 'category' => array( $slug ) ) ) as $product ) {
+			if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
 				continue;
 			}
 			$p = (float) ( $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price() );
@@ -323,7 +259,7 @@ function store_child_home() {
 				<ul class="pw-hero__facts">
 					<li>Free shipping</li>
 					<li>Cash on delivery</li>
-					<li>5–7 working days</li>
+					<li>5 से 7 दिन में delivery</li>
 				</ul>
 			</div>
 			<?php if ( $hero ) : ?>
@@ -333,7 +269,8 @@ function store_child_home() {
 						<?php echo wp_get_attachment_image( $product->get_image_id(), 'woocommerce_single', false, array( 'alt' => '', 'loading' => 0 === $i ? 'eager' : 'lazy', 'fetchpriority' => 0 === $i ? 'high' : 'auto' ) ); ?>
 					</a>
 				<?php endforeach; ?>
-							</div>
+				<p class="pw-hand pw-hero__note">पहन के देखो, फिर बोलना</p>
+			</div>
 			<?php endif; ?>
 		</div>
 	</section>
