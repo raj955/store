@@ -1,0 +1,37 @@
+name: PHP syntax checks
+
+on:
+  pull_request:
+    paths:
+      - "wp-content/**/*.php"
+      - ".github/workflows/php-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "wp-content/**/*.php"
+      - ".github/workflows/php-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    name: Lint WordPress PHP
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          coverage: none
+
+      - name: Check patch whitespace
+        run: git diff --check ${{ github.event.pull_request.base.sha || github.event.before }} ${{ github.sha }}
+
+      - name: Lint all WordPress PHP files
+        run: |
+          find wp-content -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
