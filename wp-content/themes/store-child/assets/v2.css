@@ -613,7 +613,7 @@
 .pw2 .pw-hero__card--1 { left: 4%; top: 28px; width: 53%; }
 .pw2 .pw-hero__card--2 { right: 2%; top: 0; width: 45%; }
 .pw2 .pw-hero__card--3 { right: 12%; bottom: 0; width: 36%; }
-.pw2 .pw-hero__card img { object-fit: contain; padding: 8px; background: #F0EEE8; }
+.pw2 .pw-hero__card img { box-sizing: border-box; object-fit: contain; padding: 8px; background: #F0EEE8; }
 .pw2 .pw-hero__card:hover { transform: translateY(-3px); }
 .pw2 .pw-hero__note { display: none; }
 
@@ -627,7 +627,7 @@
 }
 .pw2 .pw-cat:hover .pw-cat__img,
 .pw2 .pw-cat:focus-visible .pw-cat__img { box-shadow: 0 0 0 2px var(--pw-haldi); }
-.pw2 .pw-cat__img img { object-fit: cover; object-position: center 28%; transform: none; }
+.pw2 .pw-cat__img img { box-sizing: border-box; object-fit: contain; object-position: center; background: #F0EEE8; transform: none; }
 .pw2 .pw-cat__name { color: var(--pw-ink); font-size: 12.5px; font-weight: 700; }
 
 /* Clean section surfaces: accents are details, never full-screen competing colours. */
@@ -696,7 +696,7 @@
 }
 .pw2 .woocommerce ul.products li.product .woocommerce-loop-image-link img,
 .pw2 ul.wc-block-grid__products .woocommerce-loop-image-link img {
-  display: block; width: 100%; height: 100%; object-fit: contain;
+  display: block; width: 100%; height: 100%; box-sizing: border-box; object-fit: contain;
   padding: 8px; background: #F0EEE8; transition: transform .25s ease;
 }
 .pw2 .woocommerce ul.products li.product .woocommerce-loop-image-link:hover img { transform: scale(1.025); }
