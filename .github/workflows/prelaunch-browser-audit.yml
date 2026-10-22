@@ -2,6 +2,12 @@ name: Prelaunch browser audit
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/prelaunch-browser-audit.yml"
+      - "wp-content/themes/store-child/**"
+      - "wp-content/plugins/store-features/**"
   pull_request:
     paths:
       - ".github/workflows/prelaunch-browser-audit.yml"
@@ -22,7 +28,7 @@ jobs:
       - name: Install Playwright
         run: |
           npm init -y >/dev/null
-          npm install --no-save playwright@1.48.2
+          npm install --no-save playwright@1.48.2 lighthouse
           npx playwright install --with-deps chromium
       - name: Audit live storefront without placing orders
         shell: bash
@@ -86,6 +92,7 @@ jobs:
                     horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
                     brokenImages: [...document.images].filter(img => img.complete && img.naturalWidth === 0).length
                   }));
+                  await page.screenshot({ path: 'audit/' + (path.replace(/[^a-z0-9]+/gi, '-') || 'home') + '-' + view.name + '.png', fullPage: true }).catch(() => {});
                   if (item.status >= 400) item.failure = 'HTTP error';
                   if (item.metrics.horizontalOverflowPx > 1) item.warning = 'Horizontal overflow';
                 } catch (e) {
@@ -102,10 +109,30 @@ jobs:
           })();
           EOF
           node audit.js
+      - name: Run Lighthouse PageSpeed audit (mobile and desktop)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_PATH="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          for page in home shop; do
+            if [ "$page" = "home" ]; then url="https://panuwear.com/"; else url="https://panuwear.com/shop/"; fi
+            echo "---- Lighthouse $page MOBILE ----"
+            npx lighthouse "$url" --chrome-flags="--headless --no-sandbox" --output=json --output-path="audit/lighthouse-${page}-mobile.json" --quiet
+            echo "---- Lighthouse $page DESKTOP ----"
+            npx lighthouse "$url" --preset=desktop --chrome-flags="--headless --no-sandbox" --output=json --output-path="audit/lighthouse-${page}-desktop.json" --quiet
+          done
+          node - <<'NODE'
+          const fs = require('fs');
+          for (const file of fs.readdirSync('audit').filter(f => f.startsWith('lighthouse-') && f.endsWith('.json'))) {
+            const j = JSON.parse(fs.readFileSync('audit/' + file, 'utf8'));
+            const a = j.audits || {};
+            console.log(JSON.stringify({ report: file, performance: Math.round((j.categories?.performance?.score ?? 0) * 100), accessibility: Math.round((j.categories?.accessibility?.score ?? 0) * 100), bestPractices: Math.round((j.categories?.['best-practices']?.score ?? 0) * 100), seo: Math.round((j.categories?.seo?.score ?? 0) * 100), FCP: a['first-contentful-paint']?.displayValue, LCP: a['largest-contentful-paint']?.displayValue, CLS: a['cumulative-layout-shift']?.displayValue, TBT: a['total-blocking-time']?.displayValue, speedIndex: a['speed-index']?.displayValue }));
+          }
+          NODE
       - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: panuwear-prelaunch-audit
-          path: audit/report.json
+          path: audit/
           if-no-files-found: ignore
