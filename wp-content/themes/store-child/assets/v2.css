@@ -1415,3 +1415,69 @@
   .pw2 .pw-cat__img { width: 72px !important; height: 88px !important; }
   .pw2 .pw-cat__name { font-size: 10px !important; }
 }
+
+
+/* Contrast and readability repair across all custom homepage sections. */
+.pw2 .pw-diy__box,
+.pw2 .pw-diy__box h2,
+.pw2 .pw-diy__box .pw-h2 {
+  color: #f8f5ef !important;
+}
+.pw2 .pw-diy__box p,
+.pw2 .pw-diy__box .pw-diy__lede {
+  color: #d9d3c9 !important;
+}
+.pw2 .pw-diy__box h2 *,
+.pw2 .pw-diy__box .pw-h2 * {
+  color: inherit !important;
+}
+.pw2 .pw-story .pw-h2,
+.pw2 .pw-story .pw-h2 *,
+.pw2 .pw-story p,
+.pw2 .pw-story li,
+.pw2 .pw-story .pw-link {
+  color: #f7f3eb !important;
+}
+.pw2 .pw-story .pw-link { text-decoration-color: #c59a4a !important; }
+.pw2 .pw-hero__title,
+.pw2 .pw-hero__title *,
+.pw2 .pw-hero__lede,
+.pw2 .pw-hero__kicker {
+  text-shadow: none !important;
+}
+.pw2 .pw-hero__title { color: #171615 !important; }
+.pw2 .pw-hero__lede { color: #514b43 !important; }
+.pw2 .pw-hero__kicker { color: #765622 !important; }
+.pw2 .pw-diy__box .pw-btn--rani {
+  background: #c59a4a !important;
+  border-color: #c59a4a !important;
+  color: #171615 !important;
+}
+.pw2 .pw-diy__box .pw-btn--rani:hover {
+  background: #e0bd78 !important;
+  border-color: #e0bd78 !important;
+  color: #171615 !important;
+}
+.pw2 .pw-help,
+.pw2 .pw-help__inner,
+.pw2 .pw-help__title {
+  color: #211d19 !important;
+}
+.pw2 .pw-help p { color: #514b43 !important; }
+.pw2 .pw-help .pw-btn--paper {
+  background: #211d19 !important;
+  border-color: #211d19 !important;
+  color: #fff !important;
+}
+.pw2 .pw-new .pw-h2,
+.pw2 .pw-bundle .pw-h2,
+.pw2 .pw-diy .pw-h2,
+.pw2 .pw-help .pw-h2 {
+  color: #211d19;
+}
+.pw2 .pw-diy .pw-diy__box .pw-h2 { color: #f8f5ef !important; }
+.pw2 .pw-diy .pw-diy__box p { color: #d9d3c9 !important; }
+.pw2 .site-footer,
+.pw2 .site-footer .footer-title,
+.pw2 .site-footer .footer-about,
+.pw2 .site-footer .footer-links a { color: #f0ece4; }
