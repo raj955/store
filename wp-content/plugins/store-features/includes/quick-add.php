@@ -149,11 +149,49 @@ add_action( 'save_post_product_variation', 'store_features_clear_quick_add_cache
  * @param WC_Product $product Product.
  * @return array|null
  */
+/**
+ * Recalculate customer-context-sensitive price and stock fields on every request.
+ *
+ * Product metadata can be cached, but prices may vary by tax display, currency, or
+ * pricing extensions, so never serve a cached price to a different request context.
+ *
+ * @param array      $data    Cached quick-add metadata.
+ * @param WC_Product $product Product.
+ * @return array
+ */
+function store_features_quick_add_live_values( $data, $product ) {
+	$data['price'] = html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES, 'UTF-8' );
+
+	foreach ( (array) $data['variations'] as $key => $row ) {
+		$variation = wc_get_product( absint( $row['id'] ?? 0 ) );
+		if ( ! $variation || ! $variation->is_purchasable() ) {
+			unset( $data['variations'][ $key ] );
+			continue;
+		}
+
+		$data['variations'][ $key ]['stock'] = $variation->is_in_stock();
+		$data['variations'][ $key ]['price'] = html_entity_decode(
+			wp_strip_all_tags( wc_price( wc_get_price_to_display( $variation ) ) ),
+			ENT_QUOTES,
+			'UTF-8'
+		);
+	}
+
+	return $data;
+}
+
+/**
+ * Build the quick-add payload for a product card. Cache only product metadata briefly;
+ * calculate customer-context-sensitive prices and live stock state for every request.
+ *
+ * @param WC_Product $product Product.
+ * @return array|null
+ */
 function store_features_quick_add_data( $product ) {
-	$cache_key = 'sf_quick_add_' . $product->get_id();
+	$cache_key = 'sf_quick_add_v2_' . $product->get_id();
 	$cached    = get_transient( $cache_key );
 	if ( false !== $cached ) {
-		return $cached;
+		return store_features_quick_add_live_values( $cached, $product );
 	}
 
 	$attributes = $product->get_variation_attributes();
@@ -189,7 +227,6 @@ function store_features_quick_add_data( $product ) {
 		$variations[ $key ] = array(
 			'id'    => $child_id,
 			'stock' => $variation->is_in_stock(),
-			'price' => html_entity_decode( wp_strip_all_tags( wc_price( wc_get_price_to_display( $variation ) ) ), ENT_QUOTES, 'UTF-8' ),
 			'img'   => $img ? $img : '',
 		);
 	}
@@ -200,7 +237,6 @@ function store_features_quick_add_data( $product ) {
 		'name'       => $product->get_name(),
 		'url'        => $product->get_permalink(),
 		'img'        => (string) get_the_post_thumbnail_url( $product->get_id(), 'woocommerce_thumbnail' ),
-		'price'      => html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES, 'UTF-8' ),
 		'colours'    => $colours,
 		'sizes'      => $sizes,
 		'variations' => $variations,
@@ -208,7 +244,7 @@ function store_features_quick_add_data( $product ) {
 		'fit'        => function_exists( 'store_features_size_fit' ) ? store_features_size_fit( $product ) : array(),
 	);
 	set_transient( $cache_key, $data, 5 * MINUTE_IN_SECONDS );
-	return $data;
+	return store_features_quick_add_live_values( $data, $product );
 }
 
 /**
