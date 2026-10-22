@@ -117,7 +117,85 @@ add_action( 'woocommerce_archive_description', 'store_features_choice_on_archive
  * @param WC_Product_Variable $product Product.
  * @return array|null
  */
+/**
+ * Clear the short-lived quick-add cache when a product or variation changes.
+ *
+ * @param mixed $product Product object or product ID.
+ */
+function store_features_clear_quick_add_cache( $product ) {
+	$product_id = $product instanceof WC_Product ? $product->get_id() : absint( $product );
+	if ( ! $product_id ) {
+		return;
+	}
+	delete_transient( 'sf_quick_add_' . $product_id );
+	delete_transient( 'sf_quick_add_v2_' . $product_id );
+	$parent_id = wp_get_post_parent_id( $product_id );
+	if ( $parent_id ) {
+		delete_transient( 'sf_quick_add_' . $parent_id );
+		delete_transient( 'sf_quick_add_v2_' . $parent_id );
+	}
+}
+add_action( 'woocommerce_product_object_updated_props', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_product_set_stock', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_variation_set_stock', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_product_set_stock_status', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_variation_set_stock_status', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'save_post_product', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'save_post_product_variation', 'store_features_clear_quick_add_cache', 10, 1 );
+
+/**
+ * Build the quick-add payload for a product card. Cache briefly because variation data is
+ * expensive to assemble for every product on every shop/archive request. Product and stock
+ * update hooks invalidate the affected product payload immediately.
+ *
+ * @param WC_Product $product Product.
+ * @return array|null
+ */
+/**
+ * Recalculate customer-context-sensitive price and stock fields on every request.
+ *
+ * Product metadata can be cached, but prices may vary by tax display, currency, or
+ * pricing extensions, so never serve a cached price to a different request context.
+ *
+ * @param array      $data    Cached quick-add metadata.
+ * @param WC_Product $product Product.
+ * @return array
+ */
+function store_features_quick_add_live_values( $data, $product ) {
+	$data['price'] = html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES, 'UTF-8' );
+
+	foreach ( (array) $data['variations'] as $key => $row ) {
+		$variation = wc_get_product( absint( $row['id'] ?? 0 ) );
+		if ( ! $variation || ! $variation->is_purchasable() ) {
+			unset( $data['variations'][ $key ] );
+			continue;
+		}
+
+		$data['variations'][ $key ]['stock'] = $variation->is_in_stock();
+		$data['variations'][ $key ]['price'] = html_entity_decode(
+			wp_strip_all_tags( wc_price( wc_get_price_to_display( $variation ) ) ),
+			ENT_QUOTES,
+			'UTF-8'
+		);
+	}
+
+	return $data;
+}
+
+/**
+ * Build the quick-add payload for a product card. Cache only product metadata briefly;
+ * calculate customer-context-sensitive prices and live stock state for every request.
+ *
+ * @param WC_Product $product Product.
+ * @return array|null
+ */
 function store_features_quick_add_data( $product ) {
+	$cache_key = 'sf_quick_add_v2_' . $product->get_id();
+	$cached    = get_transient( $cache_key );
+	if ( false !== $cached ) {
+		return store_features_quick_add_live_values( $cached, $product );
+	}
+
 	$attributes = $product->get_variation_attributes();
 	if ( ! isset( $attributes['pa_color'], $attributes['pa_size'] ) ) {
 		return null;
@@ -151,24 +229,24 @@ function store_features_quick_add_data( $product ) {
 		$variations[ $key ] = array(
 			'id'    => $child_id,
 			'stock' => $variation->is_in_stock(),
-			'price' => html_entity_decode( wp_strip_all_tags( wc_price( wc_get_price_to_display( $variation ) ) ), ENT_QUOTES, 'UTF-8' ),
 			'img'   => $img ? $img : '',
 		);
 	}
 
 	$defaults = $product->get_default_attributes();
-	return array(
+	$data = array(
 		'id'         => $product->get_id(),
 		'name'       => $product->get_name(),
 		'url'        => $product->get_permalink(),
 		'img'        => (string) get_the_post_thumbnail_url( $product->get_id(), 'woocommerce_thumbnail' ),
-		'price'      => html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES, 'UTF-8' ),
 		'colours'    => $colours,
 		'sizes'      => $sizes,
 		'variations' => $variations,
 		'colour'     => $defaults['pa_color'] ?? ( $colours[0]['slug'] ?? '' ),
 		'fit'        => function_exists( 'store_features_size_fit' ) ? store_features_size_fit( $product ) : array(),
 	);
+	set_transient( $cache_key, $data, 5 * MINUTE_IN_SECONDS );
+	return store_features_quick_add_live_values( $data, $product );
 }
 
 /**
