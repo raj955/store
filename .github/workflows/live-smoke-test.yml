@@ -16,29 +16,37 @@ jobs:
   homepage-http-check:
     name: Check live page response and timing
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
-      - name: Measure homepage and shop response
+      - name: Measure homepage and shop response repeatedly
         shell: bash
         run: |
           set -euo pipefail
           for page in homepage shop; do
             if [ "$page" = "homepage" ]; then
-              url="https://panuwear.com/?_speedcheck=${GITHUB_RUN_ID}"
+              url="https://panuwear.com/"
             else
-              url="https://panuwear.com/shop/?_speedcheck=${GITHUB_RUN_ID}"
+              url="https://panuwear.com/shop/"
             fi
-            echo "---- ${page} ----"
-            metrics="$(curl --silent --show-error --location --retry 1 --retry-all-errors --connect-timeout 10 --max-time 45 \
-              --user-agent "Panuwear-speed-probe" \
-              --output "/tmp/panuwear-${page}.html" \
-              --write-out $'HTTP=%{http_code}\nDNS=%{time_namelookup}s\nConnect=%{time_connect}s\nTLS=%{time_appconnect}s\nTTFB=%{time_starttransfer}s\nTotal=%{time_total}s\nDownloaded=%{size_download} bytes\n' \
-              "$url")"
-            echo "$metrics"
-            status="$(printf '%s\n' "$metrics" | sed -n 's/^HTTP=//p')"
-            if [[ ! "$status" =~ ^[23][0-9][0-9]$ ]]; then
-              echo "::error::${page} returned HTTP ${status:-unknown}."
-              head -c 1500 "/tmp/panuwear-${page}.html" 2>/dev/null || true
-              exit 1
-            fi
+            echo "---- ${page}: 3 repeated requests (same URL to observe warm-cache behaviour) ----"
+            for attempt in 1 2 3; do
+              headers="/tmp/panuwear-${page}-${attempt}.headers"
+              body="/tmp/panuwear-${page}-${attempt}.html"
+              metrics="$(curl --silent --show-error --location --retry 1 --retry-all-errors --connect-timeout 10 --max-time 45 \
+                --user-agent "Panuwear-speed-probe" \
+                --dump-header "$headers" \
+                --output "$body" \
+                --write-out $'HTTP=%{http_code}\nDNS=%{time_namelookup}s\nConnect=%{time_connect}s\nTLS=%{time_appconnect}s\nTTFB=%{time_starttransfer}s\nTotal=%{time_total}s\nDownloaded=%{size_download} bytes\n' \
+                "$url")"
+              echo "Request ${attempt}"
+              echo "$metrics"
+              status="$(printf '%s\n' "$metrics" | sed -n 's/^HTTP=//p')"
+              echo "Relevant response headers:"
+              grep -iE '^(server|date|cache-control|age|expires|vary|etag|last-modified|x-cache|cf-cache-status|x-litespeed-cache|x-proxy-cache|x-fastcgi-cache|content-encoding):' "$headers" | tail -n 15 || true
+              if [[ ! "$status" =~ ^[23][0-9][0-9]$ ]]; then
+                echo "::error::${page} request ${attempt} returned HTTP ${status:-unknown}."
+                head -c 1500 "$body" 2>/dev/null || true
+                exit 1
+              fi
+            done
           done
