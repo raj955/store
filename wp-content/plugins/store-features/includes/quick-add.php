@@ -128,9 +128,11 @@ function store_features_clear_quick_add_cache( $product ) {
 		return;
 	}
 	delete_transient( 'sf_quick_add_' . $product_id );
+	delete_transient( 'sf_quick_add_v2_' . $product_id );
 	$parent_id = wp_get_post_parent_id( $product_id );
 	if ( $parent_id ) {
 		delete_transient( 'sf_quick_add_' . $parent_id );
+		delete_transient( 'sf_quick_add_v2_' . $parent_id );
 	}
 }
 add_action( 'woocommerce_product_object_updated_props', 'store_features_clear_quick_add_cache', 10, 1 );
