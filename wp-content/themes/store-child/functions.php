@@ -193,3 +193,53 @@ function store_child_card_fit_badge() {
 	}
 }
 add_action( 'woocommerce_before_shop_loop_item', 'store_child_card_fit_badge', 5 );
+
+
+/**
+ * Add a useful meta description only when a dedicated SEO plugin is not active.
+ * Avoid duplicate descriptions when Yoast, Rank Math, SEOPress, or AIOSEO owns metadata.
+ */
+function store_child_fallback_meta_description() {
+	if ( is_admin() || defined( 'WPSEO_VERSION' ) || defined( 'RANK_MATH_VERSION' ) || defined( 'SEOPRESS_VERSION' ) || defined( 'AIOSEO_VERSION' ) ) {
+		return;
+	}
+
+	$description = '';
+	if ( is_front_page() ) {
+		$description = 'Shop desi graphic T-shirts, oversized tees, crop tops, hoodies and sweatshirts at Panuwear. Choose original prints or create your own design. Free shipping and cash on delivery across India.';
+	} elseif ( function_exists( 'is_product' ) && is_product() ) {
+		$product = wc_get_product( get_queried_object_id() );
+		if ( $product ) {
+			$description = $product->get_short_description();
+			if ( ! $description ) {
+				$description = $product->get_name() . ' at Panuwear. Explore product details, available sizes and original graphic streetwear designs. Free shipping and COD across India.';
+			}
+		}
+	} elseif ( function_exists( 'is_product_category' ) && is_product_category() ) {
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term ) {
+			$description = $term->description;
+			if ( ! $description ) {
+				$description = 'Explore ' . $term->name . ' at Panuwear. Shop original desi graphic streetwear with free shipping and cash on delivery across India.';
+			}
+		}
+	} elseif ( function_exists( 'is_shop' ) && is_shop() ) {
+		$description = 'Shop Panuwear’s original desi graphic T-shirts, oversized tees, crop tops, hoodies and sweatshirts. Find your fit or create your own design, with free shipping and COD across India.';
+	} elseif ( is_singular() ) {
+		$post = get_queried_object();
+		if ( $post instanceof WP_Post ) {
+			$description = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
+		}
+	}
+
+	$description = trim( preg_replace( '/\\s+/', ' ', wp_strip_all_tags( (string) $description ) ) );
+	if ( $description ) {
+		if ( function_exists( 'mb_substr' ) ) {
+			$description = mb_substr( $description, 0, 160 );
+		} else {
+			$description = substr( $description, 0, 160 );
+		}
+		echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\\n";
+	}
+}
+add_action( 'wp_head', 'store_child_fallback_meta_description', 2 );
