@@ -88,6 +88,46 @@ function store_features_product_page_assets() {
 add_action( 'wp_enqueue_scripts', 'store_features_product_page_assets', 34 );
 
 /**
+ * A short brand hook and practical reassurance directly under the product title.
+ * Keep this copy about the design and shopping experience; don't invent fabric claims.
+ */
+function store_features_product_hook() {
+	if ( ! is_product() ) {
+		return;
+	}
+
+	global $product;
+	if ( ! $product instanceof WC_Product ) {
+		return;
+	}
+
+	$custom = function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product );
+	if ( $custom ) {
+		$headline = __( 'Tumhara idea. Tumhara design.', 'store-features' );
+		$note     = __( 'Apni line, photo ya idea ko apne style mein lao.', 'store-features' );
+	} else {
+		$headline = __( 'Apna mood pehno. Apni story dikhao.', 'store-features' );
+		$note     = __( 'Desi humour, pahाड़ी feels aur everyday moods—pick the print that feels like you.', 'store-features' );
+	}
+
+	echo '<div class="sf-product-hook">';
+	echo '<p class="sf-product-hook__headline">' . esc_html( $headline ) . '</p>';
+	echo '<p class="sf-product-hook__note">' . esc_html( $note ) . '</p>';
+	echo '<ul class="sf-product-promises">';
+	echo '<li>' . esc_html__( 'Free shipping across India', 'store-features' ) . '</li>';
+	if ( $custom ) {
+		echo '<li>' . esc_html__( 'Made for your design', 'store-features' ) . '</li>';
+		echo '<li>' . esc_html__( 'Pay online', 'store-features' ) . '</li>';
+	} else {
+		echo '<li>' . esc_html__( 'Cash on delivery available', 'store-features' ) . '</li>';
+		echo '<li>' . esc_html__( 'Size chart before you choose', 'store-features' ) . '</li>';
+	}
+	echo '</ul>';
+	echo '</div>';
+}
+add_action( 'woocommerce_single_product_summary', 'store_features_product_hook', 6 );
+
+/**
  * Expandable sections instead of tabs.
  */
 function store_features_product_sections() {
@@ -184,6 +224,13 @@ function store_features_product_page_style() {
 .sf-section__body > h2:first-child { display: none; }
 .sf-section__body ul { margin: 0 0 12px 1.2em; }
 .sf-section__body li { margin-bottom: 6px; }
+.sf-product-hook { margin: 10px 0 18px; padding: 13px 15px; border-left: 3px solid var(--pw-accent, #A96546); background: var(--pw-surface, #F6F2EE); }
+.sf-product-hook__headline { margin: 0 0 3px; color: var(--heading, #171C3A); font-size: 17px; font-weight: 800; line-height: 1.35; }
+.sf-product-hook__note { margin: 0 0 10px; color: var(--ink, #2B3150); font-size: 14px; line-height: 1.5; }
+.sf-product-promises { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 !important; padding: 0 !important; list-style: none; }
+.sf-product-promises li { margin: 0 !important; color: var(--ink, #2B3150); font-size: 12px; line-height: 1.4; }
+.sf-product-promises li::before { content: "✓"; margin-right: 5px; color: var(--pw-accent, #A96546); font-weight: 800; }
+@media (max-width: 767px) { .sf-product-hook { padding: 11px 12px; } .sf-product-hook__headline { font-size: 16px; } .sf-product-promises { gap: 6px 10px; } }
 .sf-fit { margin: 10px 0 0; color: var(--ink, #2B3150); font-size: 14.5px; }
 .sf-fit strong { color: var(--heading, #171C3A); }
 .sf-fit:empty { display: none; }
