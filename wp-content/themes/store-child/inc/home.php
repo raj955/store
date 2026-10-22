@@ -330,7 +330,7 @@ function store_child_home() {
 	<section class="pw-bundle" aria-labelledby="pw-bundle-title">
 		<div class="pw-wrap pw-bundle__inner">
 			<div class="pw-bundle__copy">
-				<h2 id="pw-bundle-title" class="pw-h2">मोटा कपड़ा,<br>सही दाम।</h2>
+				<h2 id="pw-bundle-title" class="pw-h2">अपना fit.<br>अपनी वाली vibe.</h2>
 				<p>हर दाम में free shipping और cash on delivery शामिल।</p>
 			</div>
 			<ul class="pw-bundle__tiers">
