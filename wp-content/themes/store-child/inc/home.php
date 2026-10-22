@@ -16,12 +16,12 @@ defined( 'ABSPATH' ) || exit;
 function store_child_home_collections() {
 	// Apparel and custom apparel always come first; every other populated category follows.
 	$collections = array(
-		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM, ढीली boxy fit', '#161618' ),
-		't-shirts'           => array( 'T-shirts', '180 GSM, रोज़ वाली regular fit', '#1C2340' ),
-		'women'              => array( "Women's fits", 'Crop tops और oversized fits', '#4B3566' ),
-		'sweatshirts'        => array( 'Sweatshirts', '300 GSM brushed fleece', '#4A3426' ),
-		'hoodies'            => array( 'Hoodies', '300 GSM, पहाड़ की ठंड के लिए', '#2F4A36' ),
-		'design-your-own'    => array( 'अपना design', 'अपनी line या photo, अपनी tee', '#3A1D2A' ),
+		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM · relaxed oversized fit', '#161618' ),
+		't-shirts'           => array( 'T-shirts', '180 GSM · everyday regular fit', '#1C2340' ),
+		'women'              => array( "Women's fits", 'Crop fits · oversized styles', '#4B3566' ),
+		'sweatshirts'        => array( 'Sweatshirts', '300 GSM · brushed fleece feel', '#4A3426' ),
+		'hoodies'            => array( 'Hoodies', '300 GSM · cosy hoodie layer', '#2F4A36' ),
+		'design-your-own'    => array( 'अपना design', 'अपनी line या photo · अपना design', '#3A1D2A' ),
 	);
 
 	$terms = get_terms(
@@ -366,6 +366,7 @@ function store_child_home() {
 			<h2 id="pw-why-title" class="pw-h2">तुम्हारा fit. तुम्हारे rules.</h2>
 			<ul class="pw-why__grid">
 				<li><h3>Copy-paste नहीं, original</h3><p>हमारे graphics और lines अपनी सोच से आते हैं—ताकि तुम्हारा fit किसी और जैसा न लगे।</p></li>
+				<li><h3>हर fit का अपना feel</h3><p>180 GSM regular tees, 240 GSM oversized tees और 300 GSM fleece hoodies/sweatshirts—अपनी पसंद का fit चुनो। GSM fabric के वजन को बताता है; feel और drape fabric blend व construction पर भी depend करते हैं।</p></li>
 				<li><h3>Made for your order</h3><p>तुम्हारा piece order के बाद print होता है—कम random stock, ज़्यादा तुम्हारी पसंद।</p></li>
 				<li><h3>Easy checkout</h3><p>पूरे India में free shipping और COD available. आम तौर पर delivery 5–7 working days में।</p></li>
 				<li><h3>Print में issue? बताओ</h3><p>Damage या गलत print मिले? 7 दिन के अंदर unboxing video के साथ हमसे contact करो—हम replacement में help करेंगे।</p></li>
