@@ -918,3 +918,116 @@
 @media (prefers-reduced-motion: reduce) {
   .pw2 *, .pw2 *::before, .pw2 *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+/* ---------------------------------------------------------------- Product colour swatches and card finishing
+   Keep the actual colour visible, but give the controls a deliberate, premium finish. */
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-height: 26px;
+  margin: 10px 0 4px;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 23px;
+  width: 23px !important;
+  min-width: 23px !important;
+  height: 23px !important;
+  min-height: 23px !important;
+  padding: 2px !important;
+  margin: 0 !important;
+  border: 1px solid #D9D6CE !important;
+  border-radius: 50% !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option) .cfvsw-swatch-inner {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 50% !important;
+  box-shadow: none !important;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option):hover {
+  border-color: var(--pw-ink) !important;
+  transform: translateY(-1px);
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option).cfvsw-selected-swatch {
+  border-color: var(--pw-ink) !important;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px var(--pw-ink) !important;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option):focus-visible {
+  outline: 2px solid var(--pw-haldi) !important;
+  outline-offset: 3px;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option .cfvsw-swatch-inner:empty {
+  overflow: hidden;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-label-option {
+  min-width: 25px !important;
+  min-height: 25px !important;
+  padding: 3px 6px !important;
+  margin: 0 !important;
+  border: 1px solid var(--pw-rule) !important;
+  border-radius: 6px !important;
+  background: #FFFFFF !important;
+  color: var(--pw-ink) !important;
+  font-size: 11px;
+  line-height: 1;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-label-option.cfvsw-selected-swatch {
+  border-color: var(--pw-ink) !important;
+  background: var(--pw-ink) !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+/* Keep homepage product cards aligned when titles or swatch counts differ. */
+.pw2 .pw-new ul.products li.product {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.pw2 .pw-new ul.products li.product .woocommerce-loop-image-link {
+  flex: 0 0 auto;
+}
+.pw2 .pw-new ul.products li.product .woocommerce-loop-product__title {
+  min-height: 2.7em;
+  margin-bottom: 4px;
+}
+.pw2 .pw-new ul.products li.product .price {
+  margin: 0 0 2px;
+}
+.pw2 .pw-new ul.products li.product .product-action-wrap {
+  margin-top: auto;
+}
+.pw2 .pw-new ul.products li.product .product-action-wrap .button {
+  width: 100%;
+}
+@media (max-width: 767px) {
+  .pw2 .pw-new ul.products li.product .woocommerce-loop-product__title {
+    min-height: 2.7em;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .pw2 .woocommerce ul.products li.product .cfvsw-shop-container {
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option) {
+    flex-basis: 21px;
+    width: 21px !important;
+    min-width: 21px !important;
+    height: 21px !important;
+    min-height: 21px !important;
+  }
+}
