@@ -16,12 +16,12 @@ defined( 'ABSPATH' ) || exit;
 function store_child_home_collections() {
 	// Apparel and custom apparel always come first; every other populated category follows.
 	$collections = array(
-		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM, ढीली boxy fit', '#161618' ),
-		't-shirts'           => array( 'T-shirts', '180 GSM, रोज़ वाली regular fit', '#1C2340' ),
-		'women'              => array( "Women's fits", 'Crop tops और oversized fits', '#4B3566' ),
-		'sweatshirts'        => array( 'Sweatshirts', '300 GSM brushed fleece', '#4A3426' ),
-		'hoodies'            => array( 'Hoodies', '300 GSM, पहाड़ की ठंड के लिए', '#2F4A36' ),
-		'design-your-own'    => array( 'अपना design', 'अपनी line या photo, अपनी tee', '#3A1D2A' ),
+		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM · relaxed oversized fit', '#161618' ),
+		't-shirts'           => array( 'T-shirts', '180 GSM · everyday regular fit', '#1C2340' ),
+		'women'              => array( "Women's fits", 'Crop fits · oversized styles', '#4B3566' ),
+		'sweatshirts'        => array( 'Sweatshirts', '300 GSM · brushed fleece feel', '#4A3426' ),
+		'hoodies'            => array( 'Hoodies', '300 GSM · cosy hoodie layer', '#2F4A36' ),
+		'design-your-own'    => array( 'अपना design', 'अपनी line या photo · अपना design', '#3A1D2A' ),
 	);
 
 	$terms = get_terms(
@@ -273,11 +273,11 @@ function store_child_home() {
 	<section class="pw-hero" aria-labelledby="pw-hero-title">
 		<div class="pw-wrap pw-hero__inner">
 			<div class="pw-hero__copy">
-				<p class="pw-hero__kicker">PANUWEAR · EVERYDAY GRAPHIC STREETWEAR</p>
-				<h1 id="pw-hero-title" class="pw-hero__title">अपनी बात।<br>अपना <span>अंदाज़।</span></h1>
-				<p class="pw-hero__lede">Original graphic tees, oversized fits और hoodies—पहाड़ की vibe और रोज़मर्रा की बातों से inspired. अपना favourite print चुनो, या अपना design बनाओ।</p>
+				<p class="pw-hero__kicker">PANUWEAR · DESI GRAPHIC STREETWEAR</p>
+				<h1 id="pw-hero-title" class="pw-hero__title">कपड़े नहीं,<br>अपनी <span>vibe पहनो।</span></h1>
+				<p class="pw-hero__lede">Desi humour, pahाड़ी feels और everyday moods—अब तुम्हारे favourite fits पर। अपना print चुनो, अपना रंग चुनो, और अपनी vibe में निकलो।</p>
 				<div class="pw-hero__actions">
-					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">कलेक्शन देखो</a>
+					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">अपना fit ढूँढो</a>
 					<a class="pw-btn pw-btn--ghost" href="<?php echo esc_url( $custom ); ?>">अपना design बनाओ</a>
 				</div>
 				<ul class="pw-hero__facts">
@@ -293,7 +293,7 @@ function store_child_home() {
 						<?php echo wp_get_attachment_image( $product->get_image_id(), 'woocommerce_single', false, array( 'alt' => '', 'loading' => 0 === $i ? 'eager' : 'lazy', 'fetchpriority' => 0 === $i ? 'high' : 'auto' ) ); ?>
 					</a>
 				<?php endforeach; ?>
-				<p class="pw-hand pw-hero__note">पहन के देखो, फिर बोलना</p>
+				<p class="pw-hand pw-hero__note">Fit check. Vibe check.</p>
 			</div>
 			<?php endif; ?>
 		</div>
@@ -303,8 +303,8 @@ function store_child_home() {
 	<section class="pw-new" aria-labelledby="pw-new-title">
 		<div class="pw-wrap">
 			<div class="pw-head">
-				<h2 id="pw-new-title" class="pw-h2">चुनिंदा designs</h2>
-				<a class="pw-link" href="<?php echo esc_url( $shop ); ?>">सारे designs देखो</a>
+				<h2 id="pw-new-title" class="pw-h2">जो तुम्हारी vibe से match करें</h2>
+				<a class="pw-link" href="<?php echo esc_url( $shop ); ?>">पूरा collection देखो</a>
 			</div>
 			<div class="woocommerce columns-4">
 				<?php
@@ -330,8 +330,8 @@ function store_child_home() {
 	<section class="pw-bundle" aria-labelledby="pw-bundle-title">
 		<div class="pw-wrap pw-bundle__inner">
 			<div class="pw-bundle__copy">
-				<h2 id="pw-bundle-title" class="pw-h2">मोटा कपड़ा,<br>सही दाम।</h2>
-				<p>हर दाम में free shipping और cash on delivery शामिल।</p>
+				<h2 id="pw-bundle-title" class="pw-h2">अपना fit.<br>अपनी वाली vibe.</h2>
+				<p>अपना fit चुनो, अपना print चुनो—shipping free, payment में COD भी।</p>
 			</div>
 			<ul class="pw-bundle__tiers">
 				<?php foreach ( $ladder as $i => $row ) : ?>
@@ -363,12 +363,13 @@ function store_child_home() {
 
 	<section class="pw-why" aria-labelledby="pw-why-title">
 		<div class="pw-wrap">
-			<h2 id="pw-why-title" class="pw-h2">Panuwear ही क्यों?</h2>
+			<h2 id="pw-why-title" class="pw-h2">तुम्हारा fit. तुम्हारे rules.</h2>
 			<ul class="pw-why__grid">
-				<li><h3>अपने designs</h3><p>हर print हमारा अपना है, graphic हो या line। किसी film, meme या brand की नकल नहीं।</p></li>
-				<li><h3>Order पर छपती है</h3><p>तुम्हारी tee तुम्हारे order के बाद छपती है, गोदाम में पड़ी नहीं रहती।</p></li>
-				<li><h3>Free shipping और COD</h3><p>पूरे India में। ज़्यादातर orders 5 से 7 working days में पहुँचते हैं।</p></li>
-				<li><h3>गड़बड़ हुई? हम बदलेंगे</h3><p>Damage या गलत print हो तो 7 दिन में unboxing video भेजो, free में बदल देंगे।</p></li>
+				<li><h3>Copy-paste नहीं, original</h3><p>हमारे graphics और lines अपनी सोच से आते हैं—ताकि तुम्हारा fit किसी और जैसा न लगे।</p></li>
+				<li><h3>हर fit का अपना feel</h3><p>180 GSM regular tees, 240 GSM oversized tees और 300 GSM fleece hoodies/sweatshirts—अपनी पसंद का fit चुनो। GSM fabric के वजन को बताता है; feel और drape fabric blend व construction पर भी depend करते हैं।</p></li>
+				<li><h3>Made for your order</h3><p>तुम्हारा piece order के बाद print होता है—कम random stock, ज़्यादा तुम्हारी पसंद।</p></li>
+				<li><h3>Easy checkout</h3><p>पूरे India में free shipping और COD available. आम तौर पर delivery 5–7 working days में।</p></li>
+				<li><h3>Print में issue? बताओ</h3><p>Damage या गलत print मिले? 7 दिन के अंदर unboxing video के साथ हमसे contact करो—हम replacement में help करेंगे।</p></li>
 			</ul>
 		</div>
 	</section>
@@ -381,9 +382,9 @@ function store_child_home() {
 			?>
 			<div class="pw-story__mark"><?php echo $story ? $story : '<img src="' . esc_url( get_stylesheet_directory_uri() . '/assets/brand/panuwear-icon-512.png' ) . '" alt="" width="256" height="256" loading="lazy">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 			<div>
-				<h2 id="pw-story-title" class="pw-h2">हल्द्वानी से,<br>पूरे India तक।</h2>
-				<p>Panuwear पहाड़ में शुरू हुआ। हमारे prints में पहाड़, रोज़ की ज़िंदगी और चाय वाली बातें हैं, कहीं तस्वीर में, कहीं शब्दों में। और जो design तुम्हारे दिमाग में है, वो भी हम छाप देते हैं।</p>
-				<a class="pw-link pw-link--light" href="<?php echo esc_url( $shop ); ?>">Collection देखो</a>
+				<h2 id="pw-story-title" class="pw-h2">पहाड़ की feel,<br>हर शहर की vibe.</h2>
+				<p>Panuwear की inspiration पहाड़, रोज़ की ज़िंदगी और chai-time वाली बातों से आती है। कभी graphic, कभी एक line—हर print में अपनी-सी feel. और तुम्हारे दिमाग में कोई design है? उसे भी अपनी tee पर लाओ।</p>
+				<a class="pw-link pw-link--light" href="<?php echo esc_url( $shop ); ?>">अपनी vibe चुनो</a>
 			</div>
 		</div>
 	</section>
