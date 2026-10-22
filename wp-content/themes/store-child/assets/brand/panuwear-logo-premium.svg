@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="180" viewBox="0 0 720 180" role="img" aria-labelledby="title desc">
+<title id="title">Panuwear</title><desc id="desc">Premium fashion wordmark in gold, ivory and burgundy with a hanger-inspired P emblem.</desc>
+<defs>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b3"/><stop offset=".28" stop-color="#d99a25"/><stop offset=".55" stop-color="#fff0a8"/><stop offset=".78" stop-color="#b97812"/><stop offset="1" stop-color="#f8d875"/></linearGradient>
+ <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff8eb6"/><stop offset=".5" stop-color="#d4145a"/><stop offset="1" stop-color="#8f093b"/></linearGradient>
+</defs>
+<g transform="translate(10 10)">
+ <circle cx="80" cy="80" r="73" fill="none" stroke="url(#gold)" stroke-width="3"/>
+ <circle cx="80" cy="80" r="67" fill="none" stroke="#c58a22" stroke-opacity=".55" stroke-width=".8"/>
+ <path d="M48 124V38h37c27 0 42 13 42 34 0 23-17 37-44 37H67v15H48zm19-32h16c16 0 25-7 25-20 0-12-9-18-25-18H67v38z" fill="url(#gold)"/>
+ <path d="M82 80c18-8 26-23 27-38 8 20-2 34-16 45-10 8-14 16-13 27 13-11 26-12 38-4-6 20-21 32-39 34 8-12 8-23 3-32-7-12-6-22 0-32z" fill="url(#pink)"/>
+ <path d="M91 69l26-14 26 14-26 14z" fill="none" stroke="url(#gold)" stroke-width="2.4" stroke-linejoin="round"/>
+ <path d="M117 55v-8c0-7 10-7 10 0" fill="none" stroke="url(#gold)" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<g font-family="Georgia, 'Times New Roman', serif" font-weight="700" letter-spacing="-2">
+ <text x="190" y="103" font-size="76" fill="#fff7e8" stroke="#d7a23c" stroke-width=".6">Panu</text>
+ <text x="364" y="103" font-size="76" fill="url(#pink)">wear</text>
+</g>
+<path d="M194 122H667" stroke="url(#gold)" stroke-width="1.5"/>
+<text x="195" y="148" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="4.1" fill="#ead9b7">CLOTHES THAT FEEL LIKE YOU</text>
+</svg>
