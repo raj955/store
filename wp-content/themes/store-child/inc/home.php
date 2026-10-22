@@ -156,6 +156,10 @@ function store_child_home_example_price( $products ) {
  * @return array[] name, gsm, price, url
  */
 function store_child_price_ladder() {
+	$cached = get_transient( 'store_child_price_ladder_v1' );
+	if ( false !== $cached && is_array( $cached ) ) {
+		return $cached;
+	}
 	$rows = array(
 		't-shirts'           => array( 'T-shirt', '180 GSM' ),
 		'oversized-t-shirts' => array( 'Oversized', '240 GSM' ),
@@ -183,8 +187,22 @@ function store_child_price_ladder() {
 			);
 		}
 	}
+	// Short cache only; product save/price/stock hooks below invalidate it.
+	set_transient( 'store_child_price_ladder_v1', $out, 5 * MINUTE_IN_SECONDS );
 	return $out;
 }
+
+/** Clear the homepage price cache whenever a product changes. */
+function store_child_clear_price_ladder_cache( $product ) {
+	delete_transient( 'store_child_price_ladder_v1' );
+}
+add_action( 'woocommerce_product_object_updated_props', 'store_child_clear_price_ladder_cache', 10, 1 );
+add_action( 'woocommerce_product_set_stock', 'store_child_clear_price_ladder_cache', 10, 1 );
+add_action( 'woocommerce_variation_set_stock', 'store_child_clear_price_ladder_cache', 10, 1 );
+add_action( 'woocommerce_product_set_stock_status', 'store_child_clear_price_ladder_cache', 10, 1 );
+add_action( 'woocommerce_variation_set_stock_status', 'store_child_clear_price_ladder_cache', 10, 1 );
+add_action( 'save_post_product', 'store_child_clear_price_ladder_cache', 10, 1 );
+add_action( 'save_post_product_variation', 'store_child_clear_price_ladder_cache', 10, 1 );
 
 /**
  * Plain rupee amount, e.g. ₹1,618.
