@@ -304,7 +304,12 @@ function store_child_home() {
 					<li>5 से 7 दिन में delivery</li>
 				</ul>
 			</div>
-			<?php if ( $hero ) : ?>
+			<?php if ( $hero ) :
+				$hero_image = wp_get_attachment_image_src( $hero[0]->get_image_id(), 'woocommerce_single' );
+				if ( $hero_image && ! empty( $hero_image[0] ) ) :
+				?>
+				<link rel="preload" as="image" href="<?php echo esc_url( $hero_image[0] ); ?>" fetchpriority="high">
+				<?php endif; ?>
 			<div class="pw-hero__art" aria-hidden="true">
 				<?php foreach ( $hero as $i => $product ) : ?>
 					<a class="pw-hero__card pw-hero__card--<?php echo (int) $i + 1; ?>" href="<?php echo esc_url( $product->get_permalink() ); ?>" tabindex="-1">
