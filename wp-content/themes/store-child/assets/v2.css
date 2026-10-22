@@ -1329,3 +1329,89 @@
   .pw2 .site-branding .custom-logo-link img { width: 190px !important; }
   .pw2 .pw-cats__row { gap: 14px; }
 }
+
+
+/* International fashion direction: consistent iconography, restrained geometry and typography. */
+.pw2 .site-header-item .kadence-svg-iconset,
+.pw2 .site-header-item svg,
+.pw2 .pw-m-account svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.6;
+}
+.pw2 .site-header-item button,
+.pw2 .site-header-item a,
+.pw2 .pw-m-account {
+  transition: color .18s ease, opacity .18s ease, border-color .18s ease;
+}
+.pw2 .search-toggle-open,
+.pw2 .header-cart-button,
+.pw2 .pw-m-account,
+.pw2 .header-wishlist-button {
+  color: #f7f3eb !important;
+}
+.pw2 .search-toggle-open:hover,
+.pw2 .header-cart-button:hover,
+.pw2 .pw-m-account:hover,
+.pw2 .header-wishlist-button:hover {
+  color: #c59a4a !important;
+}
+.pw2 .header-cart-wrap .header-cart-button .header-cart-total,
+.pw2 .header-mobile-cart-wrap .header-cart-button .header-cart-total {
+  background: #c59a4a !important;
+  color: #171615 !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 700;
+}
+.pw2 .pw-cats__row { align-items: start; }
+.pw2 .pw-cat__img {
+  width: 88px !important;
+  height: 104px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  background: #f2eee7 !important;
+}
+.pw2 .pw-cat__img img { width: 100%; height: 100%; object-fit: cover; }
+.pw2 .pw-cat__name {
+  margin-top: 10px;
+  font-size: 11px !important;
+  letter-spacing: .045em !important;
+  text-transform: uppercase;
+}
+.pw2 .site-top-header-wrap .header-html,
+.pw2 .site-top-header-wrap .mobile-html {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .055em;
+}
+.pw2 .pw-h2 {
+  font-weight: 650 !important;
+  letter-spacing: -.035em !important;
+}
+.pw2 .pw-hero__lede,
+.pw2 .pw-story p,
+.pw2 .pw-diy p,
+.pw2 .pw-help p {
+  color: #625c54 !important;
+  line-height: 1.75;
+}
+.pw2 .pw-new ul.products li.product .woocommerce-loop-product__title {
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
+.pw2 .pw-new ul.products li.product .button,
+.pw2 .pw-new ul.products li.product .sf-card-btn,
+.pw2 .pw-btn {
+  min-height: 46px;
+  text-transform: none;
+}
+.pw2 a:focus-visible,
+.pw2 button:focus-visible {
+  outline: 2px solid #c59a4a;
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  .pw2 .pw-cat__img { width: 72px !important; height: 88px !important; }
+  .pw2 .pw-cat__name { font-size: 10px !important; }
+}
