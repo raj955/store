@@ -14,30 +14,31 @@ permissions:
 
 jobs:
   homepage-http-check:
-    name: Check live homepage HTTP response
+    name: Check live page response and timing
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
-      - name: Request live homepage
+      - name: Measure homepage and shop response
         shell: bash
         run: |
-          set +e
-          status="$(curl --silent --show-error --location --retry 2 --retry-all-errors --retry-delay 3 --connect-timeout 10 --max-time 30 \
-            --user-agent "Panuwear-live-smoke-test" \
-            --output /tmp/panuwear-homepage.html \
-            --write-out "%{http_code}" \
-            "https://panuwear.com/?_livecheck=${GITHUB_RUN_ID}")"
-          curl_exit=$?
-          echo "curl_exit_code=${curl_exit}"
-          echo "homepage_http_status=${status:-000}"
-          if [ "$curl_exit" -ne 0 ]; then
-            echo "::error::Could not complete HTTP request to panuwear.com."
-            head -c 1500 /tmp/panuwear-homepage.html 2>/dev/null || true
-            exit "$curl_exit"
-          fi
-          if [[ ! "$status" =~ ^[23][0-9][0-9]$ ]]; then
-            echo "::error::Live homepage returned HTTP ${status}, expected a successful response (2xx/3xx)."
-            head -c 1500 /tmp/panuwear-homepage.html 2>/dev/null || true
-            exit 1
-          fi
-          echo "Live homepage responded with HTTP ${status}."
+          set -euo pipefail
+          for page in homepage shop; do
+            if [ "$page" = "homepage" ]; then
+              url="https://panuwear.com/?_speedcheck=${GITHUB_RUN_ID}"
+            else
+              url="https://panuwear.com/shop/?_speedcheck=${GITHUB_RUN_ID}"
+            fi
+            echo "---- ${page} ----"
+            metrics="$(curl --silent --show-error --location --retry 1 --retry-all-errors --connect-timeout 10 --max-time 45 \
+              --user-agent "Panuwear-speed-probe" \
+              --output "/tmp/panuwear-${page}.html" \
+              --write-out $'HTTP=%{http_code}\nDNS=%{time_namelookup}s\nConnect=%{time_connect}s\nTLS=%{time_appconnect}s\nTTFB=%{time_starttransfer}s\nTotal=%{time_total}s\nDownloaded=%{size_download} bytes\n' \
+              "$url")"
+            echo "$metrics"
+            status="$(printf '%s\n' "$metrics" | sed -n 's/^HTTP=//p')"
+            if [[ ! "$status" =~ ^[23][0-9][0-9]$ ]]; then
+              echo "::error::${page} returned HTTP ${status:-unknown}."
+              head -c 1500 "/tmp/panuwear-${page}.html" 2>/dev/null || true
+              exit 1
+            fi
+          done
