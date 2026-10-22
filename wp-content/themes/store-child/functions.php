@@ -46,7 +46,7 @@ function store_child_enqueue_styles() {
 	wp_enqueue_style(
 		'store-child-fonts',
 		store_child_v2()
-			? 'https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@400;500;600;700;800&family=Kalam:wght@700&family=Sarpanch:wght@700;900&display=swap'
+			? 'https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@400;500;600;700;800&family=Sarpanch:wght@700;900&display=swap'
 			: 'https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@400;500;600;700;800&display=swap',
 		array(),
 		null
