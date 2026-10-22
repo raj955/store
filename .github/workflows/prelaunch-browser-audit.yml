@@ -1,0 +1,87 @@
+name: Prelaunch browser audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/prelaunch-browser-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    name: Desktop and mobile smoke audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.48.2
+          npx playwright install --with-deps chromium
+      - name: Audit live storefront without placing orders
+        shell: bash
+        run: |
+          mkdir -p audit
+          cat > audit.js <<'EOF'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const base = 'https://panuwear.com';
+          const paths = ['/', '/shop/', '/my-account/', '/checkout/'];
+          const results = [];
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            for (const view of [
+              { name: 'desktop', viewport: { width: 1440, height: 900 }, isMobile: false },
+              { name: 'mobile', viewport: { width: 390, height: 844 }, isMobile: true }
+            ]) {
+              const context = await browser.newContext({ viewport: view.viewport, isMobile: view.isMobile });
+              const page = await context.newPage();
+              page.on('pageerror', e => results.push({ view: view.name, type: 'pageerror', message: e.message }));
+              page.on('console', m => {
+                if (m.type() === 'error') results.push({ view: view.name, type: 'console-error', message: m.text().slice(0, 400) });
+              });
+              for (const path of paths) {
+                const item = { view: view.name, path };
+                try {
+                  const response = await page.goto(base + path, { waitUntil: 'domcontentloaded', timeout: 45000 });
+                  item.status = response ? response.status() : null;
+                  await page.waitForLoadState('load', { timeout: 20000 }).catch(() => {});
+                  item.title = await page.title();
+                  item.metrics = await page.evaluate(() => ({
+                    domReadyMs: Math.round(performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart),
+                    loadMs: Math.round(performance.timing.loadEventEnd - performance.timing.navigationStart),
+                    htmlBytes: document.documentElement.outerHTML.length,
+                    viewportWidth: window.innerWidth,
+                    documentWidth: document.documentElement.scrollWidth,
+                    horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+                    brokenImages: [...document.images].filter(img => img.complete && img.naturalWidth === 0).length
+                  }));
+                  if (item.status >= 400) item.failure = 'HTTP error';
+                  if (item.metrics.horizontalOverflowPx > 1) item.warning = 'Horizontal overflow';
+                } catch (e) {
+                  item.failure = e.message;
+                }
+                results.push(item);
+              }
+              await context.close();
+            }
+            await browser.close();
+            fs.writeFileSync('audit/report.json', JSON.stringify(results, null, 2));
+            console.log(JSON.stringify(results, null, 2));
+            if (results.some(x => x.failure || (x.status && x.status >= 500))) process.exitCode = 1;
+          })();
+          EOF
+          node audit.js
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: panuwear-prelaunch-audit
+          path: audit/report.json
+          if-no-files-found: ignore
