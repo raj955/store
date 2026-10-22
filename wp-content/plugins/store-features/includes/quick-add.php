@@ -117,7 +117,45 @@ add_action( 'woocommerce_archive_description', 'store_features_choice_on_archive
  * @param WC_Product_Variable $product Product.
  * @return array|null
  */
+/**
+ * Clear the short-lived quick-add cache when a product or variation changes.
+ *
+ * @param mixed $product Product object or product ID.
+ */
+function store_features_clear_quick_add_cache( $product ) {
+	$product_id = $product instanceof WC_Product ? $product->get_id() : absint( $product );
+	if ( ! $product_id ) {
+		return;
+	}
+	delete_transient( 'sf_quick_add_' . $product_id );
+	$parent_id = wp_get_post_parent_id( $product_id );
+	if ( $parent_id ) {
+		delete_transient( 'sf_quick_add_' . $parent_id );
+	}
+}
+add_action( 'woocommerce_product_object_updated_props', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_product_set_stock', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_variation_set_stock', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_product_set_stock_status', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'woocommerce_variation_set_stock_status', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'save_post_product', 'store_features_clear_quick_add_cache', 10, 1 );
+add_action( 'save_post_product_variation', 'store_features_clear_quick_add_cache', 10, 1 );
+
+/**
+ * Build the quick-add payload for a product card. Cache briefly because variation data is
+ * expensive to assemble for every product on every shop/archive request. Product and stock
+ * update hooks invalidate the affected product payload immediately.
+ *
+ * @param WC_Product $product Product.
+ * @return array|null
+ */
 function store_features_quick_add_data( $product ) {
+	$cache_key = 'sf_quick_add_' . $product->get_id();
+	$cached    = get_transient( $cache_key );
+	if ( false !== $cached ) {
+		return $cached;
+	}
+
 	$attributes = $product->get_variation_attributes();
 	if ( ! isset( $attributes['pa_color'], $attributes['pa_size'] ) ) {
 		return null;
@@ -157,7 +195,7 @@ function store_features_quick_add_data( $product ) {
 	}
 
 	$defaults = $product->get_default_attributes();
-	return array(
+	$data = array(
 		'id'         => $product->get_id(),
 		'name'       => $product->get_name(),
 		'url'        => $product->get_permalink(),
@@ -169,6 +207,8 @@ function store_features_quick_add_data( $product ) {
 		'colour'     => $defaults['pa_color'] ?? ( $colours[0]['slug'] ?? '' ),
 		'fit'        => function_exists( 'store_features_size_fit' ) ? store_features_size_fit( $product ) : array(),
 	);
+	set_transient( $cache_key, $data, 5 * MINUTE_IN_SECONDS );
+	return $data;
 }
 
 /**
