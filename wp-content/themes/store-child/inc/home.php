@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
  * @return array
  */
 function store_child_home_collections() {
-	return array(
+	// Apparel and custom apparel always come first; every other populated category follows.
+	$collections = array(
 		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM, ढीली boxy fit', '#161618' ),
 		't-shirts'           => array( 'T-shirts', '180 GSM, रोज़ वाली regular fit', '#1C2340' ),
 		'women'              => array( "Women's fits", 'Crop tops और oversized fits', '#4B3566' ),
@@ -22,8 +23,31 @@ function store_child_home_collections() {
 		'hoodies'            => array( 'Hoodies', '300 GSM, पहाड़ की ठंड के लिए', '#2F4A36' ),
 		'design-your-own'    => array( 'अपना design', 'अपनी line या photo, अपनी tee', '#3A1D2A' ),
 	);
-}
 
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => true,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
+	if ( ! is_wp_error( $terms ) ) {
+		foreach ( $terms as $term ) {
+			if ( isset( $collections[ $term->slug ] ) || 'uncategorized' === $term->slug ) {
+				continue;
+			}
+			$description = trim( wp_strip_all_tags( $term->description ) );
+			$collections[ $term->slug ] = array(
+				$term->name,
+				$description ? wp_trim_words( $description, 7, '…' ) : 'Explore the collection',
+				'#4A3426',
+			);
+		}
+	}
+
+	return $collections;
+}
 /**
  * Image for a category card: the category's own image, else its first product's.
  *
