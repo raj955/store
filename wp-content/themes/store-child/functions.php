@@ -200,7 +200,7 @@ add_action( 'woocommerce_before_shop_loop_item', 'store_child_card_fit_badge', 5
  * Avoid duplicate descriptions when Yoast, Rank Math, SEOPress, or AIOSEO owns metadata.
  */
 function store_child_fallback_meta_description() {
-	if ( is_admin() || defined( 'WPSEO_VERSION' ) || class_exists( '\\RankMath\\' ) || defined( 'SEOPRESS_VERSION' ) || defined( 'AIOSEO_VERSION' ) ) {
+	if ( is_admin() || defined( 'WPSEO_VERSION' ) || defined( 'RANK_MATH_VERSION' ) || defined( 'SEOPRESS_VERSION' ) || defined( 'AIOSEO_VERSION' ) ) {
 		return;
 	}
 
