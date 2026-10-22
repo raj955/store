@@ -1176,3 +1176,35 @@
     height: 24px !important; min-height: 24px !important;
   }
 }
+
+
+/* Premium wordmark sizing: crisp, legible header logo on dark navigation. */
+.pw2 .site-branding .custom-logo,
+.pw2 .site-branding .site-logo img,
+.pw2 .site-branding .custom-logo-link img {
+  display: block;
+  width: 232px !important;
+  max-width: 100%;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain;
+}
+.pw2 .site-branding .custom-logo-link {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+@media (max-width: 1024px) {
+  .pw2 .site-branding .custom-logo,
+  .pw2 .site-branding .site-logo img,
+  .pw2 .site-branding .custom-logo-link img {
+    width: 205px !important;
+  }
+}
+@media (max-width: 767px) {
+  .pw2 .site-branding .custom-logo,
+  .pw2 .site-branding .site-logo img,
+  .pw2 .site-branding .custom-logo-link img {
+    width: 178px !important;
+  }
+}
