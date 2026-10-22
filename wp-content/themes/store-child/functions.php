@@ -239,7 +239,7 @@ function store_child_fallback_meta_description() {
 		} else {
 			$description = substr( $description, 0, 160 );
 		}
-		echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\\n";
+		echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
 	}
 }
 add_action( 'wp_head', 'store_child_fallback_meta_description', 2 );
