@@ -102,7 +102,7 @@ function store_child_light_logo( $attr, $attachment ) {
 	if ( is_admin() || ! store_child_v2() || ! $attachment || (int) get_theme_mod( 'custom_logo' ) !== (int) $attachment->ID ) {
 		return $attr;
 	}
-	$attr['src'] = get_stylesheet_directory_uri() . '/assets/brand/panuwear-logo-light.png';
+	$attr['src'] = get_stylesheet_directory_uri() . '/assets/brand/panuwear-logo-premium.svg';
 	unset( $attr['srcset'], $attr['sizes'] );
 	return $attr;
 }
