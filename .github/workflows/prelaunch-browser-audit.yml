@@ -43,6 +43,17 @@ jobs:
               const context = await browser.newContext({ viewport: view.viewport, isMobile: view.isMobile });
               const page = await context.newPage();
               page.on('pageerror', e => results.push({ view: view.name, type: 'pageerror', message: e.message }));
+              page.on('response', response => {
+                if (response.status() === 401 || response.status() >= 500) {
+                  results.push({
+                    view: view.name,
+                    type: 'http-resource-error',
+                    status: response.status(),
+                    url: response.url().slice(0, 500),
+                    resourceType: response.request().resourceType()
+                  });
+                }
+              });
               page.on('console', m => {
                 if (m.type() === 'error') results.push({ view: view.name, type: 'console-error', message: m.text().slice(0, 400) });
               });
@@ -52,7 +63,20 @@ jobs:
                   const response = await page.goto(base + path, { waitUntil: 'domcontentloaded', timeout: 45000 });
                   item.status = response ? response.status() : null;
                   await page.waitForLoadState('load', { timeout: 20000 }).catch(() => {});
+                  item.finalUrl = page.url();
                   item.title = await page.title();
+                  item.pageSummary = await page.evaluate(() => ({
+                    heading: document.querySelector('h1')?.innerText?.trim().slice(0, 200) || null,
+                    bodyTextStart: document.body?.innerText?.replace(/\\s+/g, ' ').trim().slice(0, 500) || '',
+                    forms: [...document.forms].map(f => ({
+                      id: f.id || null,
+                      action: f.getAttribute('action'),
+                      fields: [...f.querySelectorAll('input,select,textarea')].slice(0, 12).map(el => ({
+                        name: el.name || null,
+                        type: el.type || el.tagName.toLowerCase()
+                      }))
+                    })).slice(0, 5)
+                  }));
                   item.metrics = await page.evaluate(() => ({
                     domReadyMs: Math.round(performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart),
                     loadMs: Math.round(performance.timing.loadEventEnd - performance.timing.navigationStart),
