@@ -1525,3 +1525,85 @@
     flex-basis: 56px;
   }
 }
+
+
+/* Responsive shop-grid hotfix: keep colour dots fully visible and align card actions. */
+.pw2 .woocommerce ul.products li.product,
+.pw2 .pw-new ul.products li.product {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container,
+.pw2 .pw-new ul.products li.product .cfvsw-shop-container {
+  overflow: visible !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  flex-wrap: wrap !important;
+}
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option,
+.pw2 .pw-new ul.products li.product .cfvsw-shop-container .cfvsw-swatches-option {
+  flex-shrink: 0 !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: auto !important;
+}
+.pw2 .woocommerce ul.products li.product .sf-card-btn,
+.pw2 .pw-new ul.products li.product .sf-card-btn {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  align-items: center;
+  justify-content: center;
+  white-space: normal;
+  text-align: center;
+}
+@media (max-width: 767px) {
+  .pw2 .woocommerce ul.products,
+  .pw2 .woocommerce-page ul.products {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: 12px !important;
+    row-gap: 24px !important;
+    width: 100% !important;
+    margin-inline: 0 !important;
+  }
+  .pw2 .woocommerce ul.products li.product,
+  .pw2 .woocommerce-page ul.products li.product {
+    float: none !important;
+    clear: none !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+  }
+  .pw2 .woocommerce ul.products li.product img,
+  .pw2 .woocommerce-page ul.products li.product img {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    object-fit: contain;
+  }
+  .pw2 .woocommerce ul.products li.product .woocommerce-loop-product__title {
+    overflow-wrap: anywhere;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+  .pw2 .woocommerce ul.products li.product .price {
+    font-size: 15px;
+    line-height: 1.35;
+  }
+  .pw2 .woocommerce ul.products li.product .cfvsw-shop-container {
+    gap: 6px !important;
+    margin: 8px 0 !important;
+    padding: 4px 0 6px !important;
+  }
+  .pw2 .woocommerce ul.products li.product .sf-card-btn {
+    min-height: 44px !important;
+    padding: 10px 8px !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+}
