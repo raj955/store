@@ -1607,3 +1607,24 @@
     line-height: 1.25 !important;
   }
 }
+
+
+/* Launch polish: consistent fallback colour choices and legible product-page options. */
+.pw2 .sf-card-colour-fallback{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:26px;margin:10px 0 8px;max-width:100%;overflow:visible}
+.pw2 .sf-card-colour-fallback__dot{display:inline-block;flex:0 0 22px;width:22px;height:22px;box-sizing:border-box;border-radius:50%;background:var(--sf-colour,#D8D8D8);border:1px solid rgba(23,23,23,.22);box-shadow:inset 0 0 0 2px #fff;text-decoration:none}
+.pw2 .sf-card-colour-fallback__dot:focus-visible{outline:2px solid var(--pw-ink);outline-offset:3px}
+.pw2 .single-product table.variations .cfvsw-swatches-option[data-slug="black"],
+.pw2 .single-product table.variations .cfvsw-swatches-option[ data-slug="black" ]{background:#171717!important;border-color:#171717!important}
+.pw2.single-product table.variations .cfvsw-label-option,
+.pw2.single-product table.variations .cfvsw-swatches-option .cfvsw-label-option{color:#171717!important;background:#fff!important;text-shadow:none!important;opacity:1!important}
+.pw2.single-product table.variations .cfvsw-swatches-option[title="Black"],
+.pw2.single-product table.variations .cfvsw-swatches-option[aria-label="Black"]{background:#171717!important;color:#fff!important;border-color:#171717!important}
+.pw2.single-product table.variations .cfvsw-swatches-option[title="Off White"],
+.pw2.single-product table.variations .cfvsw-swatches-option[aria-label="Off White"]{background:#fff!important;color:#171717!important}
+@media(max-width:767px){
+ .pw2 .sf-card-colour-fallback{gap:7px;margin:8px 0}
+ .pw2 .sf-card-colour-fallback__dot{flex-basis:22px;width:22px;height:22px}
+ .pw2.single-product .cfvsw-swatches-container{display:flex!important;flex-wrap:wrap!important;gap:8px!important;max-width:100%;overflow:visible!important}
+ .pw2.single-product .cfvsw-swatches-option{flex:0 0 auto!important;max-width:100%;color:#171717!important}
+ .pw2.single-product table.variations td.value{max-width:100%;overflow:visible!important}
+}
