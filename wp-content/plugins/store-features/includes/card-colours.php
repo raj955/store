@@ -42,6 +42,78 @@ function store_features_card_colour_photos( $product ) {
 }
 
 /**
+ * Get the actual colour options from variation attributes, even when an imported
+ * product has no distinct variation thumbnail (the old logic hid all swatches).
+ */
+function store_features_card_colour_options( $product ) {
+	$options = array();
+	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+		return $options;
+	}
+	foreach ( $product->get_children() as $id ) {
+		$colour = (string) get_post_meta( $id, 'attribute_pa_color', true );
+		if ( '' === $colour ) {
+			$variation = wc_get_product( $id );
+			if ( $variation ) {
+				$attrs = $variation->get_variation_attributes( false );
+				$colour = (string) ( $attrs['pa_color'] ?? '' );
+			}
+		}
+		if ( '' === $colour || isset( $options[ $colour ] ) ) {
+			continue;
+		}
+		$term = get_term_by( 'slug', $colour, 'pa_color' );
+		$label = $term && ! is_wp_error( $term ) ? trim( $term->name ) : ucwords( str_replace( '-', ' ', $colour ) );
+		if ( '' === $label ) {
+			$label = ucwords( str_replace( '-', ' ', $colour ) );
+		}
+		$hex = $term && ! is_wp_error( $term ) ? (string) get_term_meta( $term->term_id, 'cfvsw_color', true ) : '';
+		$known = array(
+			'black' => '#171717', 'white' => '#FFFFFF', 'off-white' => '#F4F0E8',
+			'navy' => '#202A44', 'maroon' => '#641F32', 'red' => '#C62828',
+			'pink' => '#E7A9B8', 'light-pink' => '#F6CFDC', 'lavender' => '#C9B8E8',
+			'grey' => '#A8A8A8', 'gray' => '#A8A8A8', 'olive' => '#5A5F38',
+			'blue' => '#2B4BA8', 'royal-blue' => '#2B4BA8', 'beige' => '#E3C79A',
+			'mustard' => '#D29A2A', 'green' => '#38805A', 'mint' => '#BEE8D6',
+			'baby-blue' => '#BCD9F0', 'purple' => '#6B3D83', 'brown' => '#795548',
+			'charcoal' => '#4A4A4C', 'grey-melange' => '#BDBDBD',
+		);
+		if ( ! preg_match( '/^#[0-9a-f]{3,8}$/i', $hex ) ) {
+			$hex = $known[ $colour ] ?? '#D8D8D8';
+		}
+		$options[ $colour ] = array( 'label' => $label, 'hex' => $hex );
+	}
+	return $options;
+}
+
+/**
+ * Render fallback colour dots from real variation data. Existing plugin swatches stay
+ * untouched; this only fills the gap when the swatch plugin omitted them on a card.
+ */
+function store_features_card_colour_fallback() {
+	global $product;
+	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+		return;
+	}
+	$options = store_features_card_colour_options( $product );
+	if ( count( $options ) < 2 ) {
+		return;
+	}
+	echo '<div class="sf-card-colour-fallback" aria-label="' . esc_attr__( 'Available colours', 'store-features' ) . '">';
+	foreach ( $options as $slug => $option ) {
+		printf(
+			'<a class="sf-card-colour-fallback__dot" href="%1$s" data-slug="%2$s" title="%3$s" aria-label="%3$s" style="--sf-colour:%4$s"></a>',
+			esc_url( add_query_arg( 'attribute_pa_color', $slug, $product->get_permalink() ) ),
+			esc_attr( $slug ),
+			esc_attr( $option['label'] ),
+			esc_attr( $option['hex'] )
+		);
+	}
+	echo '</div>';
+}
+add_action( 'woocommerce_after_shop_loop_item_title', 'store_features_card_colour_fallback', 15 );
+
+/**
  * Print the list inside each card.
  */
 function store_features_card_colour_data() {
