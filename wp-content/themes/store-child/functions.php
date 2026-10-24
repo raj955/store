@@ -243,3 +243,17 @@ function store_child_fallback_meta_description() {
 	}
 }
 add_action( 'wp_head', 'store_child_fallback_meta_description', 2 );
+
+
+/**
+ * Enable WooCommerce's native product gallery controls.
+ * Uses WooCommerce's built-in gallery/lightbox instead of adding a heavy gallery plugin.
+ * Product thumbnails remain WordPress-generated image sizes for faster loading.
+ */
+function store_child_product_gallery_support() {
+	if ( class_exists( 'WooCommerce' ) ) {
+		add_theme_support( 'wc-product-gallery-slider' );
+		add_theme_support( 'wc-product-gallery-lightbox' );
+	}
+}
+add_action( 'after_setup_theme', 'store_child_product_gallery_support', 20 );
