@@ -314,82 +314,92 @@ function store_features_product_page_script() {
 	/* Qikink-imported products: keep gallery thumbnails aligned with the selected colour.
 	   The current importer stores one image per colour. Do not show other colours' photos
 	   after a colour is selected; restore the full gallery when the selection is cleared. */
+	/* Qikink variable products: filter gallery after WooCommerce has built its thumbnails.
+	   Qikink adoption stores one product photo per colour; variation events are the reliable
+	   source when WooCommerce omits the full variations array for large products. */
 	function initQikinkColourGallery() {
-		var gallery = document.querySelector('.single-product .woocommerce-product-gallery');
-		var form = document.querySelector('.single-product form.variations_form');
-		if (!gallery || !form || document.body.classList.contains('sf-custom-product')) {
-			return;
-		}
-		var colour = form.querySelector('select[name="attribute_pa_color"]');
-		var variations = $(form).data('product_variations');
-		var slides = gallery.querySelector('.woocommerce-product-gallery__wrapper');
-		var thumbs = gallery.querySelector('.flex-control-thumbs');
-		if (!colour || !slides || !Array.isArray(variations) || !thumbs) {
-			return;
-		}
-		var slideItems = Array.prototype.slice.call(slides.children);
-		var thumbItems = Array.prototype.slice.call(thumbs.children);
-		var normalise = function (url) {
-			if (!url) { return ''; }
-			try {
-				var parsed = new URL(url, window.location.href);
-				return parsed.origin + parsed.pathname.replace(/-[0-9]+x[0-9]+(?=\.[^.]+$)/, '');
-			} catch (e) { return String(url).split('?')[0]; }
-		};
-		var imageUrl = function (slide) {
-			var img = slide && slide.querySelector('img');
-			return normalise(img && (img.currentSrc || img.src || img.dataset.large_image));
-		};
-		var thumbUrl = function (thumb) {
-			var img = thumb && thumb.querySelector('img');
-			return normalise(img && (img.currentSrc || img.src));
-		};
-		var originalSlides = slideItems.map(function (el) { return el.style.display; });
-		var originalThumbs = thumbItems.map(function (el) { return el.style.display; });
-		function selectedVariation() {
-			for (var i = 0; i < variations.length; i++) {
-				var v = variations[i];
-				if (v.attributes && v.attributes.attribute_pa_color === colour.value && v.image && v.image.src) {
-					return v;
-				}
-			}
-			return null;
-		}
-		function applyFilter() {
-			var variation = colour.value ? selectedVariation() : null;
-			var selectedUrl = variation && variation.image ? normalise(variation.image.src) : '';
-			if (!selectedUrl) {
-				slideItems.forEach(function (el, i) { el.style.display = originalSlides[i]; });
-				thumbItems.forEach(function (el, i) { el.style.display = originalThumbs[i]; });
-				if (gallery.querySelector('.flexslider') && window.jQuery && jQuery.fn.flexslider) {
-					try { jQuery(gallery.querySelector('.flexslider')).flexslider(0); } catch (e) {}
-				}
+		var attempts = 0;
+		function bindWhenReady() {
+			var gallery = document.querySelector('.single-product .woocommerce-product-gallery');
+			var form = document.querySelector('.single-product form.variations_form');
+			var colour = form && form.querySelector('select[name="attribute_pa_color"]');
+			var slides = gallery && gallery.querySelector('.woocommerce-product-gallery__wrapper');
+			var thumbs = gallery && gallery.querySelector('.flex-control-thumbs');
+			if (!gallery || !form || !colour || !slides || !thumbs || !thumbs.children.length) {
+				if (++attempts < 24) { window.setTimeout(bindWhenReady, 250); }
 				return;
 			}
-			var visibleSlide = -1;
-			slideItems.forEach(function (el, i) {
-				var match = imageUrl(el) === selectedUrl;
-				el.style.display = match ? originalSlides[i] : 'none';
-				if (match && visibleSlide < 0) { visibleSlide = i; }
-			});
-			thumbItems.forEach(function (el, i) {
-				var match = thumbUrl(el) === selectedUrl;
-				el.style.display = match ? originalThumbs[i] : 'none';
-			});
-			/* WooCommerce's variation handler also changes the main image. */
-			if (visibleSlide >= 0 && window.jQuery && jQuery.fn.flexslider) {
+			if (form.dataset.sfColourGalleryBound === '1') { return; }
+			form.dataset.sfColourGalleryBound = '1';
+			if (document.body.classList.contains('sf-custom-product')) { return; }
+
+			var variations = $(form).data('product_variations');
+			var activeVariation = null;
+			var normalise = function (url) {
+				if (!url) { return ''; }
 				try {
-					var slider = jQuery(gallery.querySelector('.flexslider')).data('flexslider');
-					if (slider) { slider.flexAnimate(visibleSlide, true); slider.resize(); }
-				} catch (e) {}
+					var parsed = new URL(url, window.location.href);
+					return parsed.origin + parsed.pathname.replace(/-[0-9]+x[0-9]+(?=\\.[^.]+$)/, '');
+				} catch (e) { return String(url).split('?')[0]; }
+			};
+			function imageUrl(el) {
+				var img = el && el.querySelector('img');
+				return normalise(img && (img.dataset.large_image || img.dataset.src || img.currentSrc || img.src));
 			}
+			function variationForColour() {
+				if (activeVariation && activeVariation.image && activeVariation.attributes &&
+					activeVariation.attributes.attribute_pa_color === colour.value) {
+					return activeVariation;
+				}
+				if (Array.isArray(variations)) {
+					for (var i = 0; i < variations.length; i++) {
+						var v = variations[i];
+						if (v.attributes && v.attributes.attribute_pa_color === colour.value && v.image && v.image.src) {
+							return v;
+						}
+					}
+				}
+				return null;
+			}
+			function applyFilter() {
+				var variation = colour.value ? variationForColour() : null;
+				var selectedUrl = variation && variation.image ? normalise(variation.image.src) : '';
+				var slideItems = Array.prototype.slice.call(slides.children);
+				var thumbItems = Array.prototype.slice.call(thumbs.children);
+				if (!selectedUrl) {
+					slideItems.forEach(function (el) { el.style.display = ''; });
+					thumbItems.forEach(function (el) { el.style.display = ''; });
+					return;
+				}
+				var matchingSlides = slideItems.filter(function (el) { return imageUrl(el) === selectedUrl; });
+				var matchingThumbs = thumbItems.filter(function (el) { return imageUrl(el) === selectedUrl; });
+				/* Never blank the gallery if the variation image cannot be matched safely. */
+				if (!matchingSlides.length) { return; }
+				slideItems.forEach(function (el) { el.style.display = matchingSlides.indexOf(el) !== -1 ? '' : 'none'; });
+				thumbItems.forEach(function (el) { el.style.display = matchingThumbs.indexOf(el) !== -1 ? '' : 'none'; });
+				if (window.jQuery && jQuery.fn.flexslider) {
+					try {
+						var sliderEl = gallery.querySelector('.flexslider');
+						var slider = sliderEl && jQuery(sliderEl).data('flexslider');
+						if (slider) { slider.flexAnimate(slideItems.indexOf(matchingSlides[0]), true); slider.resize(); }
+					} catch (e) {}
+				}
+			}
+			$(form).on('change', 'select[name="attribute_pa_color"]', function () {
+				activeVariation = null;
+				window.setTimeout(applyFilter, 120);
+			});
+			$(form).on('found_variation', function (event, variation) {
+				activeVariation = variation || null;
+				window.setTimeout(applyFilter, 120);
+			});
+			$(form).on('reset_data hide_variation', function () {
+				activeVariation = null;
+				window.setTimeout(applyFilter, 120);
+			});
+			window.setTimeout(applyFilter, 500);
 		}
-		$(form).on('change', 'select[name="attribute_pa_color"]', function () {
-			window.setTimeout(applyFilter, 80);
-		});
-		$(form).on('found_variation', function () { window.setTimeout(applyFilter, 80); });
-		$(form).on('reset_data hide_variation', function () { window.setTimeout(applyFilter, 80); });
-		window.setTimeout(applyFilter, 450);
+		bindWhenReady();
 	}
 	initQikinkColourGallery();
 
