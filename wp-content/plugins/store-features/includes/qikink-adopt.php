@@ -488,6 +488,29 @@ function store_features_repair_qikink_product_gallery( $product ) {
 	return true;
 }
 
+// One-time repair for Qikink products already in the catalogue. Runs for a shop manager
+// in wp-admin, then records completion so it does not repeat on every page load.
+add_action( 'admin_init', function () {
+	if ( '1' === get_option( 'store_features_qikink_gallery_repair_v1' ) || ! current_user_can( 'manage_woocommerce' ) ) {
+		return;
+	}
+	$ids = get_posts( array(
+		'post_type' => 'product',
+		'post_status' => array( 'publish', 'draft', 'private' ),
+		'numberposts' => -1,
+		'fields' => 'ids',
+		'meta_key' => '_sf_from_qikink',
+		'meta_value' => 'yes',
+	) );
+	foreach ( $ids as $id ) {
+		$product = wc_get_product( $id );
+		if ( $product && $product->is_type( 'variable' ) ) {
+			store_features_repair_qikink_product_gallery( $product );
+		}
+	}
+	update_option( 'store_features_qikink_gallery_repair_v1', '1', false );
+}, 30 );
+
 /**
  * Finish brand-new products pushed from Qikink (no older copy to take words from).
  *
