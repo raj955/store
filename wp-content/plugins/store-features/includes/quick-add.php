@@ -265,7 +265,15 @@ function store_features_card_button( $html, $product ) {
 	}
 	$data = store_features_quick_add_data( $product );
 	if ( ! $data ) {
-		return $html;
+		// Keep the shop grid visually consistent when an older/imported variable product
+		// does not yet have the exact pa_color + pa_size attributes needed by quick-add.
+		// Send the shopper to the product page to choose its available options.
+		return sprintf(
+			'<a href="%1$s" class="button sf-card-btn sf-card-btn--details" aria-label="%2$s">%3$s</a>',
+			esc_url( $product->get_permalink() ),
+			esc_attr( sprintf( __( 'Add %s to cart', 'store-features' ), $product->get_name() ) ),
+			esc_html__( 'Add to cart', 'store-features' )
+		);
 	}
 	return sprintf(
 		'<button type="button" class="button sf-card-btn sf-quick-add" aria-haspopup="dialog" data-sf-quick="%1$s" aria-label="%2$s">%3$s</button>',
