@@ -114,6 +114,37 @@ function store_features_card_colour_fallback() {
 add_action( 'woocommerce_after_shop_loop_item_title', 'store_features_card_colour_fallback', 15 );
 
 /**
+ * Hide fallback dots whenever the swatch plugin already rendered its native swatches.
+ * This prevents two sets of colour dots appearing on cards where both systems work.
+ */
+function store_features_hide_duplicate_card_swatches() {
+	?>
+	<style>
+		.pw2 li.product:has(.cfvsw-shop-container .cfvsw-swatches-option) .sf-card-colour-fallback,
+		.pw2 li.product:has(.cfvsw-swatches-container .cfvsw-swatches-option) .sf-card-colour-fallback {
+			display: none !important;
+		}
+	</style>
+	<script>
+	(function(){
+		function removeDuplicateFallbacks(){
+			document.querySelectorAll('.pw2 li.product, li.product').forEach(function(card){
+				if(card.querySelector('.cfvsw-shop-container .cfvsw-swatches-option, .cfvsw-swatches-container .cfvsw-swatches-option')){
+					var fallback=card.querySelector('.sf-card-colour-fallback');
+					if(fallback) fallback.remove();
+				}
+			});
+		}
+		if(document.readyState==='loading'){
+			document.addEventListener('DOMContentLoaded',removeDuplicateFallbacks);
+		}else{removeDuplicateFallbacks();}
+	})();
+	</script>
+	<?php
+}
+add_action( 'wp_footer', 'store_features_hide_duplicate_card_swatches', 60 );
+
+/**
  * Print the list inside each card.
  */
 function store_features_card_colour_data() {
