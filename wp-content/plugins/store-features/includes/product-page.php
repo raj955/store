@@ -311,9 +311,6 @@ function store_features_product_page_script() {
 		setTimeout(showColour, 300);
 	}
 
-	/* Qikink-imported products: keep gallery thumbnails aligned with the selected colour.
-	   The current importer stores one image per colour. Do not show other colours' photos
-	   after a colour is selected; restore the full gallery when the selection is cleared. */
 	/* Qikink variable products: filter gallery after WooCommerce has built its thumbnails.
 	   Qikink adoption stores one product photo per colour; variation events are the reliable
 	   source when WooCommerce omits the full variations array for large products. */
