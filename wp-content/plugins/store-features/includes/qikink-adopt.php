@@ -8,7 +8,7 @@
  *  - moves Color / Size onto the store's colour and size attributes, so swatches, quick add and the
  *    size line work as on every other product;
  *  - copies the words and categories from the older product it replaces, and gives it that URL;
- *  - puts one Qikink photo per colour in the gallery;
+ *  - keeps all distinct Qikink variation photos grouped by colour in the gallery;
  *  - turns the older product into a draft (nothing is deleted).
  *
  * Admin only: POST /wp-json/store-features/v1/adopt-qikink { new_id, old_id, colour }.
@@ -202,10 +202,11 @@ function store_features_adopt_qikink_product( $request ) {
 		return new WP_Error( 'sf_adopt', 'This product has no plain Color and Size attributes (already done?).', array( 'status' => 400 ) );
 	}
 
-	// 2. Map every variation; collect the terms in use and one photo per colour.
+	// 2. Map variations and retain every distinct Qikink image per colour (not just one).
 	$colour_slugs = array();
 	$size_slugs   = array();
 	$photos       = array();
+	$photos_by_colour = array();
 	$variations   = array();
 	foreach ( $new->get_children() as $child_id ) {
 		$variation = wc_get_product( $child_id );
@@ -230,8 +231,18 @@ function store_features_adopt_qikink_product( $request ) {
 		}
 		$colour_slugs[ $cs ] = true;
 		$size_slugs[ $ss ]   = true;
-		if ( empty( $photos[ $cs ] ) && $variation->get_image_id() ) {
-			$photos[ $cs ] = (int) $variation->get_image_id();
+		$image_id = (int) $variation->get_image_id();
+		if ( $image_id ) {
+			if ( empty( $photos[ $cs ] ) ) {
+				$photos[ $cs ] = $image_id;
+			}
+			if ( ! isset( $photos_by_colour[ $cs ] ) ) {
+				$photos_by_colour[ $cs ] = array();
+			}
+			// Qikink may create duplicate attachments for sizes; keep each attachment only once.
+			if ( ! in_array( $image_id, $photos_by_colour[ $cs ], true ) ) {
+				$photos_by_colour[ $cs ][] = $image_id;
+			}
 		}
 		$variations[] = array( $variation, $cs, $ss );
 	}
@@ -275,20 +286,33 @@ function store_features_adopt_qikink_product( $request ) {
 	}
 	$log[] = count( $variations ) . ' variations on store colours/sizes';
 
-	// 4. Photos: default colour first, then the rest in swatch order.
+	// 4. Photos: retain all distinct images per colour, with the chosen colour first.
 	$order = $ordered( 'pa_color', $colour_slugs );
 	$first = $want_colour && isset( $photos[ $want_colour ] ) ? $want_colour : (string) array_key_first( $photos );
 	$gallery = array();
+	$ordered_colours = array();
+	if ( $first ) {
+		$ordered_colours[] = $first;
+	}
 	foreach ( $order as $term_id ) {
 		$slug = get_term( $term_id, 'pa_color' )->slug;
-		if ( $slug !== $first && ! empty( $photos[ $slug ] ) ) {
-			$gallery[] = $photos[ $slug ];
+		if ( $slug !== $first ) {
+			$ordered_colours[] = $slug;
+		}
+	}
+	foreach ( $ordered_colours as $slug ) {
+		$ids = isset( $photos_by_colour[ $slug ] ) ? $photos_by_colour[ $slug ] : array();
+		foreach ( $ids as $image_id ) {
+			if ( $slug !== $first || $image_id !== (int) $photos[ $first ] ) {
+				$gallery[] = (int) $image_id;
+			}
 		}
 	}
 	if ( $first && ! empty( $photos[ $first ] ) ) {
 		$new->set_image_id( $photos[ $first ] );
 	}
-	$new->set_gallery_image_ids( $gallery );
+	$new->set_gallery_image_ids( array_values( array_unique( $gallery ) ) );
+	$new->update_meta_data( '_sf_qikink_colour_images', $photos_by_colour );
 	$new->set_default_attributes( $first ? array( 'pa_color' => $first ) : array() );
 
 	// 5. Words, categories and URL from the older copy.
@@ -339,7 +363,7 @@ function store_features_adopt_qikink_product( $request ) {
 }
 
 /**
- * One-time tidy of the products adopted before the one-photo-per-colour rule (19 Oct 2026).
+ * One-time tidy of the variation image assignment for previously adopted Qikink products.
  */
 add_action(
 	'admin_init',
@@ -376,8 +400,8 @@ add_action(
  *   category_ids: [17], tag_ids: [55], menu_order_start: 11, colour: "black",
  *   items: [ { name, slug, line } ]             // name = the name saved in Qikink
  * }
- * For each item: finds the pushed product by name, adopts it (store colours and sizes, one photo
- * per colour), writes the description (template with this design's line first), short
+ * For each item: finds the pushed product by name, adopts it (store colours and sizes, all distinct
+ * variation photos per colour), writes the description (template with this design's line first), short
  * description, category, tag, URL and order, publishes it and fills photo alt text.
  * Products still waiting for photos are skipped and reported, so the call can simply be repeated.
  */
