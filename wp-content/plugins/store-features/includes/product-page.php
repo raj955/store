@@ -333,7 +333,7 @@ function store_features_product_page_script() {
 			if (!url) { return ''; }
 			try {
 				var parsed = new URL(url, window.location.href);
-				return parsed.origin + parsed.pathname;
+				return parsed.origin + parsed.pathname.replace(/-[0-9]+x[0-9]+(?=\.[^.]+$)/, '');
 			} catch (e) { return String(url).split('?')[0]; }
 		};
 		var imageUrl = function (slide) {
