@@ -1481,3 +1481,47 @@
 .pw2 .site-footer .footer-title,
 .pw2 .site-footer .footer-about,
 .pw2 .site-footer .footer-links a { color: #f0ece4; }
+
+
+/* Product gallery: keep WooCommerce's gallery thumbnails visible on the storefront.
+   This is CSS-only and adds no extra image requests or gallery plugin. */
+.pw2.single-product div.product .woocommerce-product-gallery {
+  overflow: visible;
+}
+.pw2.single-product div.product .woocommerce-product-gallery .flex-control-thumbs {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+.pw2.single-product div.product .woocommerce-product-gallery .flex-control-thumbs li {
+  float: none !important;
+  width: 68px !important;
+  flex: 0 0 68px;
+  margin: 0 !important;
+}
+.pw2.single-product div.product .woocommerce-product-gallery .flex-control-thumbs li img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  border: 1px solid var(--pw-rule, #dedbd3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pw2.single-product div.product .woocommerce-product-gallery .flex-control-thumbs li img.flex-active {
+  border-color: var(--pw-ink, #242820);
+}
+@media (max-width: 767px) {
+  .pw2.single-product div.product .woocommerce-product-gallery .flex-control-thumbs {
+    gap: 7px;
+    margin-top: 10px !important;
+  }
+  .pw2.single-product div.product .woocommerce-product-gallery .flex-control-thumbs li {
+    width: 56px !important;
+    flex-basis: 56px;
+  }
+}
