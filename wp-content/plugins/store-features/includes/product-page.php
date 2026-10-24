@@ -81,6 +81,14 @@ function store_features_product_page_assets() {
 		$product = wc_get_product( get_queried_object_id() );
 		if ( $product ) {
 			wp_add_inline_script( 'store-features', 'window.sfSizeFit=' . wp_json_encode( store_features_size_fit( $product ) ) . ';', 'before' );
+		if ( 'yes' === $product->get_meta( '_sf_from_qikink' ) ) {
+			$colour_images = (array) $product->get_meta( '_sf_qikink_colour_images' );
+			$image_urls = array();
+			foreach ( $colour_images as $slug => $ids ) {
+				$image_urls[ $slug ] = array_values( array_filter( array_map( function ( $id ) { return wp_get_attachment_image_url( (int) $id, 'full' ); }, (array) $ids ) ) );
+			}
+			wp_add_inline_script( 'store-features', 'window.sfQikinkColourImages=' . wp_json_encode( $image_urls ) . ';', 'before' );
+		}
 		}
 	}
 	wp_add_inline_script( 'store-features', store_features_product_page_script() );
@@ -311,9 +319,8 @@ function store_features_product_page_script() {
 		setTimeout(showColour, 300);
 	}
 
-	/* Qikink variable products: filter gallery after WooCommerce has built its thumbnails.
-	   Qikink adoption stores one product photo per colour; variation events are the reliable
-	   source when WooCommerce omits the full variations array for large products. */
+	/* Qikink variable products: filter gallery to all known photos for the selected colour.
+	   Use the importer’s colour-to-image map; fall back to the variation image when unavailable. */
 	function initQikinkColourGallery() {
 		var attempts = 0;
 		function bindWhenReady() {
@@ -361,15 +368,17 @@ function store_features_product_page_script() {
 			function applyFilter() {
 				var variation = colour.value ? variationForColour() : null;
 				var selectedUrl = variation && variation.image ? normalise(variation.image.src) : '';
+				var mappedUrls = window.sfQikinkColourImages && window.sfQikinkColourImages[colour.value];
+				var selectedUrls = Array.isArray(mappedUrls) ? mappedUrls.map(normalise) : (selectedUrl ? [selectedUrl] : []);
 				var slideItems = Array.prototype.slice.call(slides.children);
 				var thumbItems = Array.prototype.slice.call(thumbs.children);
-				if (!selectedUrl) {
+				if (!selectedUrls.length) {
 					slideItems.forEach(function (el) { el.style.display = ''; });
 					thumbItems.forEach(function (el) { el.style.display = ''; });
 					return;
 				}
-				var matchingSlides = slideItems.filter(function (el) { return imageUrl(el) === selectedUrl; });
-				var matchingThumbs = thumbItems.filter(function (el) { return imageUrl(el) === selectedUrl; });
+				var matchingSlides = slideItems.filter(function (el) { return selectedUrls.indexOf(imageUrl(el)) !== -1; });
+				var matchingThumbs = thumbItems.filter(function (el) { return selectedUrls.indexOf(imageUrl(el)) !== -1; });
 				/* Never blank the gallery if the variation image cannot be matched safely. */
 				if (!matchingSlides.length) { return; }
 				slideItems.forEach(function (el) { el.style.display = matchingSlides.indexOf(el) !== -1 ? '' : 'none'; });
