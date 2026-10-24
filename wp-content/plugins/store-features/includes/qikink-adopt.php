@@ -429,6 +429,66 @@ add_action(
 );
 
 /**
+ * Repair image-to-product and image-to-colour associations on already-adopted products.
+ * This deliberately reads the normalized pa_color variations instead of rerunning adoption.
+ */
+function store_features_repair_qikink_product_gallery( $product ) {
+	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+		return new WP_Error( 'sf_gallery', 'Not a variable product.', array( 'status' => 400 ) );
+	}
+	$parent_ids = array_values( array_unique( array_filter( array_map( 'intval', array_merge(
+		array( $product->get_image_id() ),
+		$product->get_gallery_image_ids()
+	) ) ) ) );
+	$by_colour = array();
+	$first = '';
+	foreach ( $product->get_children() as $child_id ) {
+		$variation = wc_get_product( $child_id );
+		if ( ! $variation ) { continue; }
+		$attrs = $variation->get_variation_attributes( false );
+		$colour = (string) ( $attrs['pa_color'] ?? get_post_meta( $child_id, 'attribute_pa_color', true ) );
+		if ( '' === $colour ) { continue; }
+		if ( '' === $first ) { $first = $colour; }
+		$image_id = (int) $variation->get_image_id();
+		if ( $image_id ) {
+			if ( ! isset( $by_colour[ $colour ] ) ) { $by_colour[ $colour ] = array(); }
+			if ( ! in_array( $image_id, $by_colour[ $colour ], true ) ) { $by_colour[ $colour ][] = $image_id; }
+		}
+	}
+	if ( '' === $first ) {
+		$defaults = $product->get_default_attributes();
+		$first = (string) ( $defaults['pa_color'] ?? '' );
+	}
+	if ( '' !== $first ) {
+		if ( ! isset( $by_colour[ $first ] ) ) { $by_colour[ $first ] = array(); }
+		foreach ( $parent_ids as $image_id ) {
+			$already = false;
+			foreach ( $by_colour as $ids ) {
+				if ( in_array( $image_id, $ids, true ) ) { $already = true; break; }
+			}
+			if ( ! $already ) { $by_colour[ $first ][] = $image_id; }
+		}
+	}
+	$featured = (int) $product->get_image_id();
+	$gallery = array();
+	foreach ( $by_colour as $ids ) {
+		foreach ( $ids as $image_id ) {
+			if ( $image_id !== $featured && ! in_array( $image_id, $gallery, true ) ) { $gallery[] = $image_id; }
+		}
+	}
+	// Keep any existing gallery attachment, even if it has no variation mapping.
+	foreach ( $parent_ids as $image_id ) {
+		if ( $image_id !== $featured && ! in_array( $image_id, $gallery, true ) ) { $gallery[] = $image_id; }
+	}
+	$product->set_gallery_image_ids( $gallery );
+	$product->update_meta_data( '_sf_qikink_colour_images', $by_colour );
+	$product->save();
+	WC_Product_Variable::sync( $product->get_id() );
+	wc_delete_product_transients( $product->get_id() );
+	return true;
+}
+
+/**
  * Finish brand-new products pushed from Qikink (no older copy to take words from).
  *
  * Admin only: POST /wp-json/store-features/v1/finish-qikink-new
@@ -504,6 +564,15 @@ function store_features_finish_qikink_new( $request ) {
 		}
 		$product = wc_get_product( $found[0]->ID );
 		$done    = 'yes' === $product->get_meta( '_sf_from_qikink' );
+
+		if ( $done && $product->is_type( 'variable' ) ) {
+			$repair = store_features_repair_qikink_product_gallery( $product );
+			if ( is_wp_error( $repair ) ) {
+				$out[] = array( $name, 'gallery repair failed: ' . $repair->get_error_message() );
+				continue;
+			}
+			$product = wc_get_product( $product->get_id() );
+		}
 
 		if ( ! $done ) {
 			// Wait until Qikink has sent the photos (they arrive after the product itself).
