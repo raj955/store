@@ -286,9 +286,47 @@ function store_features_adopt_qikink_product( $request ) {
 	}
 	$log[] = count( $variations ) . ' variations on store colours/sizes';
 
-	// 4. Photos: retain all distinct images per colour, with the chosen colour first.
+	// 4. Photos: use variation images AND Qikink's product-level gallery.
+	// Qikink sometimes puts front/back mockups in the parent gallery only, not on each
+	// variation. Previously those photos were silently dropped because only variation
+	// thumbnail IDs were collected above.
 	$order = $ordered( 'pa_color', $colour_slugs );
 	$first = $want_colour && isset( $photos[ $want_colour ] ) ? $want_colour : (string) array_key_first( $photos );
+
+	$parent_gallery_ids = array_values(
+		array_unique(
+			array_filter(
+				array_map(
+					'intval',
+					array_merge( array( $new->get_image_id() ), $new->get_gallery_image_ids() )
+				)
+			)
+		)
+	);
+	$known_photo_ids = array();
+	foreach ( $photos_by_colour as $known_ids ) {
+		$known_photo_ids = array_merge( $known_photo_ids, (array) $known_ids );
+	}
+	$known_photo_ids = array_values( array_unique( array_map( 'intval', $known_photo_ids ) ) );
+
+	// Any parent-gallery photo not attached to a variation is an extra Qikink mockup.
+	// Keep it with the default/first colour so it appears instead of disappearing. Do
+	// not duplicate photos already assigned to a colour.
+	if ( $first ) {
+		if ( ! isset( $photos_by_colour[ $first ] ) ) {
+			$photos_by_colour[ $first ] = array();
+		}
+		foreach ( $parent_gallery_ids as $parent_image_id ) {
+			if ( ! in_array( $parent_image_id, $known_photo_ids, true )
+				&& ! in_array( $parent_image_id, $photos_by_colour[ $first ], true ) ) {
+				$photos_by_colour[ $first ][] = $parent_image_id;
+			}
+		}
+		// Keep the main product image as the first image for the default colour.
+		if ( $new->get_image_id() && ! in_array( (int) $new->get_image_id(), $photos_by_colour[ $first ], true ) ) {
+			array_unshift( $photos_by_colour[ $first ], (int) $new->get_image_id() );
+		}
+	}
 	$gallery = array();
 	$ordered_colours = array();
 	if ( $first ) {
@@ -303,7 +341,7 @@ function store_features_adopt_qikink_product( $request ) {
 	foreach ( $ordered_colours as $slug ) {
 		$ids = isset( $photos_by_colour[ $slug ] ) ? $photos_by_colour[ $slug ] : array();
 		foreach ( $ids as $image_id ) {
-			if ( $slug !== $first || $image_id !== (int) $photos[ $first ] ) {
+			if ( $slug !== $first || ! isset( $photos[ $first ] ) || $image_id !== (int) $photos[ $first ] ) {
 				$gallery[] = (int) $image_id;
 			}
 		}
