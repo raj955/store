@@ -217,7 +217,40 @@ function store_features_category_chips() {
 	if ( ! ( is_shop() || is_product_category() ) || is_product_category( 'design-your-own' ) ) {
 		return;
 	}
-	$own   = get_term_by( 'slug', 'design-your-own', 'product_cat' );
+	$own     = get_term_by( 'slug', 'design-your-own', 'product_cat' );
+	$current = is_product_category() ? (int) get_queried_object_id() : 0;
+	$top     = $current ? array_merge( array( $current ), get_ancestors( $current, 'product_cat' ) ) : array();
+
+	// Inside Men or Women: show that gender's own groups (T-shirts, Hoodies...).
+	$gender = null;
+	foreach ( array( 'men', 'women' ) as $slug ) {
+		$term = get_term_by( 'slug', $slug, 'product_cat' );
+		if ( $term && in_array( (int) $term->term_id, $top, true ) ) {
+			$gender = $term;
+		}
+	}
+	if ( $gender ) {
+		$terms = get_terms( array( 'taxonomy' => 'product_cat', 'parent' => $gender->term_id, 'hide_empty' => true, 'orderby' => 'name' ) );
+		if ( is_wp_error( $terms ) || ! $terms ) {
+			return;
+		}
+		echo '<nav class="chip-row" aria-label="' . esc_attr( $gender->name ) . '">';
+		printf( '<a href="%s"%s>%s</a>', esc_url( get_term_link( $gender ) ), (int) $gender->term_id === $current ? ' aria-current="page"' : '', esc_html( sprintf( /* translators: %s: Men or Women */ __( 'All %s', 'store-features' ), $gender->name ) ) );
+		foreach ( $terms as $term ) {
+			printf( '<a href="%s"%s>%s</a>', esc_url( get_term_link( $term ) ), in_array( (int) $term->term_id, $top, true ) ? ' aria-current="page"' : '', esc_html( $term->name ) );
+		}
+		echo '</nav>';
+		return;
+	}
+
+	// Elsewhere: Men and Women first, then the rest. The old type categories now live inside Men and Women.
+	$hide  = array();
+	foreach ( array( 't-shirts', 'oversized-t-shirts', 'sweatshirts', 'hoodies' ) as $slug ) {
+		$term = get_term_by( 'slug', $slug, 'product_cat' );
+		if ( $term && get_term_by( 'slug', 'men', 'product_cat' ) ) {
+			$hide[] = (int) $term->term_id;
+		}
+	}
 	$terms = get_terms(
 		array(
 			'taxonomy'   => 'product_cat',
@@ -225,14 +258,16 @@ function store_features_category_chips() {
 			'hide_empty' => true,
 			'orderby'    => 'menu_order',
 			'order'      => 'ASC',
-			'exclude'    => array_filter( array( (int) get_option( 'default_product_cat' ), $own ? (int) $own->term_id : 0 ) ),
+			'exclude'    => array_filter( array_merge( array( (int) get_option( 'default_product_cat' ), $own ? (int) $own->term_id : 0 ), $hide ) ),
 		)
 	);
 	if ( is_wp_error( $terms ) || count( $terms ) < 2 ) {
 		return;
 	}
-	$current = is_product_category() ? (int) get_queried_object_id() : 0;
-	$top     = $current ? array_merge( array( $current ), get_ancestors( $current, 'product_cat' ) ) : array();
+	$rank  = array( 'men' => 0, 'women' => 1 );
+	usort( $terms, function ( $a, $b ) use ( $rank ) {
+		return ( $rank[ $a->slug ] ?? 9 ) <=> ( $rank[ $b->slug ] ?? 9 );
+	} );
 
 	echo '<nav class="chip-row" aria-label="' . esc_attr__( 'Product categories', 'store-features' ) . '">';
 	printf( '<a href="%s"%s>%s</a>', esc_url( wc_get_page_permalink( 'shop' ) ), $current ? '' : ' aria-current="page"', esc_html__( 'All', 'store-features' ) );
