@@ -381,14 +381,17 @@ function store_features_product_page_script() {
 				var matchingThumbs = thumbItems.filter(function (el) { return selectedUrls.indexOf(imageUrl(el)) !== -1; });
 				/* Never blank the gallery if the variation image cannot be matched safely. */
 				if (!matchingSlides.length) { return; }
-				slideItems.forEach(function (el) { el.style.display = matchingSlides.indexOf(el) !== -1 ? '' : 'none'; });
+				/* Slides stay in place (the slider moves by position, so hiding slides would show an
+				   empty frame); only the thumbnails are narrowed to this colour. */
+				slideItems.forEach(function (el) { el.style.display = ''; });
 				thumbItems.forEach(function (el) { el.style.display = matchingThumbs.indexOf(el) !== -1 ? '' : 'none'; });
-				if (window.jQuery && jQuery.fn.flexslider) {
-					try {
-						var sliderEl = gallery.querySelector('.flexslider');
-						var slider = sliderEl && jQuery(sliderEl).data('flexslider');
-						if (slider) { slider.flexAnimate(slideItems.indexOf(matchingSlides[0]), true); slider.resize(); }
-					} catch (e) {}
+				var target = slideItems.indexOf(matchingSlides[0]);
+				var slider = window.jQuery && (jQuery(gallery).data('flexslider') || jQuery(gallery.querySelector('.flexslider')).data('flexslider'));
+				if (slider && slider.currentSlide !== target) {
+					try { slider.flexAnimate(target, true); } catch (e) {}
+				} else if (!slider && thumbItems[target]) {
+					var t = thumbItems[target].querySelector('img');
+					if (t) { t.click(); }
 				}
 			}
 			$(form).on('change', 'select[name="attribute_pa_color"]', function () {
