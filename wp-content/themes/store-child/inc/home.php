@@ -16,6 +16,7 @@ defined( 'ABSPATH' ) || exit;
 function store_child_home_collections() {
 	// Apparel and custom apparel always come first; every other populated category follows.
 	$collections = array(
+		'men'                => array( 'Men', 'T-shirts · hoodies · oversized', '#1C2340' ),
 		'oversized-t-shirts' => array( 'Oversized tees', '240 GSM · relaxed oversized fit', '#161618' ),
 		't-shirts'           => array( 'T-shirts', '180 GSM · everyday regular fit', '#1C2340' ),
 		'women'              => array( "Women's fits", 'Crop fits · oversized styles', '#4B3566' ),
@@ -27,6 +28,7 @@ function store_child_home_collections() {
 	$terms = get_terms(
 		array(
 			'taxonomy'   => 'product_cat',
+			'parent'     => 0,
 			'hide_empty' => true,
 			'orderby'    => 'name',
 			'order'      => 'ASC',

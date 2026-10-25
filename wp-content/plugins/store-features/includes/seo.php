@@ -84,6 +84,14 @@ function store_features_seo_category_copy() {
 			__( 'Printed Hoodies', 'store-features' ),
 			__( 'Hoodies with graphic prints and desi lines, in warm 300 GSM brushed fleece. Free shipping and cash on delivery across India.', 'store-features' ),
 		),
+		'men'                => array(
+			__( 'Men\'s T-shirts, Hoodies and Oversized Tees', 'store-features' ),
+			__( 'Printed T-shirts, oversized tees, hoodies and sweatshirts for men, with graphic prints and desi lines. Free shipping and cash on delivery across India.', 'store-features' ),
+		),
+		'women'              => array(
+			__( 'Women\'s T-shirts, Crop Tops and Hoodies', 'store-features' ),
+			__( 'Printed T-shirts, crop tops, oversized tees and hoodies for women, with graphic prints and desi lines. Free shipping and cash on delivery across India.', 'store-features' ),
+		),
 		'design-your-own'    => array(
 			__( 'Design Your Own T-shirt, Hoodie or Sweatshirt', 'store-features' ),
 			__( 'Print your own text in Hindi or English, a photo or a logo on a T-shirt, oversized tee, sweatshirt or hoodie. See it before you order. Free shipping across India.', 'store-features' ),

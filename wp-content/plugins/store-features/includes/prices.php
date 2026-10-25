@@ -160,6 +160,9 @@ function store_features_apply_prices() {
 			if ( isset( $by_slug[ $product->get_slug() ] ) ) {
 				continue; // Priced exactly above.
 			}
+			if ( 'women' === $slug && has_term( 'men', 'product_cat', $product->get_id() ) ) {
+				continue; // Unisex: not priced as a women-only item.
+			}
 			$targets = $product->is_type( 'variable' ) ? array_filter( array_map( 'wc_get_product', $product->get_children() ) ) : array( $product );
 			foreach ( $targets as $item ) {
 				$item->set_regular_price( (string) $price );
