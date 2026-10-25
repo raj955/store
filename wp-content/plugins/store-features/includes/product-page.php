@@ -115,7 +115,7 @@ function store_features_product_hook() {
 		$note     = __( 'Apni line, photo ya idea ko apne style mein lao.', 'store-features' );
 	} else {
 		$headline = __( 'Apna mood pehno. Apni story dikhao.', 'store-features' );
-		$note     = __( 'Desi humour, pahाड़ी feels aur everyday moods—pick the print that feels like you.', 'store-features' );
+		$note     = __( 'Desi humour, pahadi feels aur everyday moods—pick the print that feels like you.', 'store-features' );
 	}
 
 	echo '<div class="sf-product-hook">';

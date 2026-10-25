@@ -293,7 +293,7 @@ function store_child_home() {
 			<div class="pw-hero__copy">
 				<p class="pw-hero__kicker">PANUWEAR · DESI GRAPHIC STREETWEAR</p>
 				<h1 id="pw-hero-title" class="pw-hero__title">कपड़े नहीं,<br>अपनी <span>vibe पहनो।</span></h1>
-				<p class="pw-hero__lede">Desi humour, pahाड़ी feels और everyday moods—अब तुम्हारे favourite fits पर। अपना print चुनो, अपना रंग चुनो, और अपनी vibe में निकलो।</p>
+				<p class="pw-hero__lede">Desi humour, पहाड़ी feels और everyday moods—अब तुम्हारे favourite fits पर। अपना print चुनो, अपना रंग चुनो, और अपनी vibe में निकलो।</p>
 				<div class="pw-hero__actions">
 					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">अपना fit ढूँढो</a>
 					<a class="pw-btn pw-btn--ghost" href="<?php echo esc_url( $custom ); ?>">अपना design बनाओ</a>

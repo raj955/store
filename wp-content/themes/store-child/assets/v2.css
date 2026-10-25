@@ -1628,3 +1628,12 @@
  .pw2.single-product .cfvsw-swatches-option{flex:0 0 auto!important;max-width:100%;color:#171717!important}
  .pw2.single-product table.variations td.value{max-width:100%;overflow:visible!important}
 }
+
+/* Selected size/colour choice on the product page: always dark with white text, never white on white. */
+.pw2.single-product table.variations .cfvsw-swatches-option.cfvsw-label-option.cfvsw-selected-swatch,
+.pw2.single-product table.variations .cfvsw-selected-swatch .cfvsw-label-option {
+  background: #171717 !important; border-color: #171717 !important; color: #FFFFFF !important;
+}
+.pw2.single-product table.variations .cfvsw-selected-swatch .cfvsw-swatch-inner,
+.pw2.single-product table.variations .cfvsw-label-option.cfvsw-selected-swatch .cfvsw-swatch-inner { color: #FFFFFF !important; }
+.pw2.single-product table.variations .cfvsw-label-option:not(.cfvsw-selected-swatch) .cfvsw-swatch-inner { color: #171717 !important; }
