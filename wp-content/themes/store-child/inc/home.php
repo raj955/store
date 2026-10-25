@@ -158,7 +158,7 @@ function store_child_home_example_price( $products ) {
  * @return array[] name, gsm, price, url
  */
 function store_child_price_ladder() {
-	$cached = get_transient( 'store_child_price_ladder_v2' );
+	$cached = get_transient( 'store_child_price_ladder_v3' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -170,8 +170,8 @@ function store_child_price_ladder() {
 			continue;
 		}
 		$type = function_exists( 'store_features_autocat_type_of' ) ? store_features_autocat_type_of( $product->get_name() ) : null;
-		if ( ! $type ) {
-			continue;
+		if ( ! $type || in_array( $type[0], array( 'mugs', 'tote-bags' ), true ) ) {
+			continue; // Clothes only.
 		}
 		$p = (float) ( $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price() );
 		if ( $p > 0 && ( ! isset( $kind[ $type[0] ] ) || $p < $kind[ $type[0] ]['price'] ) ) {
@@ -196,13 +196,13 @@ function store_child_price_ladder() {
 			'url'   => is_wp_error( $link ) ? wc_get_page_permalink( 'shop' ) : $link,
 		);
 	}
-	set_transient( 'store_child_price_ladder_v2', $out, 5 * MINUTE_IN_SECONDS );
+	set_transient( 'store_child_price_ladder_v3', $out, 5 * MINUTE_IN_SECONDS );
 	return $out;
 }
 
 /** Clear the homepage price cache whenever a product changes. */
 function store_child_clear_price_ladder_cache( $product ) {
-	delete_transient( 'store_child_price_ladder_v2' );
+	delete_transient( 'store_child_price_ladder_v3' );
 }
 add_action( 'woocommerce_product_object_updated_props', 'store_child_clear_price_ladder_cache', 10, 1 );
 add_action( 'woocommerce_product_set_stock', 'store_child_clear_price_ladder_cache', 10, 1 );
