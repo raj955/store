@@ -298,7 +298,7 @@ function store_features_adopt_qikink_product( $request ) {
 			array_filter(
 				array_map(
 					'intval',
-					array_merge( array( $new->get_image_id() ), $new->get_gallery_image_ids() )
+					array_merge( array( $new->get_image_id() ), $new->get_gallery_image_ids(), store_features_qikink_unlinked_photos( $new ) )
 				)
 			)
 		)
@@ -429,6 +429,41 @@ add_action(
 );
 
 /**
+ * Photos Qikink uploaded for a product (front, back...) that were never put in its gallery.
+ * Qikink saves each photo in the media library "uploaded to" the product or one of its
+ * variations, but only links one of them. Every such photo is returned, except size charts.
+ *
+ * @param WC_Product $product Variable product.
+ * @return int[] Attachment IDs.
+ */
+function store_features_qikink_unlinked_photos( $product ) {
+	if ( ! $product instanceof WC_Product ) {
+		return array();
+	}
+	$parents = array_merge( array( $product->get_id() ), array_map( 'intval', $product->get_children() ) );
+	$ids     = get_posts(
+		array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'post_mime_type' => 'image',
+			'post_parent__in' => $parents,
+			'posts_per_page' => 200,
+			'orderby'        => 'ID',
+			'order'          => 'ASC',
+			'fields'         => 'ids',
+		)
+	);
+	$out = array();
+	foreach ( $ids as $id ) {
+		if ( false !== stripos( (string) get_post_field( 'post_name', $id ), 'sizechart' ) || false !== stripos( (string) get_post_meta( $id, '_wp_attached_file', true ), 'sizechart' ) ) {
+			continue;
+		}
+		$out[] = (int) $id;
+	}
+	return $out;
+}
+
+/**
  * Repair image-to-product and image-to-colour associations on already-adopted products.
  * This deliberately reads the normalized pa_color variations instead of rerunning adoption.
  */
@@ -438,7 +473,8 @@ function store_features_repair_qikink_product_gallery( $product ) {
 	}
 	$parent_ids = array_values( array_unique( array_filter( array_map( 'intval', array_merge(
 		array( $product->get_image_id() ),
-		$product->get_gallery_image_ids()
+		$product->get_gallery_image_ids(),
+		store_features_qikink_unlinked_photos( $product )
 	) ) ) ) );
 	$by_colour = array();
 	$first = '';
@@ -488,10 +524,31 @@ function store_features_repair_qikink_product_gallery( $product ) {
 	return true;
 }
 
+// Photos arrive after the product itself, so whenever an adopted Qikink product is saved
+// and has photos not yet in its gallery, link them (front, back, every colour).
+add_action( 'woocommerce_update_product', function ( $product_id ) {
+	static $busy = false;
+	if ( $busy ) {
+		return;
+	}
+	$product = wc_get_product( $product_id );
+	if ( ! $product || ! $product->is_type( 'variable' ) || 'yes' !== $product->get_meta( '_sf_from_qikink' ) ) {
+		return;
+	}
+	$known = array_map( 'intval', array_merge( array( $product->get_image_id() ), $product->get_gallery_image_ids() ) );
+	if ( ! array_diff( store_features_qikink_unlinked_photos( $product ), $known ) ) {
+		return;
+	}
+	$busy = true;
+	store_features_repair_qikink_product_gallery( $product );
+	$busy = false;
+}, 99 );
+
 // One-time repair for Qikink products already in the catalogue. Runs for a shop manager
 // in wp-admin, then records completion so it does not repeat on every page load.
+// v2: also links photos that were uploaded for a product but never put in its gallery.
 add_action( 'admin_init', function () {
-	if ( '1' === get_option( 'store_features_qikink_gallery_repair_v1' ) || ! current_user_can( 'manage_woocommerce' ) ) {
+	if ( '1' === get_option( 'store_features_qikink_gallery_repair_v2' ) || ! current_user_can( 'manage_woocommerce' ) ) {
 		return;
 	}
 	$ids = get_posts( array(
@@ -508,7 +565,7 @@ add_action( 'admin_init', function () {
 			store_features_repair_qikink_product_gallery( $product );
 		}
 	}
-	update_option( 'store_features_qikink_gallery_repair_v1', '1', false );
+	update_option( 'store_features_qikink_gallery_repair_v2', '1', false );
 }, 30 );
 
 /**
