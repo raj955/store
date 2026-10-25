@@ -27,11 +27,10 @@ function store_features_offer_config() {
 		'store_features_offer_config',
 		array(
 			// pieces => rupees off the whole order
-			'tiers'       => array(
-				3 => 30,
-				2 => 20,
-			),
-			'coupon'      => 'pehla20',
+			// Bundle offer and first-order code switched off (Oct 2026): the only offer now is
+			// ₹20 off for paying online (see prepaid.php). Put tiers back here to restore them.
+			'tiers'       => array(),
+			'coupon'      => '',
 			'coupon_off'  => 20,
 			'coupon_min'  => 599,
 		)
@@ -345,8 +344,8 @@ function store_features_offer_line() {
 	$from = store_features_lowest_price();
 	return $from
 		/* translators: %s: lowest price */
-		? sprintf( __( 'Free shipping & cash on delivery across India | Tees from ₹%s', 'store-features' ), number_format_i18n( $from ) )
-		: __( 'Free shipping & cash on delivery across India', 'store-features' );
+		? sprintf( __( 'Free shipping across India | ₹20 off on online payment | Tees from ₹%s', 'store-features' ), number_format_i18n( $from ) )
+		: __( 'Free shipping across India | ₹20 off on online payment', 'store-features' );
 }
 
 /**
@@ -407,10 +406,9 @@ function store_features_offer_product_note() {
 	if ( ! $product instanceof WC_Product || ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) ) {
 		return;
 	}
-	$c = store_features_offer_config();
-	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html__( 'Buy 2, save ₹20. Buy 3 or more, save ₹30.', 'store-features' ) . '</strong> ' . esc_html__( 'Mix any designs and sizes; the discount shows in the cart.', 'store-features' ) . '</p>';
-	/* translators: 1: code, 2: amount, 3: minimum */
-	echo '<p class="sf-offer__code">' . sprintf( esc_html__( 'First order? Use %1$s for ₹%2$d off (orders from ₹%3$d).', 'store-features' ), '<code>' . esc_html( strtoupper( $c['coupon'] ) ) . '</code>', (int) $c['coupon_off'], (int) $c['coupon_min'] ) . '</p></div>';
+	$off = defined( 'STORE_FEATURES_PREPAID_OFF' ) ? STORE_FEATURES_PREPAID_OFF : 20;
+	/* translators: %d: rupees */
+	echo '<div class="sf-offer" role="note"><p class="sf-offer__main"><strong>' . esc_html( sprintf( __( 'Pay online and save ₹%d.', 'store-features' ), $off ) ) . '</strong> ' . esc_html__( 'UPI, cards or net banking at checkout. Cash on delivery is also available.', 'store-features' ) . '</p></div>';
 }
 add_action( 'woocommerce_single_product_summary', 'store_features_offer_product_note', 31 );
 
@@ -420,25 +418,12 @@ add_action( 'woocommerce_single_product_summary', 'store_features_offer_product_
  * @return string
  */
 function store_features_offer_nudge_html() {
-	list( $count ) = store_features_offer_cart_count();
-	if ( $count < 1 ) {
+	if ( ! function_exists( 'WC' ) || ! WC()->cart || WC()->cart->is_empty() ) {
 		return '';
 	}
-	$amount = store_features_offer_amount( $count );
-	$next   = store_features_offer_next( $count );
-	if ( ! $next ) {
-		/* translators: %d: rupees */
-		$text = sprintf( __( 'Bundle offer on: ₹%d off your order.', 'store-features' ), $amount );
-	} elseif ( $amount ) {
-		/* translators: 1: rupees now, 2: pieces to add, 3: rupees next */
-		$text = sprintf( __( '₹%1$d off is on. Add %2$d more to save ₹%3$d.', 'store-features' ), $amount, $next[0] - $count, $next[1] );
-	} else {
-		/* translators: 1: pieces to add, 2: rupees */
-		$text = sprintf( __( 'Add %1$d more design to save ₹%2$d.', 'store-features' ), $next[0] - $count, $next[1] );
-	}
-	$shop = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/' );
-	return '<div class="sf-offer sf-offer--cart" role="note"><p class="sf-offer__main"><strong>' . esc_html( $text ) . '</strong>'
-		. ( $next ? ' <a href="' . esc_url( $shop ) . '">' . esc_html__( 'See designs', 'store-features' ) . '</a>' : '' ) . '</p></div>';
+	$off = defined( 'STORE_FEATURES_PREPAID_OFF' ) ? STORE_FEATURES_PREPAID_OFF : 20;
+	/* translators: %d: rupees */
+	return '<div class="sf-offer sf-offer--cart" role="note"><p class="sf-offer__main"><strong>' . esc_html( sprintf( __( 'Pay online at checkout and get ₹%d off.', 'store-features' ), $off ) ) . '</strong></p></div>';
 }
 
 /**

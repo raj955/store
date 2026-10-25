@@ -308,6 +308,7 @@ require_once STORE_FEATURES_DIR . 'includes/clear-test-products.php';
 require_once STORE_FEATURES_DIR . 'includes/move-domain.php';
 require_once STORE_FEATURES_DIR . 'includes/seo.php';
 require_once STORE_FEATURES_DIR . 'includes/mail.php';
+require_once STORE_FEATURES_DIR . 'includes/prepaid.php';
 require_once STORE_FEATURES_DIR . 'includes/offers.php';
 require_once STORE_FEATURES_DIR . 'includes/product-zoom.php';
 require_once STORE_FEATURES_DIR . 'includes/cancellation.php';

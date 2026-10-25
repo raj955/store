@@ -374,20 +374,7 @@ function store_child_home() {
 					</li>
 				<?php endforeach; ?>
 			</ul>
-			<?php if ( $tiers ) : ?>
-				<p class="pw-bundle__code">
-					<?php
-					$bits = array();
-					foreach ( $tiers as $qty => $amount ) {
-						$bits[] = $qty . ( $qty === $last ? ' या ज़्यादा' : '' ) . ' लो तो ' . store_child_rupees( $amount ) . ' कम';
-					}
-					echo esc_html( implode( ', ', $bits ) . '।' );
-					if ( ! empty( $offer['coupon'] ) ) {
-						echo ' पहला order? Code <strong>' . esc_html( strtoupper( $offer['coupon'] ) ) . '</strong> से ' . esc_html( store_child_rupees( $offer['coupon_off'] ) ) . ' और कम।';
-					}
-					?>
-				</p>
-			<?php endif; ?>
+			<p class="pw-bundle__code">Online payment करो तो हर order पर <?php echo esc_html( store_child_rupees( defined( 'STORE_FEATURES_PREPAID_OFF' ) ? STORE_FEATURES_PREPAID_OFF : 20 ) ); ?> और कम।</p>
 		</div>
 	</section>
 	<?php endif; ?>
