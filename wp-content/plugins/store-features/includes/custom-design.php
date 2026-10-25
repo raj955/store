@@ -20,6 +20,7 @@ defined( 'ABSPATH' ) || exit;
 
 const STORE_FEATURES_CUSTOM_CHUNK = 3145728;   // Largest upload piece, 3 MB.
 const STORE_FEATURES_CUSTOM_MAX   = 62914560;  // Largest print file, 60 MB.
+const STORE_FEATURES_CUSTOM_BACK_PRICE = 169;  // Extra for printing both front and back (Qikink's back print + GST).
 
 /**
  * Blank photos, print areas and colours, written by the render script.
@@ -120,7 +121,8 @@ function store_features_custom_find( $token ) {
 	}
 	foreach ( array( 'orders', 'pending' ) as $stage ) {
 		$loc = store_features_custom_location( $stage, $token );
-		if ( is_file( $loc['dir'] . '/print.png' ) && is_file( $loc['dir'] . '/mockup.jpg' ) ) {
+		if ( ( is_file( $loc['dir'] . '/print.png' ) && is_file( $loc['dir'] . '/mockup.jpg' ) )
+			|| ( is_file( $loc['dir'] . '/print-back.png' ) && is_file( $loc['dir'] . '/mockup-back.jpg' ) ) ) {
 			return $loc;
 		}
 	}
@@ -157,8 +159,9 @@ function store_features_custom_upload() {
 	$total = isset( $_POST['total'] ) ? absint( $_POST['total'] ) : 0;
 	$file  = isset( $_FILES['chunk'] ) && is_array( $_FILES['chunk'] ) ? $_FILES['chunk'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
-	$limit = 'print' === $kind ? STORE_FEATURES_CUSTOM_MAX : 3145728;
-	if ( ! store_features_custom_valid_token( $token ) || ! in_array( $kind, array( 'print', 'mockup' ), true )
+	$is_print = in_array( $kind, array( 'print', 'print_back' ), true );
+	$limit    = $is_print ? STORE_FEATURES_CUSTOM_MAX : 3145728;
+	if ( ! store_features_custom_valid_token( $token ) || ! in_array( $kind, array( 'print', 'mockup', 'print_back', 'mockup_back' ), true )
 		|| $total < 1 || $index >= $total || $total > (int) ceil( $limit / STORE_FEATURES_CUSTOM_CHUNK )
 		|| ! $file || UPLOAD_ERR_OK !== (int) $file['error'] || (int) $file['size'] > STORE_FEATURES_CUSTOM_CHUNK
 		|| ! is_uploaded_file( $file['tmp_name'] ) ) {
@@ -200,13 +203,19 @@ function store_features_custom_upload() {
 
 	// Last piece: check it really is the image we expect.
 	$info     = @getimagesize( $part ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-	$expected = 'print' === $kind ? IMAGETYPE_PNG : IMAGETYPE_JPEG;
-	$max      = 'print' === $kind ? array( 6000, 7500 ) : array( 1600, 2000 );
+	$expected = $is_print ? IMAGETYPE_PNG : IMAGETYPE_JPEG;
+	$max      = $is_print ? array( 6000, 7500 ) : array( 1600, 2000 );
 	if ( ! $info || $expected !== $info[2] || $info[0] > $max[0] || $info[1] > $max[1] || $info[0] < 50 || $info[1] < 50 ) {
 		wp_delete_file( $part );
 		wp_send_json_error( array( 'message' => __( 'The design file could not be read. Please try again.', 'store-features' ) ), 400 );
 	}
-	$final = $loc['dir'] . '/' . ( 'print' === $kind ? 'print.png' : 'mockup.jpg' );
+	$names = array(
+		'print'       => 'print.png',
+		'mockup'      => 'mockup.jpg',
+		'print_back'  => 'print-back.png',
+		'mockup_back' => 'mockup-back.jpg',
+	);
+	$final = $loc['dir'] . '/' . $names[ $kind ];
 	rename( $part, $final ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
 
 	wp_send_json_success( array( 'url' => $loc['url'] . '/' . basename( $final ) ) );
@@ -264,6 +273,8 @@ function store_features_custom_posted_design( $product ) {
 	$token   = isset( $_POST['sf_token'] ) ? sanitize_text_field( wp_unslash( $_POST['sf_token'] ) ) : '';
 	$width   = isset( $_POST['sf_w'] ) ? (float) $_POST['sf_w'] : 0;
 	$height  = isset( $_POST['sf_h'] ) ? (float) $_POST['sf_h'] : 0;
+	$bwidth  = isset( $_POST['sf_bw'] ) ? (float) $_POST['sf_bw'] : 0;
+	$bheight = isset( $_POST['sf_bh'] ) ? (float) $_POST['sf_bh'] : 0;
 	$agree   = ! empty( $_POST['sf_agree'] );
 	$summary = isset( $_POST['sf_summary'] ) ? sanitize_text_field( wp_unslash( $_POST['sf_summary'] ) ) : '';
 	// phpcs:enable
@@ -275,14 +286,23 @@ function store_features_custom_posted_design( $product ) {
 		return new WP_Error( 'sf_custom', __( 'Please confirm you have checked your design.', 'store-features' ) );
 	}
 	$style = store_features_custom_style( $product );
-	if ( ! $style || $width <= 0 || $height <= 0 || $width > $style['w_in'] + 0.05 || $height > $style['h_in'] + 0.05 ) {
+	$front = $width > 0 && $height > 0;
+	$back  = $bwidth > 0 && $bheight > 0;
+	$loc   = store_features_custom_find( $token );
+	$too   = function ( $w, $h ) use ( $style ) {
+		return $w > $style['w_in'] + 0.05 || $h > $style['h_in'] + 0.05;
+	};
+	if ( ! $style || ( ! $front && ! $back ) || ( $front && $too( $width, $height ) ) || ( $back && $too( $bwidth, $bheight ) )
+		|| ( $front && ! is_file( $loc['dir'] . '/print.png' ) ) || ( $back && ! is_file( $loc['dir'] . '/print-back.png' ) ) ) {
 		return new WP_Error( 'sf_custom', __( 'The design is larger than the print area. Make it smaller and try again.', 'store-features' ) );
 	}
 
 	return array(
 		'token'   => $token,
-		'w'       => round( $width, 2 ),
-		'h'       => round( $height, 2 ),
+		'w'       => $front ? round( $width, 2 ) : 0,
+		'h'       => $front ? round( $height, 2 ) : 0,
+		'bw'      => $back ? round( $bwidth, 2 ) : 0,
+		'bh'      => $back ? round( $bheight, 2 ) : 0,
 		'summary' => function_exists( 'mb_substr' ) ? mb_substr( $summary, 0, 300 ) : substr( $summary, 0, 300 ),
 	);
 }
@@ -384,7 +404,7 @@ function store_features_custom_cart_thumbnail( $html, $item ) {
 	if ( isset( $item['sf_custom'] ) ) {
 		$loc = store_features_custom_find( $item['sf_custom']['token'] );
 		if ( $loc ) {
-			return '<img src="' . esc_url( $loc['url'] . '/mockup.jpg' ) . '" alt="' . esc_attr__( 'Your design', 'store-features' ) . '" width="300" height="375" loading="lazy" />';
+			return '<img src="' . esc_url( store_features_custom_preview_url( $loc ) ) . '" alt="' . esc_attr__( 'Your design', 'store-features' ) . '" width="300" height="375" loading="lazy" />';
 		}
 	}
 	return $html;
@@ -402,7 +422,7 @@ function store_features_custom_block_images( $images, $item ) {
 	if ( isset( $item['sf_custom'] ) ) {
 		$loc = store_features_custom_find( $item['sf_custom']['token'] );
 		if ( $loc ) {
-			$url = $loc['url'] . '/mockup.jpg';
+			$url = store_features_custom_preview_url( $loc );
 			return array(
 				(object) array(
 					'id'        => 0,
@@ -536,6 +556,8 @@ function store_features_custom_order_line( $item, $key, $values, $order = null )
 	$item->update_meta_data( '_sf_custom_token', $token );
 	$item->update_meta_data( '_sf_design_w', $design['w'] );
 	$item->update_meta_data( '_sf_design_h', $design['h'] );
+	$item->update_meta_data( '_sf_design_bw', isset( $design['bw'] ) ? $design['bw'] : 0 );
+	$item->update_meta_data( '_sf_design_bh', isset( $design['bh'] ) ? $design['bh'] : 0 );
 	$item->update_meta_data( __( 'Design', 'store-features' ), $design['summary'] ? $design['summary'] : __( 'Your own design', 'store-features' ) );
 }
 add_action( 'woocommerce_checkout_create_order_line_item', 'store_features_custom_order_line', 10, 4 );
@@ -547,21 +569,60 @@ add_action( 'woocommerce_checkout_create_order_line_item', 'store_features_custo
  * @return array{code: string, print_url: string, mockup_url: string, w: float, h: float}|null
  */
 function store_features_custom_item_design( $item ) {
+	$designs = store_features_custom_item_designs( $item );
+	if ( null === $designs ) {
+		return null;
+	}
+	if ( ! $designs ) {
+		return array( 'code' => '', 'print_url' => '', 'mockup_url' => '', 'w' => 0, 'h' => 0 );
+	}
+	return $designs[0];
+}
+
+/**
+ * Every printed side of a custom order line (front first), for Qikink.
+ *
+ * @param WC_Order_Item_Product $item Order line.
+ * @return array|null List of { side, placement, code, print_url, mockup_url, w, h }; null if not custom.
+ */
+function store_features_custom_item_designs( $item ) {
 	$token = (string) $item->get_meta( '_sf_custom_token' );
 	if ( '' === $token ) {
 		return null;
 	}
 	$loc = store_features_custom_find( $token );
 	if ( ! $loc ) {
-		return array( 'code' => '', 'print_url' => '', 'mockup_url' => '', 'w' => 0, 'h' => 0 );
+		return array();
 	}
-	return array(
-		'code'       => 'C' . strtoupper( substr( $token, 0, 12 ) ),
-		'print_url'  => $loc['url'] . '/print.png',
-		'mockup_url' => $loc['url'] . '/mockup.jpg',
-		'w'          => (float) $item->get_meta( '_sf_design_w' ),
-		'h'          => (float) $item->get_meta( '_sf_design_h' ),
+	$out   = array();
+	$sides = array(
+		array( 'front', 'fr', '', (float) $item->get_meta( '_sf_design_w' ), (float) $item->get_meta( '_sf_design_h' ) ),
+		array( 'back', 'bk', '-back', (float) $item->get_meta( '_sf_design_bw' ), (float) $item->get_meta( '_sf_design_bh' ) ),
 	);
+	foreach ( $sides as $side ) {
+		if ( $side[3] > 0 && $side[4] > 0 && is_file( $loc['dir'] . '/print' . $side[2] . '.png' ) ) {
+			$out[] = array(
+				'side'       => $side[0],
+				'placement'  => $side[1],
+				'code'       => 'C' . strtoupper( substr( $token, 0, 11 ) ) . ( 'back' === $side[0] ? 'B' : '' ),
+				'print_url'  => $loc['url'] . '/print' . $side[2] . '.png',
+				'mockup_url' => $loc['url'] . '/mockup' . $side[2] . '.jpg',
+				'w'          => $side[3],
+				'h'          => $side[4],
+			);
+		}
+	}
+	return $out;
+}
+
+/**
+ * Preview image of a design (front if there is one, else back).
+ *
+ * @param array $loc Design folder.
+ * @return string
+ */
+function store_features_custom_preview_url( $loc ) {
+	return $loc['url'] . ( is_file( $loc['dir'] . '/mockup.jpg' ) ? '/mockup.jpg' : '/mockup-back.jpg' );
 }
 
 /**
@@ -608,22 +669,25 @@ function store_features_custom_admin_item( $item_id, $item ) {
 	if ( ! $item instanceof WC_Order_Item_Product ) {
 		return;
 	}
-	$design = store_features_custom_item_design( $item );
-	if ( ! $design ) {
+	$designs = store_features_custom_item_designs( $item );
+	if ( null === $designs ) {
 		return;
 	}
-	if ( '' === $design['print_url'] ) {
+	if ( ! $designs ) {
 		echo '<p style="color:#b32d2e"><strong>' . esc_html__( 'Design files not found.', 'store-features' ) . '</strong></p>';
 		return;
 	}
-	printf(
-		'<div class="sf-custom-admin" style="display:flex;gap:12px;align-items:flex-start;margin-top:8px"><a href="%1$s" target="_blank" rel="noopener"><img src="%1$s" alt="" width="96" style="border:1px solid #ddd;border-radius:4px"></a><p style="margin:0">%2$s<br><a href="%3$s" target="_blank" rel="noopener">%4$s</a> &middot; <a href="%1$s" target="_blank" rel="noopener">%5$s</a></p></div>',
-		esc_url( $design['mockup_url'] ),
-		esc_html( sprintf( /* translators: 1: width, 2: height in inches. */ __( 'Print size %1$s × %2$s in, front.', 'store-features' ), $design['w'], $design['h'] ) ),
-		esc_url( $design['print_url'] ),
-		esc_html__( 'Print file (PNG)', 'store-features' ),
-		esc_html__( 'Preview', 'store-features' )
-	);
+	foreach ( $designs as $design ) {
+		printf(
+			'<div class="sf-custom-admin" style="display:flex;gap:12px;align-items:flex-start;margin-top:8px"><a href="%1$s" target="_blank" rel="noopener"><img src="%1$s" alt="" width="96" style="border:1px solid #ddd;border-radius:4px"></a><p style="margin:0"><strong>%6$s</strong> &middot; %2$s<br><a href="%3$s" target="_blank" rel="noopener">%4$s</a> &middot; <a href="%1$s" target="_blank" rel="noopener">%5$s</a></p></div>',
+			esc_url( $design['mockup_url'] ),
+			esc_html( sprintf( /* translators: 1: width, 2: height in inches. */ __( 'Print size %1$s × %2$s in', 'store-features' ), $design['w'], $design['h'] ) ),
+			esc_url( $design['print_url'] ),
+			esc_html__( 'Print file (PNG)', 'store-features' ),
+			esc_html__( 'Preview', 'store-features' ),
+			esc_html( 'back' === $design['side'] ? __( 'Back', 'store-features' ) : __( 'Front', 'store-features' ) )
+		);
+	}
 }
 add_action( 'woocommerce_after_order_itemmeta', 'store_features_custom_admin_item', 10, 2 );
 
@@ -702,6 +766,7 @@ function store_features_custom_panel() {
 		<div class="sf-cz-tabs" role="tablist" aria-label="<?php esc_attr_e( 'What to add', 'store-features' ); ?>">
 			<button type="button" role="tab" id="sf-cz-tab-text" aria-controls="sf-cz-text" aria-selected="true" data-tab="text"><?php esc_html_e( 'Text', 'store-features' ); ?></button>
 			<button type="button" role="tab" id="sf-cz-tab-photo" aria-controls="sf-cz-photo" aria-selected="false" tabindex="-1" data-tab="photo"><?php esc_html_e( 'Photo or logo', 'store-features' ); ?></button>
+			<button type="button" role="tab" id="sf-cz-tab-ideas" aria-controls="sf-cz-ideas" aria-selected="false" tabindex="-1" data-tab="ideas"><?php esc_html_e( 'Ideas', 'store-features' ); ?></button>
 		</div>
 
 		<div class="sf-cz-pane" id="sf-cz-text" role="tabpanel" aria-labelledby="sf-cz-tab-text">
@@ -726,6 +791,13 @@ function store_features_custom_panel() {
 			<p class="sf-cz-quality" aria-live="polite"></p>
 			<button type="button" class="sf-cz-remove" hidden><?php esc_html_e( 'Remove photo', 'store-features' ); ?></button>
 			<p class="sf-cz-help"><?php esc_html_e( 'JPG or PNG up to 25 MB. A PNG with a transparent background prints best. Only use photos and logos you have the right to print.', 'store-features' ); ?></p>
+		</div>
+
+		<div class="sf-cz-pane sf-cz-ideas" id="sf-cz-ideas" role="tabpanel" aria-labelledby="sf-cz-tab-ideas" hidden>
+			<p class="sf-cz-label"><?php esc_html_e( 'Ready lines (tap, then change the name)', 'store-features' ); ?></p>
+			<div class="sf-cz-ideas__text"></div>
+			<p class="sf-cz-label"><?php esc_html_e( 'Ready art (add your text with it)', 'store-features' ); ?></p>
+			<div class="sf-cz-ideas__art"></div>
 		</div>
 
 		<div class="sf-cz-adjust" hidden>
@@ -819,6 +891,9 @@ function store_features_custom_assets() {
 			'colours'      => $colours,
 			'colour'       => isset( $defaults['pa_color'] ) ? $defaults['pa_color'] : ( $style['colours'][0] ?? 'black' ),
 			'fonts'        => $fonts,
+			'backPrice'    => STORE_FEATURES_CUSTOM_BACK_PRICE,
+			'artUrl'       => $base . 'art/',
+			'ideas'        => store_features_custom_ideas(),
 			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 			'nonce'        => wp_create_nonce( 'sf-custom' ),
 			'chunk'        => STORE_FEATURES_CUSTOM_CHUNK,
@@ -846,6 +921,11 @@ function store_features_custom_assets() {
 				'photoLabel'  => __( 'Photo', 'store-features' ),
 				'previewOf'   => __( 'Preview of your design on the %s garment', 'store-features' ),
 				'showPreview' => __( 'Show the preview', 'store-features' ),
+				'front'       => __( 'Front (आगे)', 'store-features' ),
+				'back'        => __( 'Back (पीछे)', 'store-features' ),
+				'backPrice'   => __( '+₹%s', 'store-features' ),
+				'backLabel'   => __( 'BACK', 'store-features' ),
+				'sidesLabel'  => __( 'Which side to print', 'store-features' ),
 			),
 		)
 	);
@@ -957,3 +1037,77 @@ function store_features_custom_not_related( $related ) {
 	return array_values( array_diff( array_map( 'intval', (array) $related ), store_features_custom_product_ids() ) );
 }
 add_filter( 'woocommerce_related_products', 'store_features_custom_not_related' );
+
+/**
+ * Ready lines and art for the customizer's "Ideas" tab. Fonts are indexes into
+ * store_features_custom_fonts(): 0 Yatra, 1 Rozha, 2 Baloo, 3 Kalam, 4 Tiro, 5 Mukta.
+ *
+ * @return array
+ */
+function store_features_custom_ideas() {
+	return array(
+		'text' => array(
+			array( 'text' => "RAHUL\nSince 1998", 'font' => 1 ),
+			array( 'text' => "दूल्हे का भाई", 'font' => 2 ),
+			array( 'text' => "Bride Squad", 'font' => 3 ),
+			array( 'text' => "Birthday Squad\n2026", 'font' => 2 ),
+			array( 'text' => "TEAM\nPANU", 'font' => 5 ),
+			array( 'text' => "पापा की परी", 'font' => 3 ),
+			array( 'text' => "माँ का लाडला", 'font' => 0 ),
+			array( 'text' => "चाय पे चर्चा", 'font' => 0 ),
+			array( 'text' => "पहाड़ी हूँ", 'font' => 1 ),
+			array( 'text' => "Mr.", 'font' => 1 ),
+			array( 'text' => "Mrs.", 'font' => 1 ),
+			array( 'text' => "जय श्री राम", 'font' => 4 ),
+		),
+		'art'  => array(
+			array( 'key' => 'trishul', 'label' => 'Trishul' ),
+			array( 'key' => 'feather', 'label' => 'Mor pankh' ),
+			array( 'key' => 'scooter', 'label' => 'Scooter' ),
+			array( 'key' => 'peak', 'label' => 'Mountain' ),
+			array( 'key' => 'chai', 'label' => 'Chai' ),
+			array( 'key' => 'lotus', 'label' => 'Lotus' ),
+			array( 'key' => 'butterflies', 'label' => 'Butterflies' ),
+			array( 'key' => 'moons', 'label' => 'Moon phases' ),
+			array( 'key' => 'genda', 'label' => 'Genda flowers' ),
+			array( 'key' => 'cat', 'label' => 'Cat' ),
+			array( 'key' => 'bookchai', 'label' => 'Book and chai' ),
+		),
+	);
+}
+
+/**
+ * Front and back printed: add the back print to the price.
+ *
+ * @param WC_Cart $cart Cart.
+ */
+function store_features_custom_back_price( $cart ) {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return;
+	}
+	foreach ( $cart->get_cart() as $item ) {
+		if ( empty( $item['sf_custom'] ) || empty( $item['sf_custom']['bw'] ) || empty( $item['sf_custom']['w'] ) || empty( $item['data'] ) ) {
+			continue;
+		}
+		$product = $item['data'];
+		if ( $product->get_meta( '_sf_back_added' ) ) {
+			continue;
+		}
+		$product->set_price( (float) $product->get_price( 'edit' ) + STORE_FEATURES_CUSTOM_BACK_PRICE );
+		$product->update_meta_data( '_sf_back_added', 1 );
+	}
+}
+add_action( 'woocommerce_before_calculate_totals', 'store_features_custom_back_price', 20 );
+
+/**
+ * Product page: tell shoppers both sides can be printed.
+ */
+function store_features_custom_back_note() {
+	global $product;
+	if ( ! $product instanceof WC_Product || ! store_features_is_custom_product( $product ) ) {
+		return;
+	}
+	/* translators: %d: rupees */
+	echo '<p class="sf-cz-backnote">' . esc_html( sprintf( __( 'Print on the front, the back, or both. Both sides: +₹%d.', 'store-features' ), STORE_FEATURES_CUSTOM_BACK_PRICE ) ) . '</p>';
+}
+add_action( 'woocommerce_single_product_summary', 'store_features_custom_back_note', 11 );

@@ -229,14 +229,23 @@ function store_features_qikink_payload( $order ) {
 			return $sku;
 		}
 
-		$custom = function_exists( 'store_features_custom_item_design' ) ? store_features_custom_item_design( $item ) : null;
-		if ( $custom ) {
-			// The customer's own design, made on the product page.
-			$code   = $custom['code'];
-			$link   = $custom['print_url'];
-			$width  = $custom['w'];
-			$high   = $custom['h'];
-			$mockup = $custom['mockup_url'];
+		$custom = function_exists( 'store_features_custom_item_designs' ) ? store_features_custom_item_designs( $item ) : null;
+		$designs = array();
+		if ( null !== $custom ) {
+			// The customer's own design (front, back or both), made on the product page.
+			foreach ( $custom as $d ) {
+				$designs[] = array(
+					'design_code'   => substr( $d['code'], 0, 20 ),
+					'width_inches'  => round( $d['w'], 2 ),
+					'height_inches' => round( $d['h'], 2 ),
+					'placement_sku' => $d['placement'],
+					'design_link'   => $d['print_url'],
+					'mockup_link'   => $d['mockup_url'],
+				);
+			}
+			if ( ! $designs ) {
+				return new WP_Error( 'qikink_design', sprintf( '%s: the customer design files were not found.', $parent->get_name() ) );
+			}
 		} else {
 			$code     = substr( preg_replace( '/[^A-Za-z0-9]/', '', (string) $parent->get_meta( '_sf_qikink_design_code' ) ), 0, 20 );
 			$link     = (string) $parent->get_meta( '_sf_qikink_design_url' );
@@ -244,9 +253,17 @@ function store_features_qikink_payload( $order ) {
 			$high     = (float) $parent->get_meta( '_sf_qikink_design_h' );
 			$image_id = $product->get_image_id() ? $product->get_image_id() : $parent->get_image_id();
 			$mockup   = $image_id ? wp_get_attachment_image_url( $image_id, 'full' ) : '';
-		}
-		if ( '' === $code || '' === $link || $width <= 0 || $high <= 0 ) {
-			return new WP_Error( 'qikink_design', sprintf( '%s is missing its print file details.', $parent->get_name() ) );
+			if ( '' === $code || '' === $link || $width <= 0 || $high <= 0 ) {
+				return new WP_Error( 'qikink_design', sprintf( '%s is missing its print file details.', $parent->get_name() ) );
+			}
+			$designs[] = array(
+				'design_code'   => $code,
+				'width_inches'  => round( $width, 2 ),
+				'height_inches' => round( $high, 2 ),
+				'placement_sku' => 'fr',
+				'design_link'   => $link,
+				'mockup_link'   => $mockup ? $mockup : $link,
+			);
 		}
 		$quantity = max( 1, (int) $item->get_quantity() );
 
@@ -256,16 +273,7 @@ function store_features_qikink_payload( $order ) {
 			'print_type_id'           => (int) store_features_qikink_setting( 'print_type_id', '1' ),
 			'price'                   => round( ( (float) $item->get_total() + (float) $item->get_total_tax() ) / $quantity, 2 ),
 			'sku'                     => $sku,
-			'designs'                 => array(
-				array(
-					'design_code'   => $code,
-					'width_inches'  => round( $width, 2 ),
-					'height_inches' => round( $high, 2 ),
-					'placement_sku' => 'fr',
-					'design_link'   => $link,
-					'mockup_link'   => $mockup ? $mockup : $link,
-				),
-			),
+			'designs'                 => $designs,
 		);
 	}
 

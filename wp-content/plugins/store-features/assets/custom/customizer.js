@@ -39,8 +39,13 @@
 		inkAuto: true,
 		busy: false,
 		text: { value: '', lines: [], font: 0, ink: '#FFFFFF', size: 2.2, cx: A.w / 2, top: 0.6, w: 0, h: 0, asc: 1, lh: 1.3 },
-		photo: null
+		photo: null,
+		side: 'front',
+		sides: { front: null, back: null }
 	};
+	function newText(ink) {
+		return { value: '', lines: [], font: 0, ink: ink || state.text.ink, size: 2.2, cx: A.w / 2, top: 0.6, w: 0, h: 0, asc: 1, lh: 1.3 };
+	}
 
 	var el = {
 		frame: document.querySelector('.sf-cz-frame'),
@@ -207,12 +212,7 @@
 		var info = colourInfo();
 		var blank = blankFor(state.colour);
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		if (blank.complete && blank.naturalWidth) {
-			ctx.drawImage(blank, 0, 0, canvas.width, canvas.height);
-		} else {
-			ctx.fillStyle = '#EDEEF2';
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-		}
+		drawBlank(ctx, blank, canvas.width, canvas.height, state.side === 'back', '#EDEEF2');
 		/* Print area. */
 		ctx.save();
 		ctx.setLineDash([10, 8]);
@@ -238,12 +238,42 @@
 
 		var any = hasDesign();
 		paintMini(any);
-		el.empty.hidden = any;
+		el.empty.hidden = any || anyDesign();
+		updateSides();
 		canvas.classList.toggle('has-design', any);
 		canvas.setAttribute('aria-label', fmt(t.previewOf, (info.label || '').toLowerCase()) +
 			(state.text.lines.length ? '. ' + fmt(t.textPreview, state.text.lines.join(' / ')) : '') +
 			(state.photo ? '. ' + t.photoLabel : ''));
 		updateControls();
+	}
+
+	/* The garment photo; the back view is the same photo mirrored, with a label. */
+	function drawBlank(c, blank, w, h, back, fill) {
+		if (blank.complete && blank.naturalWidth) {
+			c.save();
+			if (back) {
+				c.translate(w, 0);
+				c.scale(-1, 1);
+			}
+			c.drawImage(blank, 0, 0, w, h);
+			c.restore();
+		} else {
+			c.fillStyle = fill;
+			c.fillRect(0, 0, w, h);
+		}
+		if (back) {
+			c.save();
+			var fs = Math.round(w * 0.034);
+			c.font = '800 ' + fs + 'px sans-serif';
+			var label = t.backLabel || 'BACK';
+			var tw = c.measureText(label).width;
+			c.fillStyle = 'rgba(23,23,26,.82)';
+			c.fillRect(w * 0.04, w * 0.04, tw + fs * 1.2, fs * 1.8);
+			c.fillStyle = '#FFFFFF';
+			c.textBaseline = 'middle';
+			c.fillText(label, w * 0.04 + fs * 0.6, w * 0.04 + fs * 0.9);
+			c.restore();
+		}
 	}
 
 	/* ------------------------------------------------------------ phone preview */
@@ -588,6 +618,7 @@
 			state.colour = select.value;
 			blankFor(state.colour);
 			autoInk();
+			refreshArt();
 			render();
 		}
 	}
@@ -699,12 +730,7 @@
 		c.height = canvas.height * scale;
 		var x = c.getContext('2d');
 		var blank = blankFor(state.colour);
-		if (blank.complete && blank.naturalWidth) {
-			x.drawImage(blank, 0, 0, c.width, c.height);
-		} else {
-			x.fillStyle = colourInfo().hex;
-			x.fillRect(0, 0, c.width, c.height);
-		}
+		drawBlank(x, blank, c.width, c.height, state.side === 'back', colourInfo().hex);
 		x.globalAlpha = 0.96;
 		drawLayers(x, A.ppi * scale, A.x * scale, A.y * scale);
 		return canvasBlob(c, 'image/jpeg', 0.86);
@@ -762,6 +788,18 @@
 	}
 
 	function summary() {
+		var out = [];
+		['front', 'back'].forEach(function (name) {
+			useSide(name, function () {
+				var s = sideSummary();
+				if (s) {
+					out.push((name === 'front' ? 'Front: ' : 'Back: ') + s);
+				}
+			});
+		});
+		return out.join(' | ');
+	}
+	function sideSummary() {
 		var parts = [];
 		if (state.text.lines.length) {
 			var ink = INKS.filter(function (i) {
@@ -800,7 +838,7 @@
 			return;
 		}
 		showError('');
-		if (!hasDesign()) {
+		if (!anyDesign()) {
 			showError(t.needDesign);
 			panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			return;
@@ -820,25 +858,44 @@
 		}
 		var qtyField = form.querySelector('input.qty');
 		var token = newToken();
-		var print;
-		setBusy(true, t.preparing);
-		makePrintFile().then(function (file) {
-			print = file;
-			return upload(token, 'print', file.blob, function (f) {
-				setBusy(true, fmt(t.uploading, Math.round(f * 95)));
+		var dims = { front: { w: 0, h: 0 }, back: { w: 0, h: 0 } };
+		var jobs = [];
+		['front', 'back'].forEach(function (name) {
+			useSide(name, function () {
+				if (hasDesign()) {
+					/* Drawing happens now, while this side is loaded; the files finish later. */
+					jobs.push({ side: name, print: makePrintFile(), mockup: makeMockup() });
+				}
 			});
-		}).then(function () {
-			return makeMockup();
-		}).then(function (mockup) {
-			return upload(token, 'mockup', mockup);
-		}).then(function () {
+		});
+		var finalLabel = summary();
+		setBusy(true, t.preparing);
+		var chain = Promise.resolve();
+		jobs.forEach(function (job, i) {
+			var suffix = job.side === 'back' ? '_back' : '';
+			chain = chain.then(function () {
+				return job.print;
+			}).then(function (file) {
+				dims[job.side] = { w: file.w, h: file.h };
+				return upload(token, 'print' + suffix, file.blob, function (f) {
+					setBusy(true, fmt(t.uploading, Math.round((i + f) / jobs.length * 95)));
+				});
+			}).then(function () {
+				return job.mockup;
+			}).then(function (mockup) {
+				return upload(token, 'mockup' + suffix, mockup);
+			});
+		});
+		chain.then(function () {
 			return $.post(cfg.addToCartUrl, {
 				product_id: variationId,
 				quantity: qtyField ? qtyField.value : 1,
 				sf_token: token,
-				sf_w: print.w,
-				sf_h: print.h,
-				sf_summary: summary(),
+				sf_w: dims.front.w,
+				sf_h: dims.front.h,
+				sf_bw: dims.back.w,
+				sf_bh: dims.back.h,
+				sf_summary: finalLabel,
 				sf_agree: 1
 			});
 		}).then(function (res) {
@@ -853,6 +910,159 @@
 			showError(err && err.message ? err.message : t.failed);
 		});
 	}, true);
+
+	/* ------------------------------------------------------------ front and back */
+
+	function saveSide() {
+		state.sides[state.side] = { text: state.text, photo: state.photo };
+	}
+	function loadSide(name) {
+		var d = state.sides[name] || { text: newText(), photo: null };
+		state.text = d.text;
+		state.photo = d.photo;
+		state.side = name;
+	}
+	/* Run fn with another side loaded, then come back (fn must draw synchronously). */
+	function useSide(name, fn) {
+		var was = state.side;
+		saveSide();
+		loadSide(name);
+		try {
+			fn();
+		} finally {
+			saveSide();
+			loadSide(was);
+		}
+	}
+	function sideHas(name) {
+		if (name === state.side) {
+			return hasDesign();
+		}
+		var d = state.sides[name];
+		return !!(d && (d.photo || (d.text && d.text.lines.length)));
+	}
+	function anyDesign() {
+		return sideHas('front') || sideHas('back');
+	}
+	function syncInputs() {
+		el.input.value = state.text.value;
+		el.remove.hidden = !state.photo;
+		el.fileText.textContent = state.photo ? t.change : t.choose;
+		el.fontList.querySelectorAll('input').forEach(function (input) {
+			input.checked = parseInt(input.value, 10) === state.text.font;
+		});
+		syncInk();
+	}
+	function switchSide(name) {
+		if (name === state.side || state.busy) {
+			return;
+		}
+		saveSide();
+		loadSide(name);
+		syncInputs();
+		layoutText();
+		state.active = state.text.lines.length || !state.photo ? 'text' : 'photo';
+		if (state.active === 'photo') {
+			selectTab('photo');
+		}
+		render();
+	}
+	var sideBox = document.createElement('div');
+	sideBox.className = 'sf-cz-sides';
+	sideBox.setAttribute('role', 'group');
+	sideBox.setAttribute('aria-label', t.sidesLabel || 'Print side');
+	['front', 'back'].forEach(function (name) {
+		var b = document.createElement('button');
+		b.type = 'button';
+		b.setAttribute('data-side', name);
+		b.innerHTML = '<span class="sf-cz-side__name"></span><span class="sf-cz-side__note"></span>';
+		b.querySelector('.sf-cz-side__name').textContent = name === 'front' ? (t.front || 'Front') : (t.back || 'Back');
+		b.querySelector('.sf-cz-side__note').textContent = name === 'back' && cfg.backPrice ? fmt(t.backPrice || '+₹%s', cfg.backPrice) : '';
+		b.addEventListener('click', function () {
+			switchSide(name);
+		});
+		sideBox.appendChild(b);
+	});
+	var titleEl = panel.querySelector('.sf-cz-title');
+	titleEl.parentNode.insertBefore(sideBox, titleEl.nextSibling);
+	function updateSides() {
+		sideBox.querySelectorAll('button').forEach(function (b) {
+			var name = b.getAttribute('data-side');
+			b.setAttribute('aria-pressed', name === state.side ? 'true' : 'false');
+			b.classList.toggle('has-design', sideHas(name));
+		});
+	}
+
+	/* ------------------------------------------------------------ ideas */
+
+	var ideasBox = panel.querySelector('.sf-cz-ideas');
+	if (ideasBox && cfg.ideas) {
+		(cfg.ideas.text || []).forEach(function (idea) {
+			var b = document.createElement('button');
+			b.type = 'button';
+			b.className = 'sf-cz-idea sf-cz-idea--text';
+			b.lang = 'hi';
+			b.textContent = idea.text.replace(/\n/g, ' ');
+			var f = cfg.fonts[idea.font || 0];
+			b.style.fontFamily = '"' + f.family + '", sans-serif';
+			b.style.fontWeight = f.weight;
+			b.addEventListener('click', function () {
+				state.text.font = idea.font || 0;
+				el.input.value = idea.text;
+				loadFont(state.text.font).then(function () {
+					syncInputs();
+					el.input.dispatchEvent(new Event('input'));
+					selectTab('text');
+					el.input.focus();
+				});
+			});
+			ideasBox.querySelector('.sf-cz-ideas__text').appendChild(b);
+		});
+		(cfg.ideas.art || []).forEach(function (art) {
+			var b = document.createElement('button');
+			b.type = 'button';
+			b.className = 'sf-cz-idea sf-cz-idea--art';
+			b.setAttribute('aria-label', art.label);
+			b.title = art.label;
+			b.innerHTML = '<img alt="" loading="lazy">';
+			b.querySelector('img').src = cfg.artUrl + 'art-' + art.key + '-dark.png';
+			b.addEventListener('click', function () {
+				var variant = colourInfo().dark ? 'dark' : 'light';
+				var img = new Image();
+				img.onload = function () {
+					var nw = img.naturalWidth, nh = img.naturalHeight;
+					var p = { img: img, name: art.label + ' (ready art)', nw: nw, nh: nh, cx: A.w / 2, top: 0.3, art: art.key };
+					p.w = Math.min(A.w * 0.55, A.h * 0.55 * nw / nh);
+					p.h = p.w * nh / nw;
+					state.photo = p;
+					clamp(p);
+					el.remove.hidden = false;
+					el.fileText.textContent = t.change;
+					selectTab('photo');
+				};
+				img.src = cfg.artUrl + 'art-' + art.key + '-' + variant + '.png';
+			});
+			ideasBox.querySelector('.sf-cz-ideas__art').appendChild(b);
+		});
+	}
+	/* Ready art follows the garment colour (light art on dark cloth and the other way). */
+	function refreshArt() {
+		['front', 'back'].forEach(function (name) {
+			var d = name === state.side ? { photo: state.photo } : state.sides[name];
+			var p = d && d.photo;
+			if (p && p.art) {
+				var want = cfg.artUrl + 'art-' + p.art + '-' + (colourInfo().dark ? 'dark' : 'light') + '.png';
+				if (p.img.src.indexOf(want) === -1) {
+					var img = new Image();
+					img.onload = function () {
+						p.img = img;
+						render();
+					};
+					img.src = want;
+				}
+			}
+		});
+	}
 
 	/* ------------------------------------------------------------ tracking */
 
