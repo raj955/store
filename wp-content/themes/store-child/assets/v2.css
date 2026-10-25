@@ -1637,3 +1637,14 @@
 .pw2.single-product table.variations .cfvsw-selected-swatch .cfvsw-swatch-inner,
 .pw2.single-product table.variations .cfvsw-label-option.cfvsw-selected-swatch .cfvsw-swatch-inner { color: #FFFFFF !important; }
 .pw2.single-product table.variations .cfvsw-label-option:not(.cfvsw-selected-swatch) .cfvsw-swatch-inner { color: #171717 !important; }
+
+/* Cards: the shop's own colour dots are used; the swatch plugin's row (blank for new products) is hidden. */
+.pw2 .woocommerce ul.products li.product .cfvsw-shop-container,
+.pw2 .pw-new ul.products li.product .cfvsw-shop-container,
+.pw2 ul.products li.product .cfvsw-shop-container,
+.pw2 li.product .cfvsw-shop-variations { display: none !important; }
+.pw2 .sf-card-colour-fallback { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; min-height: 28px; margin: 10px 0 12px; }
+.pw2 .sf-card-colour-fallback__dot { flex: 0 0 24px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(23,23,23,.28); box-shadow: inset 0 0 0 2px #fff; transition: transform .15s ease, box-shadow .15s ease; }
+.pw2 .sf-card-colour-fallback__dot:hover { transform: scale(1.12); }
+.pw2 .sf-card-colour-fallback__dot.is-active { border-color: #171717; box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #171717; }
+.pw2 .sf-card-colour-more { font-size: 13px; color: var(--pw-muted, #5b5b57); }

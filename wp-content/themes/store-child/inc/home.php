@@ -158,45 +158,51 @@ function store_child_home_example_price( $products ) {
  * @return array[] name, gsm, price, url
  */
 function store_child_price_ladder() {
-	$cached = get_transient( 'store_child_price_ladder_v1' );
+	$cached = get_transient( 'store_child_price_ladder_v2' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
-	$rows = array(
-		't-shirts'           => array( 'T-shirt', '180 GSM' ),
-		'oversized-t-shirts' => array( 'Oversized', '240 GSM' ),
-		'sweatshirts'        => array( 'Sweatshirt', '300 GSM' ),
-		'hoodies'            => array( 'Hoodie', '300 GSM' ),
-	);
-	$out = array();
-	foreach ( $rows as $slug => $row ) {
-		$min = 0;
-		foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 20, 'category' => array( $slug ) ) ) as $product ) {
-			if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
-				continue;
-			}
-			$p = (float) ( $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price() );
-			if ( $p > 0 && ( ! $min || $p < $min ) ) {
-				$min = $p;
-			}
+	// Built from the products that are really in the shop: the lowest price of each kind.
+	$gsm  = array( 't-shirts' => '180 GSM', 'oversized-t-shirts' => '240 GSM', 'sweatshirts' => '300 GSM', 'hoodies' => '300 GSM' );
+	$kind = array();
+	foreach ( wc_get_products( array( 'status' => 'publish', 'limit' => 200, 'visibility' => 'catalog' ) ) as $product ) {
+		if ( function_exists( 'store_features_is_custom_product' ) && store_features_is_custom_product( $product ) ) {
+			continue;
 		}
-		if ( $min ) {
-			$out[] = array(
-				'name'  => $row[0],
-				'gsm'   => $row[1],
-				'price' => $min,
-				'url'   => store_child_cat_url( $slug ),
-			);
+		$type = function_exists( 'store_features_autocat_type_of' ) ? store_features_autocat_type_of( $product->get_name() ) : null;
+		if ( ! $type ) {
+			continue;
+		}
+		$p = (float) ( $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price() );
+		if ( $p > 0 && ( ! isset( $kind[ $type[0] ] ) || $p < $kind[ $type[0] ]['price'] ) ) {
+			$kind[ $type[0] ] = array( 'name' => $type[1], 'price' => $p );
 		}
 	}
-	// Short cache only; product save/price/stock hooks below invalidate it.
-	set_transient( 'store_child_price_ladder_v1', $out, 5 * MINUTE_IN_SECONDS );
+	uasort( $kind, function ( $a, $b ) {
+		return $a['price'] <=> $b['price'];
+	} );
+	$out = array();
+	foreach ( array_slice( $kind, 0, 4, true ) as $slug => $row ) {
+		$link = get_term_link( $slug, 'product_cat' );
+		if ( is_wp_error( $link ) ) {
+			$term = get_term_by( 'slug', 'men-' . $slug, 'product_cat' );
+			$term = $term ? $term : get_term_by( 'slug', 'women-' . $slug, 'product_cat' );
+			$link = $term ? get_term_link( $term ) : wc_get_page_permalink( 'shop' );
+		}
+		$out[] = array(
+			'name'  => $row['name'],
+			'gsm'   => isset( $gsm[ $slug ] ) ? $gsm[ $slug ] : '',
+			'price' => $row['price'],
+			'url'   => is_wp_error( $link ) ? wc_get_page_permalink( 'shop' ) : $link,
+		);
+	}
+	set_transient( 'store_child_price_ladder_v2', $out, 5 * MINUTE_IN_SECONDS );
 	return $out;
 }
 
 /** Clear the homepage price cache whenever a product changes. */
 function store_child_clear_price_ladder_cache( $product ) {
-	delete_transient( 'store_child_price_ladder_v1' );
+	delete_transient( 'store_child_price_ladder_v2' );
 }
 add_action( 'woocommerce_product_object_updated_props', 'store_child_clear_price_ladder_cache', 10, 1 );
 add_action( 'woocommerce_product_set_stock', 'store_child_clear_price_ladder_cache', 10, 1 );
@@ -362,7 +368,7 @@ function store_child_home() {
 				<?php foreach ( $ladder as $i => $row ) : ?>
 					<li>
 						<a href="<?php echo esc_url( $row['url'] ); ?>" class="pw-bundle__link">
-							<span class="pw-bundle__qty"><?php echo esc_html( $row['name'] . ' · ' . $row['gsm'] ); ?></span>
+							<span class="pw-bundle__qty"><?php echo esc_html( $row['gsm'] ? $row['name'] . ' · ' . $row['gsm'] : $row['name'] ); ?></span>
 							<span class="pw-bundle__price"><?php echo esc_html( store_child_rupees( $row['price'] ) ); ?></span>
 						</a>
 					</li>
@@ -391,7 +397,7 @@ function store_child_home() {
 			<h2 id="pw-why-title" class="pw-h2">तुम्हारा fit. तुम्हारे rules.</h2>
 			<ul class="pw-why__grid">
 				<li><h3>Copy-paste नहीं, original</h3><p>हमारे graphics और lines अपनी सोच से आते हैं—ताकि तुम्हारा fit किसी और जैसा न लगे।</p></li>
-				<li><h3>हर fit का अपना feel</h3><p>180 GSM regular tees, 240 GSM oversized tees और 300 GSM fleece hoodies/sweatshirts—अपनी पसंद का fit चुनो। GSM fabric के वजन को बताता है; feel और drape fabric blend व construction पर भी depend करते हैं।</p></li>
+				<li><h3>हर fit का अपना feel</h3><p>अलग-अलग fabric weight और fits में से अपनी पसंद का fit चुनो। GSM fabric के वजन को बताता है; feel और drape fabric blend व construction पर भी depend करते हैं।</p></li>
 				<li><h3>Made for your order</h3><p>तुम्हारा piece order के बाद print होता है—कम random stock, ज़्यादा तुम्हारी पसंद।</p></li>
 				<li><h3>Easy checkout</h3><p>पूरे India में free shipping और COD available. आम तौर पर delivery 5–7 working days में।</p></li>
 				<li><h3>Print में issue? बताओ</h3><p>Damage या गलत print मिले? 7 दिन के अंदर unboxing video के साथ हमसे contact करो—हम replacement में help करेंगे।</p></li>
@@ -402,8 +408,13 @@ function store_child_home() {
 	<section class="pw-story" aria-labelledby="pw-story-title">
 		<div class="pw-wrap pw-story__inner">
 			<?php
-			$hoodies = get_term_by( 'slug', 'hoodies', 'product_cat' );
-			$story   = $hoodies ? store_child_home_term_image( $hoodies ) : '';
+			$story = '';
+			foreach ( array_slice( array_reverse( $products ), 0, 8 ) as $story_product ) {
+				if ( $story_product->get_image_id() ) {
+					$story = get_the_post_thumbnail( $story_product->get_id(), 'woocommerce_single', array( 'alt' => '', 'loading' => 'lazy' ) );
+					break;
+				}
+			}
 			?>
 			<div class="pw-story__mark"><?php echo $story ? $story : '<img src="' . esc_url( get_stylesheet_directory_uri() . '/assets/brand/panuwear-icon-512.png' ) . '" alt="" width="256" height="256" loading="lazy">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 			<div>
