@@ -51,7 +51,7 @@ function store_features_shipment( $order ) {
 	}
 	return array(
 		'courier'      => $courier,
-		'courier_name' => isset( $couriers[ $courier ] ) && 'other' !== $courier ? $couriers[ $courier ][0] : '',
+		'courier_name' => (string) $order->get_meta( '_sf_courier_name' ) ? (string) $order->get_meta( '_sf_courier_name' ) : ( isset( $couriers[ $courier ] ) && 'other' !== $courier ? $couriers[ $courier ][0] : '' ),
 		'awb'          => $awb,
 		'url'          => $url,
 		'delivered'    => 'yes' === $order->get_meta( '_sf_delivered' ),
