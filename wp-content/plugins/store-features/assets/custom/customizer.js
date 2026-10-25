@@ -1034,6 +1034,20 @@
 					var p = { img: img, name: art.label + ' (ready art)', nw: nw, nh: nh, cx: A.w / 2, top: 0.3, art: art.key };
 					p.w = Math.min(A.w * 0.55, A.h * 0.55 * nw / nh);
 					p.h = p.w * nh / nw;
+					if (state.text.lines.length) {
+						/* Text already there: put the art below it (smaller if needed), never on top of it. */
+						var below = state.text.top + state.text.h + 0.3, room = A.h - below - 0.2;
+						if (room >= 2) {
+							if (p.h > room) {
+								p.h = room;
+								p.w = p.h * nw / nh;
+							}
+							p.top = below;
+						} else {
+							state.text.top = Math.min(p.top + p.h + 0.3, A.h - state.text.h);
+							clamp(state.text);
+						}
+					}
 					state.photo = p;
 					clamp(p);
 					el.remove.hidden = false;
