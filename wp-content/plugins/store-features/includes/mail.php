@@ -204,3 +204,9 @@ function store_features_reply_to_business( $headers, $id = '' ) {
 	return $headers;
 }
 add_filter( 'woocommerce_email_headers', 'store_features_reply_to_business', 20, 2 );
+
+/**
+ * Faster "Place order": WooCommerce's order emails are sent a moment later in the background
+ * (through Action Scheduler) instead of while the customer waits at checkout.
+ */
+add_filter( 'woocommerce_defer_transactional_emails', '__return_true' );

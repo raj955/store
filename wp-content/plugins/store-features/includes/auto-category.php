@@ -278,6 +278,6 @@ function store_features_autocat_backfill() {
 		store_features_autocat_product( $product, true );
 	}
 	update_option( 'store_features_autocat_done', STORE_FEATURES_AUTOCAT_VERSION, false );
-	delete_transient( 'store_child_price_ladder_v2' );
+	delete_transient( 'store_child_price_ladder_v3' );
 }
 add_action( 'admin_init', 'store_features_autocat_backfill', 40 );
