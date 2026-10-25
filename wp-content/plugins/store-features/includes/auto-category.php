@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_AUTOCAT_VERSION = 1;
+const STORE_FEATURES_AUTOCAT_VERSION = 2;
 
 /**
  * Kinds of product, in the order they are tried: slug => array( label, pattern, old category or '' ).
@@ -60,6 +60,40 @@ function store_features_autocat_genders( $name ) {
 		return array( 'men' );
 	}
 	return array( 'men', 'women' ); // Unisex, or no gender word.
+}
+
+/**
+ * A kind of product we have no rule for, read from the name: the last meaningful word.
+ * "AOP Female Kaftan" gives Kaftan, "Unisex Baseball Cap" gives Cap.
+ *
+ * @param string $name Product name.
+ * @return array|null slug, label
+ */
+function store_features_autocat_name_type( $name ) {
+	$stop  = array( 'unisex', 'men', 'mens', 'women', 'womens', 'woman', 'man', 'female', 'male', 'boy', 'boys', 'girl', 'girls', 'ladies', 'kids', 'aop', 'all', 'over', 'print', 'printed', 'oversized', 'fit', 'regular', 'classic', 'premium', 'the', 'and', 'for', 'with', 'of', 'new', 'set' );
+	$words = preg_split( '/[^a-z]+/', strtolower( str_replace( array( "'", '’' ), '', $name ) ), -1, PREG_SPLIT_NO_EMPTY );
+	$words = array_values( array_diff( $words, $stop ) );
+	$last  = $words ? end( $words ) : '';
+	if ( strlen( $last ) < 3 ) {
+		return null;
+	}
+	return array( sanitize_title( $last ), ucfirst( $last ) );
+}
+
+/**
+ * Kind of product for a name: slug and label, or null. Used by the home page price list.
+ *
+ * @param string $name Product name.
+ * @return array|null
+ */
+function store_features_autocat_type_of( $name ) {
+	$lower = strtolower( str_replace( array( "'", '’' ), '', $name ) );
+	foreach ( store_features_autocat_types() as $slug => $row ) {
+		if ( preg_match( $row[1], $lower ) ) {
+			return array( $slug, $row[0] );
+		}
+	}
+	return store_features_autocat_name_type( $name );
 }
 
 /**
@@ -119,6 +153,13 @@ function store_features_autocat_product( $product, $force = false ) {
 				$info = array( $term->name, '', $slug, true );
 				break;
 			}
+		}
+	}
+	if ( '' === $type ) {
+		$derived = store_features_autocat_name_type( $name );
+		if ( $derived ) {
+			$type = $derived[0];
+			$info = array( $derived[1], '', '', true );
 		}
 	}
 	if ( '' === $type ) {
@@ -223,6 +264,6 @@ function store_features_autocat_backfill() {
 		store_features_autocat_product( wc_get_product( $id ) );
 	}
 	update_option( 'store_features_autocat_done', STORE_FEATURES_AUTOCAT_VERSION, false );
-	delete_transient( 'store_child_price_ladder_v1' );
+	delete_transient( 'store_child_price_ladder_v2' );
 }
 add_action( 'admin_init', 'store_features_autocat_backfill', 40 );
