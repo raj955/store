@@ -567,3 +567,20 @@ li.product .sf-card-btn--design:hover { background: var(--neel, #1E2650); color:
 }
 CSS;
 }
+
+/**
+ * "Design your own" for men or women: say so in the page heading and browser title, not just "Women".
+ *
+ * @param string $title Term title.
+ * @return string
+ */
+function store_features_custom_sub_title( $title ) {
+	$term = function_exists( 'is_product_category' ) && is_product_category() ? get_queried_object() : null;
+	$own  = $term ? get_term_by( 'slug', STORE_FEATURES_CUSTOM_CAT, 'product_cat' ) : null;
+	if ( $own && $term instanceof WP_Term && (int) $term->parent === (int) $own->term_id ) {
+		/* translators: 1: Design your own, 2: Men or Women */
+		return sprintf( __( '%1$s for %2$s', 'store-features' ), $own->name, $term->name );
+	}
+	return $title;
+}
+add_filter( 'single_term_title', 'store_features_custom_sub_title' );
