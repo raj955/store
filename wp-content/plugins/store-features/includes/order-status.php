@@ -521,4 +521,4 @@ function store_features_track_page_content( $content ) {
 	}
 	return store_features_track_page();
 }
-add_filter( 'the_content', 'store_features_track_page_content', 5 );
+add_filter( 'the_content', 'store_features_track_page_content', 20 );
