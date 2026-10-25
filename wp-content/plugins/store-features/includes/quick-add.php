@@ -48,6 +48,39 @@ function store_features_product_image_by_slug( $slug, $size = 'woocommerce_thumb
 }
 
 /**
+ * Is the shopper looking at Women (or one of its groups, or the women's "Design your own")?
+ *
+ * @return bool
+ */
+function store_features_in_women() {
+	if ( ! function_exists( 'is_product_category' ) || ! is_product_category() ) {
+		return false;
+	}
+	$current = (int) get_queried_object_id();
+	$ids     = array_merge( array( $current ), get_ancestors( $current, 'product_cat' ) );
+	foreach ( array( 'women', STORE_FEATURES_CUSTOM_CAT . '-women' ) as $slug ) {
+		$term = get_term_by( 'slug', $slug, 'product_cat' );
+		if ( $term && in_array( (int) $term->term_id, $ids, true ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Link to "Design your own": the women's garments when shopping Women, else all of them.
+ *
+ * @param bool $women Women's garments.
+ * @return string|WP_Error
+ */
+function store_features_custom_cat_link( $women = false ) {
+	if ( $women && get_term_by( 'slug', STORE_FEATURES_CUSTOM_CAT . '-women', 'product_cat' ) ) {
+		return get_term_link( STORE_FEATURES_CUSTOM_CAT . '-women', 'product_cat' );
+	}
+	return get_term_link( STORE_FEATURES_CUSTOM_CAT, 'product_cat' );
+}
+
+/**
  * The two choices.
  *
  * @param string $current ready|own|'' (which one is open now).
@@ -55,6 +88,7 @@ function store_features_product_image_by_slug( $slug, $size = 'woocommerce_thumb
  * @return string
  */
 function store_features_choice_html( $current = '', $compact = false ) {
+	$women   = store_features_in_women();
 	$choices = array(
 		'ready' => array(
 			'url'   => wc_get_page_permalink( 'shop' ),
@@ -64,8 +98,8 @@ function store_features_choice_html( $current = '', $compact = false ) {
 			'cta'   => __( 'Shop designs', 'store-features' ),
 		),
 		'own'   => array(
-			'url'   => get_term_link( STORE_FEATURES_CUSTOM_CAT, 'product_cat' ),
-			'img'   => store_features_product_image_by_slug( 'design-your-own-t-shirt' ),
+			'url'   => store_features_custom_cat_link( $women ),
+			'img'   => store_features_product_image_by_slug( $women ? 'design-your-own-crop-top' : 'design-your-own-t-shirt' ),
 			'title' => __( 'Design your own', 'store-features' ),
 			'text'  => __( 'Your name, your line or your photo. See it before you order.', 'store-features' ),
 			'cta'   => __( 'Start designing', 'store-features' ),
@@ -105,7 +139,7 @@ add_shortcode( 'sf_choice', 'store_features_choice_shortcode' );
  */
 function store_features_choice_on_archives() {
 	if ( is_shop() || is_product_category() ) {
-		$own = is_product_category( STORE_FEATURES_CUSTOM_CAT );
+		$own = is_product_category( array( STORE_FEATURES_CUSTOM_CAT, STORE_FEATURES_CUSTOM_CAT . '-men', STORE_FEATURES_CUSTOM_CAT . '-women' ) );
 		echo store_features_choice_html( $own ? 'own' : 'ready', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

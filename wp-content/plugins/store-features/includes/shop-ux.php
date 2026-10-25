@@ -214,12 +214,27 @@ add_action( 'wp_enqueue_scripts', 'store_features_shop_ux_assets', 31 );
  * product categories so new categories (Men, Women, Kids…) appear on their own.
  */
 function store_features_category_chips() {
-	if ( ! ( is_shop() || is_product_category() ) || is_product_category( 'design-your-own' ) ) {
+	if ( ! ( is_shop() || is_product_category() ) ) {
 		return;
 	}
 	$own     = get_term_by( 'slug', 'design-your-own', 'product_cat' );
 	$current = is_product_category() ? (int) get_queried_object_id() : 0;
 	$top     = $current ? array_merge( array( $current ), get_ancestors( $current, 'product_cat' ) ) : array();
+
+	// Design your own: All / Men / Women, so women see the garments made for them.
+	if ( $own && in_array( (int) $own->term_id, $top, true ) ) {
+		$kids = get_terms( array( 'taxonomy' => 'product_cat', 'parent' => $own->term_id, 'hide_empty' => true, 'orderby' => 'slug' ) );
+		if ( is_wp_error( $kids ) || ! $kids ) {
+			return;
+		}
+		echo '<nav class="chip-row" aria-label="' . esc_attr( $own->name ) . '">';
+		printf( '<a href="%s"%s>%s</a>', esc_url( get_term_link( $own ) ), (int) $own->term_id === $current ? ' aria-current="page"' : '', esc_html__( 'All', 'store-features' ) );
+		foreach ( $kids as $term ) {
+			printf( '<a href="%s"%s>%s</a>', esc_url( get_term_link( $term ) ), (int) $term->term_id === $current ? ' aria-current="page"' : '', esc_html( $term->name ) );
+		}
+		echo '</nav>';
+		return;
+	}
 
 	// Inside Men or Women: show that gender's own groups (T-shirts, Hoodies...).
 	$gender = null;

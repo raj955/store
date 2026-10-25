@@ -177,7 +177,7 @@ function store_features_apply_prices() {
 		}
 	}
 	// Design your own: same rule, by garment.
-	foreach ( array( 'design-your-own-t-shirt' => 549, 'design-your-own-oversized-t-shirt' => 749, 'design-your-own-sweatshirt' => 899, 'design-your-own-hoodie' => 1079 ) as $slug => $price ) {
+	foreach ( array( 'design-your-own-t-shirt' => 549, 'design-your-own-oversized-t-shirt' => 749, 'design-your-own-sweatshirt' => 899, 'design-your-own-hoodie' => 1079, 'design-your-own-crop-top' => 499 ) as $slug => $price ) {
 		$post    = get_page_by_path( $slug, OBJECT, 'product' );
 		$product = $post ? wc_get_product( $post->ID ) : null;
 		if ( ! $product ) {
