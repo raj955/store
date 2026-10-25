@@ -257,3 +257,27 @@ function store_child_product_gallery_support() {
 	}
 }
 add_action( 'after_setup_theme', 'store_child_product_gallery_support', 20 );
+
+/**
+ * Instagram: the link set in Settings → Store contact (store_features_instagram) shows in the
+ * footer, and feeds Kadence's own social links (header/footer social elements).
+ *
+ * @param mixed $mods Theme mods.
+ * @return mixed
+ */
+function store_child_instagram_link( $mods ) {
+	if ( ! is_array( $mods ) ) {
+		return $mods;
+	}
+	$insta = esc_url( (string) get_option( 'store_features_instagram', '' ) );
+	if ( ! $insta ) {
+		return $mods;
+	}
+	$mods['instagram_link'] = $insta;
+	if ( ! is_admin() && ! empty( $mods['footer_html_content'] ) && false === strpos( $mods['footer_html_content'], 'instagram.com' ) ) {
+		$icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>';
+		$mods['footer_html_content'] .= ' <a class="pw-insta" href="' . $insta . '" target="_blank" rel="noopener">' . $icon . 'Instagram par follow karo</a>';
+	}
+	return $mods;
+}
+add_filter( 'option_theme_mods_store-child', 'store_child_instagram_link', 13 );
