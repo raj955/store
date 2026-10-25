@@ -174,7 +174,13 @@ function store_features_qk_apply( $order, $qk ) {
  * @return array Summary.
  */
 function store_features_qk_sync() {
-	// Reading status works even when sending orders through the API is switched off.
+	// Only the live Qikink account has real orders. Sandbox test orders share order numbers with
+	// real store orders, so never read them. With sending switched off, read live anyway.
+	if ( 'sandbox' === store_features_qikink_setting( 'mode', 'off' ) ) {
+		$summary = array( 'time' => gmdate( 'c' ), 'error' => 'Qikink is set to Sandbox. Add the Live Client ID and Secret and choose Live (or Off).' );
+		update_option( 'store_features_qk_sync_last', $summary, false );
+		return $summary;
+	}
 	$force_live = function ( $settings ) {
 		if ( is_array( $settings ) && ( empty( $settings['mode'] ) || 'off' === $settings['mode'] ) ) {
 			$settings['mode'] = 'live';
@@ -289,4 +295,55 @@ add_action(
 			)
 		);
 	}
+);
+
+/**
+ * One-time undo of the first run, which read the Sandbox account by mistake: remove anything
+ * that run wrote on store orders, and keep a record (no personal data) in the status.
+ */
+function store_features_qk_undo_sandbox() {
+	if ( get_option( 'store_features_qk_undo_v1' ) || ! function_exists( 'wc_get_orders' ) ) {
+		return;
+	}
+	$report = array();
+	$orders = wc_get_orders(
+		array(
+			'limit'        => 50,
+			'meta_key'     => '_sf_qikink_live_status', // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_compare' => 'EXISTS',
+		)
+	);
+	foreach ( $orders as $order ) {
+		$row = array(
+			'order'  => $order->get_id(),
+			'status' => (string) $order->get_meta( '_sf_qikink_live_status' ),
+			'awb'    => '' !== (string) $order->get_meta( '_sf_awb' ),
+			'wc'     => $order->get_status(),
+		);
+		$order->delete_meta_data( '_sf_qikink_live_status' );
+		if ( $order->get_meta( '_sf_courier_name' ) || $order->get_meta( '_sf_qk_problem_noted' ) ) {
+			foreach ( array( '_sf_courier', '_sf_courier_name', '_sf_awb', '_sf_track_url', '_sf_delivered', '_sf_qk_problem_noted' ) as $key ) {
+				$order->delete_meta_data( $key );
+			}
+			$row['cleared'] = true;
+		}
+		$order->save();
+		$report[] = $row;
+	}
+	update_option( 'store_features_qk_undo_v1', array( 'time' => gmdate( 'c' ), 'orders' => $report ), false );
+}
+add_action( 'init', 'store_features_qk_undo_sandbox', 40 );
+
+add_filter(
+	'rest_post_dispatch',
+	function ( $response, $server, $request ) {
+		if ( '/store-features/v1/qikink-sync-status' === $request->get_route() && $response instanceof WP_REST_Response ) {
+			$data         = $response->get_data();
+			$data['undo'] = get_option( 'store_features_qk_undo_v1' );
+			$response->set_data( $data );
+		}
+		return $response;
+	},
+	10,
+	3
 );
