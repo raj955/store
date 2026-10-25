@@ -300,6 +300,7 @@ require_once STORE_FEATURES_DIR . 'includes/google-login.php';
 require_once STORE_FEATURES_DIR . 'includes/tracking.php';
 require_once STORE_FEATURES_DIR . 'includes/quick-add.php';
 require_once STORE_FEATURES_DIR . 'includes/product-page.php';
+require_once STORE_FEATURES_DIR . 'includes/photo-sides.php';
 require_once STORE_FEATURES_DIR . 'includes/custom-admin.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-assets.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-adopt.php';
