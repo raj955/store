@@ -20,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_AUTOCAT_VERSION = 3;
+const STORE_FEATURES_AUTOCAT_VERSION = 4;
 
 /**
  * Kinds of product, in the order they are tried: slug => array( label, pattern, old category or '' ).
@@ -32,7 +32,9 @@ function store_features_autocat_types() {
 	return array(
 		'mugs'               => array( 'Mugs', '/\bmugs?\b/', '', false ),
 		'tote-bags'          => array( 'Tote bags', '/\btote\b|\bbags?\b/', '', false ),
-		'crop-tops'          => array( 'Crop Tops', '/\bcrop\b/', '', true ),
+		'crop-tops'          => array( 'Crop Tops', '/\bcrop\b|tube\s*top/', '', true ),
+		'skirts'             => array( 'Skirts', '/\bskirts?\b/', '', true ),
+		'dresses'            => array( 'Dresses', '/\bdress(es)?\b|kaftan|kurti|tunic|gown|jumpsuit/', '', true ),
 		'hoodies'            => array( 'Hoodies', '/hood/', 'hoodies', true ),
 		'sweatshirts'        => array( 'Sweatshirts', '/sweat\s*shirt/', 'sweatshirts', true ),
 		'oversized-t-shirts' => array( 'Oversized T-shirts', '/oversized/', 'oversized-t-shirts', true ),
@@ -52,7 +54,7 @@ function store_features_autocat_types() {
  */
 function store_features_autocat_genders( $name ) {
 	$n     = strtolower( str_replace( array( "'", '’', '`' ), '', $name ) );
-	$women = (bool) preg_match( '/\b(women|womens|woman|ladies|lady|girls?|female|crop)\b/', $n );
+	$women = (bool) preg_match( '/\b(women|womens|woman|ladies|lady|girls?|female|crop|skirts?|kaftans?|dress(es)?|kurtis?|sarees?|leggings?|tube|tunics?|blouses?|gowns?|maternity|nighty|nightie|jumpsuits?|bralette)\b/', $n );
 	$men   = (bool) preg_match( '/\b(men|mens|man|boys?|male)\b/', $n );
 	if ( $women && ! $men ) {
 		return array( 'women' );
@@ -281,3 +283,36 @@ function store_features_autocat_backfill() {
 	delete_transient( 'store_child_price_ladder_v3' );
 }
 add_action( 'admin_init', 'store_features_autocat_backfill', 40 );
+
+/**
+ * Women-only clothes (skirt, kaftan, dress...) that were filed under Men: move them to Women.
+ * Runs once per version, for the published products.
+ */
+function store_features_autocat_fix_women() {
+	if ( (int) get_option( 'store_features_autocat_women_fix', 0 ) >= STORE_FEATURES_AUTOCAT_VERSION || ! function_exists( 'wc_get_products' ) ) {
+		return;
+	}
+	update_option( 'store_features_autocat_women_fix', STORE_FEATURES_AUTOCAT_VERSION, false );
+	foreach ( wc_get_products( array( 'status' => array( 'publish', 'draft', 'private' ), 'limit' => 200 ) ) as $product ) {
+		if ( array( 'women' ) !== store_features_autocat_genders( $product->get_name() ) ) {
+			continue;
+		}
+		$id   = $product->get_id();
+		$have = wp_get_post_terms( $id, 'product_cat' );
+		if ( is_wp_error( $have ) ) {
+			continue;
+		}
+		$keep = array();
+		foreach ( $have as $term ) {
+			if ( 'men' !== $term->slug && 0 !== strpos( $term->slug, 'men-' ) ) {
+				$keep[] = (int) $term->term_id;
+			}
+		}
+		if ( count( $keep ) !== count( $have ) ) {
+			wp_set_object_terms( $id, $keep, 'product_cat', false );
+			delete_post_meta( $id, '_sf_autocat' );
+		}
+		store_features_autocat_product( wc_get_product( $id ), true );
+	}
+}
+add_action( 'wp_loaded', 'store_features_autocat_fix_women' );
