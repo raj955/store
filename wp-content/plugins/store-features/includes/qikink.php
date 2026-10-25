@@ -38,6 +38,7 @@ function store_features_qikink_style_prefixes() {
 		'UC21' => 'MRnHs',    // Classic Crew T-Shirt, 180 GSM.
 		'UH26' => 'USs',      // Sweatshirt, 300 GSM.
 		'UH24' => 'UHd',      // Hooded Sweatshirt, 300 GSM.
+		'FC39' => 'FCpTp',    // Female Crop Top, 180 GSM.
 	);
 }
 

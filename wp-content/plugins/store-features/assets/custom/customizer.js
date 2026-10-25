@@ -1008,9 +1008,9 @@
 			b.style.fontWeight = f.weight;
 			b.addEventListener('click', function () {
 				state.text.font = idea.font || 0;
-				el.input.value = idea.text;
 				loadFont(state.text.font).then(function () {
 					syncInputs();
+					el.input.value = idea.text;
 					el.input.dispatchEvent(new Event('input'));
 					selectTab('text');
 					el.input.focus();

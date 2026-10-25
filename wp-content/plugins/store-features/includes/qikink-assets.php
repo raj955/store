@@ -129,7 +129,7 @@ function store_features_photo_blank_dir() {
 function store_features_save_photo_blank( $request ) {
 	$name = (string) $request['name'];
 	$data = (string) $request['data'];
-	if ( ! preg_match( '~^U[CH]\d\d-[a-z-]+$~', $name ) || ! preg_match( '~^data:image/webp;base64,~', $data ) ) {
+	if ( ! preg_match( '~^[A-Z]{2}\d\d-[a-z-]+$~', $name ) || ! preg_match( '~^data:image/webp;base64,~', $data ) ) {
 		return new WP_Error( 'sf_bad_blank', 'Expected a style-colour name and a WebP image.', array( 'status' => 400 ) );
 	}
 	$bytes = base64_decode( substr( $data, strpos( $data, ',' ) + 1 ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
@@ -156,7 +156,7 @@ function store_features_save_photo_blank_areas( $request ) {
 	$clean  = array();
 	if ( is_array( $styles ) ) {
 		foreach ( $styles as $code => $area ) {
-			if ( preg_match( '~^U[CH]\d\d$~', (string) $code ) && isset( $area['x'], $area['y'], $area['ppi'] ) ) {
+			if ( preg_match( '~^[A-Z]{2}\d\d$~', (string) $code ) && isset( $area['x'], $area['y'], $area['ppi'] ) ) {
 				$clean[ $code ] = array(
 					'x'   => round( (float) $area['x'], 2 ),
 					'y'   => round( (float) $area['y'], 2 ),
@@ -165,6 +165,12 @@ function store_features_save_photo_blank_areas( $request ) {
 			}
 		}
 	}
+	$saved = get_option( 'store_features_photo_blanks', array() );
+	$all   = isset( $saved['styles'] ) && is_array( $saved['styles'] ) ? $saved['styles'] : array();
+	if ( ! empty( $request['replace'] ) ) {
+		$all = array();
+	}
+	$clean = array_merge( $all, $clean ); // Add or update the styles sent; keep the others.
 	update_option( 'store_features_photo_blanks', array( 'styles' => $clean, 'version' => time() ), false );
 	return rest_ensure_response( array( 'styles' => $clean ) );
 }
