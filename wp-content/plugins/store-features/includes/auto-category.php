@@ -9,7 +9,8 @@
  *   Mugs, Tote bags (stay on their own, outside Men and Women)
  *
  * The gender and the kind of product are read from the product name ("Women's Crop Top",
- * "Boy's Crew Neck T-Shirt", "Unisex Sweatpants"). Unisex or no gender word = both Men and Women.
+ * "Boy's Crew Neck T-Shirt", "Unisex Sweatpants"). Only a women's word (women, female, girl, crop)
+ * puts a product under Women; unisex or no gender word goes under Men.
  * A kind we do not know yet (say "Cap") gets a new category made for it, named after the
  * category Qikink gave it, or after the name. The product keeps its old category as well, so
  * prices and the older pages work as before.
@@ -19,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const STORE_FEATURES_AUTOCAT_VERSION = 2;
+const STORE_FEATURES_AUTOCAT_VERSION = 3;
 
 /**
  * Kinds of product, in the order they are tried: slug => array( label, pattern, old category or '' ).
@@ -47,7 +48,7 @@ function store_features_autocat_types() {
  * "men", "women" or "both" from the product name.
  *
  * @param string $name Product name.
- * @return string[]
+ * @return string[] men, women, or both
  */
 function store_features_autocat_genders( $name ) {
 	$n     = strtolower( str_replace( array( "'", '’', '`' ), '', $name ) );
@@ -59,7 +60,10 @@ function store_features_autocat_genders( $name ) {
 	if ( $men && ! $women ) {
 		return array( 'men' );
 	}
-	return array( 'men', 'women' ); // Unisex, or no gender word.
+	if ( $men && $women ) {
+		return array( 'men', 'women' );
+	}
+	return array( 'men' ); // Unisex, or no gender word: sold under Men.
 }
 
 /**
@@ -260,8 +264,18 @@ function store_features_autocat_backfill() {
 			'fields'      => 'ids',
 		)
 	);
+	$women_ids = array();
+	foreach ( get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) ) as $t ) {
+		if ( 'women' === $t->slug || 0 === strpos( $t->slug, 'women-' ) ) {
+			$women_ids[] = (int) $t->term_id;
+		}
+	}
 	foreach ( $ids as $id ) {
-		store_features_autocat_product( wc_get_product( $id ) );
+		$product = wc_get_product( $id );
+		if ( $product && $women_ids && get_post_meta( $id, '_sf_autocat', true ) && array( 'men' ) === store_features_autocat_genders( $product->get_name() ) ) {
+			wp_remove_object_terms( $id, $women_ids, 'product_cat' ); // Sorted into Women by an earlier version.
+		}
+		store_features_autocat_product( $product, true );
 	}
 	update_option( 'store_features_autocat_done', STORE_FEATURES_AUTOCAT_VERSION, false );
 	delete_transient( 'store_child_price_ladder_v2' );

@@ -142,11 +142,13 @@ function store_features_card_colour_photos( $product ) {
  */
 function store_features_card_colour_fallback() {
 	global $product;
-	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+	if ( ! $product instanceof WC_Product ) {
 		return;
 	}
-	$options = store_features_card_colour_options( $product );
+	$options = $product->is_type( 'variable' ) ? store_features_card_colour_options( $product ) : array();
 	if ( count( $options ) < 2 ) {
+		// Same height as a row of dots, so every card's button lines up.
+		echo '<div class="sf-card-colour-fallback sf-card-colour-fallback--empty" aria-hidden="true"></div>';
 		return;
 	}
 	echo '<div class="sf-card-colour-fallback" role="group" aria-label="' . esc_attr__( 'Available colours', 'store-features' ) . '">';
