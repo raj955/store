@@ -42,6 +42,49 @@ function store_features_card_colour_photos( $product ) {
 }
 
 /**
+ * Dot colour for a colour slug. Known names map to a colour; two-tone names such as
+ * "white-black" or "green-black" become a half-and-half dot. Unknown names stay light grey.
+ *
+ * @param string $slug Colour slug.
+ * @return string CSS colour or gradient.
+ */
+function store_features_colour_css( $slug ) {
+	$known = array(
+		'black' => '#171717', 'white' => '#FFFFFF', 'off-white' => '#F4F0E8', 'navy' => '#202A44',
+		'maroon' => '#641F32', 'red' => '#C62828', 'pink' => '#E7A9B8', 'light-pink' => '#F6CFDC',
+		'lavender' => '#C9B8E8', 'grey' => '#A8A8A8', 'gray' => '#A8A8A8', 'olive' => '#5A5F38',
+		'blue' => '#2B4BA8', 'royal-blue' => '#2B4BA8', 'beige' => '#E3C79A', 'mustard' => '#D29A2A',
+		'green' => '#38805A', 'bottle-green' => '#0F3D23', 'mint' => '#BEE8D6', 'baby-blue' => '#BCD9F0',
+		'purple' => '#6B3D83', 'brown' => '#795548', 'charcoal' => '#4A4A4C', 'grey-melange' => '#BDBDBD',
+		'yellow' => '#F2C230', 'orange' => '#EF7D22', 'coral' => '#E8736C', 'cream' => '#F2E6C9', 'sky-blue' => '#8EC9EE',
+	);
+	$slug = sanitize_title( $slug );
+	if ( isset( $known[ $slug ] ) ) {
+		return $known[ $slug ];
+	}
+	$tones = array();
+	$rest  = $slug;
+	while ( '' !== $rest ) {
+		$hit = '';
+		foreach ( array_keys( $known ) as $name ) {
+			if ( ( $rest === $name || 0 === strpos( $rest, $name . '-' ) ) && strlen( $name ) > strlen( $hit ) ) {
+				$hit = $name;
+			}
+		}
+		if ( '' === $hit ) {
+			$hit = (string) strtok( $rest, '-' );
+		}
+		$tones[] = isset( $known[ $hit ] ) ? $known[ $hit ] : null;
+		$rest    = ltrim( substr( $rest, strlen( $hit ) ), '-' );
+	}
+	$tones = array_values( array_filter( $tones ) );
+	if ( count( $tones ) >= 2 ) {
+		return sprintf( 'linear-gradient(135deg,%1$s 50%%,%2$s 50%%)', $tones[0], $tones[1] );
+	}
+	return $tones ? $tones[0] : '#D8D8D8';
+}
+
+/**
  * Get the actual colour options from variation attributes, even when an imported
  * product has no distinct variation thumbnail (the old logic hid all swatches).
  */
@@ -68,18 +111,8 @@ function store_features_card_colour_options( $product ) {
 			$label = ucwords( str_replace( '-', ' ', $colour ) );
 		}
 		$hex = $term && ! is_wp_error( $term ) ? (string) get_term_meta( $term->term_id, 'cfvsw_color', true ) : '';
-		$known = array(
-			'black' => '#171717', 'white' => '#FFFFFF', 'off-white' => '#F4F0E8',
-			'navy' => '#202A44', 'maroon' => '#641F32', 'red' => '#C62828',
-			'pink' => '#E7A9B8', 'light-pink' => '#F6CFDC', 'lavender' => '#C9B8E8',
-			'grey' => '#A8A8A8', 'gray' => '#A8A8A8', 'olive' => '#5A5F38',
-			'blue' => '#2B4BA8', 'royal-blue' => '#2B4BA8', 'beige' => '#E3C79A',
-			'mustard' => '#D29A2A', 'green' => '#38805A', 'mint' => '#BEE8D6',
-			'baby-blue' => '#BCD9F0', 'purple' => '#6B3D83', 'brown' => '#795548',
-			'charcoal' => '#4A4A4C', 'grey-melange' => '#BDBDBD',
-		);
 		if ( ! preg_match( '/^#[0-9a-f]{3,8}$/i', $hex ) ) {
-			$hex = $known[ $colour ] ?? '#D8D8D8';
+			$hex = store_features_colour_css( $colour );
 		}
 		$options[ $colour ] = array( 'label' => $label, 'hex' => $hex );
 	}
@@ -120,8 +153,8 @@ add_action( 'woocommerce_after_shop_loop_item_title', 'store_features_card_colou
 function store_features_hide_duplicate_card_swatches() {
 	?>
 	<style>
-		.pw2 li.product:has(.cfvsw-shop-container .cfvsw-swatches-option) .sf-card-colour-fallback,
-		.pw2 li.product:has(.cfvsw-swatches-container .cfvsw-swatches-option) .sf-card-colour-fallback {
+		.pw2 li.product:has(.cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option)) .sf-card-colour-fallback,
+		.pw2 li.product:has(.cfvsw-swatches-container .cfvsw-swatches-option:not(.cfvsw-label-option)) .sf-card-colour-fallback {
 			display: none !important;
 		}
 	</style>
@@ -129,7 +162,7 @@ function store_features_hide_duplicate_card_swatches() {
 	(function(){
 		function removeDuplicateFallbacks(){
 			document.querySelectorAll('.pw2 li.product, li.product').forEach(function(card){
-				if(card.querySelector('.cfvsw-shop-container .cfvsw-swatches-option, .cfvsw-swatches-container .cfvsw-swatches-option')){
+				if(card.querySelector('.cfvsw-shop-container .cfvsw-swatches-option:not(.cfvsw-label-option), .cfvsw-swatches-container .cfvsw-swatches-option:not(.cfvsw-label-option)')){
 					var fallback=card.querySelector('.sf-card-colour-fallback');
 					if(fallback) fallback.remove();
 				}
