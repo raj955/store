@@ -225,13 +225,12 @@ function store_features_track_page() {
 
 	ob_start();
 	?>
-	<p>Order number और order में दिया phone number या email डालो, status तुरंत दिखेगा। Order number आपके order email में है (जैसे #2945)।</p>
 	<?php if ( $error ) : ?>
 		<p class="sf-track-err"><?php echo esc_html( $error ); ?></p>
 	<?php endif; ?>
 	<form class="sf-track-form" method="post">
 		<label>Order number <input name="sf_track_order" inputmode="numeric" required placeholder="2945"></label>
-		<label>Phone या email <input name="sf_track_contact" required placeholder="98XXXXXXXX"></label>
+		<label>Phone number या email <input name="sf_track_contact" required placeholder="98XXXXXXXX"></label>
 		<?php wp_nonce_field( 'sf_track', 'sf_track_nonce' ); ?>
 		<button type="submit">Order track करो</button>
 	</form>
