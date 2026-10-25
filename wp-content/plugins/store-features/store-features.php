@@ -604,4 +604,3 @@ function store_features_style() {
 }
 CSS;
 }
-require_once STORE_FEATURES_DIR . 'includes/zz-probe.php';
