@@ -15,6 +15,9 @@ on:
       probe:
         description: "Optional JS expression run on each desktop page; its result goes in the log"
         default: ""
+      act:
+        description: "Optional JS run after the full-page shot (e.g. open a panel); then a viewport shot *-act.png"
+        default: ""
 
 permissions:
   contents: write
@@ -41,6 +44,7 @@ jobs:
           PATHS: ${{ inputs.paths }}
           TAG: ${{ inputs.tag }}
           PROBE: ${{ inputs.probe }}
+          ACT: ${{ inputs.act }}
         run: |
           cd pw
           cat > shot.js <<'EOF'
@@ -78,6 +82,10 @@ jobs:
                   if (process.env.PROBE) {
                     try { log.push(`[probe ${v.name}] ${p}: ` + JSON.stringify(await page.evaluate(process.env.PROBE))); }
                     catch (e) { log.push(`[probe ${v.name}] ${p} ERROR ${e.message}`); }
+                  }
+                  if (process.env.ACT) {
+                    try { log.push(`[act ${v.name}] ${p}: ` + JSON.stringify(await page.evaluate(process.env.ACT))); await page.waitForTimeout(1800); await page.screenshot({ path: `${out}/${slug}-${v.name}-act.png` }); }
+                    catch (e) { log.push(`[act ${v.name}] ${p} ERROR ${e.message}`); }
                   }
                   const ow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
                   if (ow > 1) log.push(`[${v.name}] ${p} horizontal overflow ${ow}px`);
