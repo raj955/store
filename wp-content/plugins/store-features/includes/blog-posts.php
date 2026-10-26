@@ -55,6 +55,9 @@ function store_features_blog_import() {
 		$existing = get_page_by_path( $slug, OBJECT, 'post' );
 		$hash     = md5( (string) file_get_contents( $file ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 		if ( $existing && get_post_meta( $existing->ID, '_sf_blog_hash', true ) === $hash ) {
+			if ( 'future' === $existing->post_status ) {
+				wp_update_post( array( 'ID' => $existing->ID, 'post_status' => 'publish', 'post_date' => current_time( 'mysql' ), 'post_date_gmt' => current_time( 'mysql', true ) ) );
+			}
 			continue;
 		}
 		$post = array(
@@ -66,7 +69,8 @@ function store_features_blog_import() {
 			'post_content' => wp_kses_post( $data['content'] ),
 			'post_author'  => (int) ( get_users( array( 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ) )[0] ?? 1 ),
 		);
-		if ( ! empty( $data['date'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['date'] ) && ! $existing ) {
+		// A back-dated post keeps its date; today's or a later date publishes now (never "scheduled").
+		if ( ! empty( $data['date'] ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['date'] ) && ! $existing && $data['date'] < current_time( 'Y-m-d' ) ) {
 			$post['post_date'] = $data['date'] . ' 10:00:00';
 		}
 		if ( $existing ) {
