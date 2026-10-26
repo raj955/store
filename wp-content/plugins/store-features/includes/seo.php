@@ -299,8 +299,11 @@ function store_features_seo_head() {
 
 	$settings = get_option( 'woocommerce_store_features_tracking_settings', array() );
 	$gsc      = preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) ( $settings['gsc_token'] ?? '' ) );
-	if ( $gsc && is_front_page() ) {
-		printf( "<meta name=\"google-site-verification\" content=\"%s\">\n", esc_attr( $gsc ) );
+	if ( is_front_page() ) {
+		// Search Console token from the settings, plus Google Merchant Center's own token.
+		foreach ( array_unique( array_filter( array( $gsc, 'FLLAiQvh0MkE2-GtlelxzOO7ZnLLLZRvVLIPArzAqVQ' ) ) ) as $token ) {
+			printf( "<meta name=\"google-site-verification\" content=\"%s\">\n", esc_attr( $token ) );
+		}
 	}
 
 	// Link previews (Open Graph for WhatsApp, Instagram, Facebook; Twitter cards for X).
