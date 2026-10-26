@@ -320,6 +320,9 @@ require_once STORE_FEATURES_DIR . 'includes/reviews.php';
 require_once STORE_FEATURES_DIR . 'includes/checkout-ux.php';
 require_once STORE_FEATURES_DIR . 'includes/order-status.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-sync.php';
+require_once STORE_FEATURES_DIR . 'includes/product-feed.php';
+require_once STORE_FEATURES_DIR . 'includes/cart-reminder.php';
+require_once STORE_FEATURES_DIR . 'includes/blog-posts.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
