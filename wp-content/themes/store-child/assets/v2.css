@@ -1648,3 +1648,21 @@
 .pw2 .sf-card-colour-fallback__dot:hover { transform: scale(1.12); }
 .pw2 .sf-card-colour-fallback__dot.is-active { border-color: #171717; box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #171717; }
 .pw2 .sf-card-colour-more { font-size: 13px; color: var(--pw-muted, #5b5b57); }
+
+/* Colour options shown as names (e.g. "Navy Blue", "Black White"): each name gets its own
+   pill that grows with the text and wraps to the next line, instead of fixed boxes where the
+   names overlapped on phones. */
+.single-product table.variations .cfvsw-swatches-container[swatches-attr*="color" i],
+.single-product table.variations .cfvsw-swatches-container[swatches-attr*="colour" i] {
+  display: flex !important; flex-wrap: wrap !important; width: 100% !important; gap: 8px !important;
+}
+.single-product table.variations .cfvsw-swatches-container[swatches-attr*="color" i] .cfvsw-label-option,
+.single-product table.variations .cfvsw-swatches-container[swatches-attr*="colour" i] .cfvsw-label-option {
+  flex: 0 0 auto !important; width: auto !important; min-width: 0 !important; max-width: 100% !important;
+  height: auto !important; min-height: 44px !important; margin: 0 !important; padding: 8px 14px !important;
+  white-space: nowrap; text-transform: capitalize; line-height: 1.2;
+}
+.single-product table.variations .cfvsw-swatches-container[swatches-attr*="color" i] .cfvsw-label-option .cfvsw-swatch-inner,
+.single-product table.variations .cfvsw-swatches-container[swatches-attr*="colour" i] .cfvsw-label-option .cfvsw-swatch-inner {
+  width: auto !important; overflow: visible !important; white-space: nowrap; font-size: 14.5px;
+}
