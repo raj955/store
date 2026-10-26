@@ -151,3 +151,26 @@ function store_features_blog_shop_the_look( $content ) {
 	return $content . $css . '<section class="sf-look"><h2>Shop the look</h2><div class="sf-look__grid">' . $cards . '</div></section>';
 }
 add_filter( 'the_content', 'store_features_blog_shop_the_look', 30 );
+
+/**
+ * Blog posts: the photo sits above the title (not behind it), square, and posts take no
+ * comments (they only attract spam; questions go to WhatsApp).
+ */
+add_filter(
+	'option_theme_mods_' . get_option( 'stylesheet' ),
+	function ( $mods ) {
+		if ( is_array( $mods ) ) {
+			$mods['post_feature_position'] = 'above';
+			$mods['post_feature_ratio']    = '1-1';
+		}
+		return $mods;
+	}
+);
+add_filter(
+	'comments_open',
+	function ( $open, $post_id ) {
+		return 'post' === get_post_type( $post_id ) ? false : $open;
+	},
+	10,
+	2
+);
