@@ -23,7 +23,7 @@ function store_features_blog_import() {
 	if ( ! $files ) {
 		return;
 	}
-	$stamp = md5( implode( '|', array_map( function ( $f ) { return basename( $f ) . filemtime( $f ); }, $files ) ) );
+	$stamp = md5( 'v2|' . implode( '|', array_map( function ( $f ) { return basename( $f ) . filemtime( $f ); }, $files ) ) );
 	if ( get_option( 'store_features_blog_stamp' ) === $stamp ) {
 		return;
 	}
