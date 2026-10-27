@@ -38,11 +38,26 @@ async function dataUrl(url) {
 	if (!type.startsWith('image/')) throw new Error(`${url} is ${type}`);
 	return `data:${type};base64,${Buffer.from(await r.arrayBuffer()).toString('base64')}`;
 }
+// The login goes to curl through a private config file, never on the command line, so it can't
+// show up in any log or error message. Retries cover the host's FTP server being briefly busy.
 function ftpUpload(local, remote) {
 	const { FTP_SERVER, FTP_USERNAME, FTP_PASSWORD, FTP_PORT = '21', FTP_BASE_DIR = '' } = process.env;
 	if (!FTP_SERVER) throw new Error('FTP secrets missing');
-	execFileSync('curl', ['-sS', '--ssl', '-k', '--ftp-create-dirs', '-T', local, '--user', `${FTP_USERNAME}:${FTP_PASSWORD}`,
-		`ftp://${FTP_SERVER}:${FTP_PORT}/${FTP_BASE_DIR}${remote}`], { stdio: 'inherit' });
+	const cfg = path.join(OUT, '.ftp.cfg');
+	const q = (v) => `"${String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+	fs.writeFileSync(cfg, `user = ${q(`${FTP_USERNAME}:${FTP_PASSWORD}`)}\n`, { mode: 0o600 });
+	for (let attempt = 1; ; attempt++) {
+		try {
+			execFileSync('curl', ['-sS', '--ssl', '-k', '--ftp-create-dirs', '--connect-timeout', '40', '-K', cfg, '-T', local,
+				`ftp://${FTP_SERVER}:${FTP_PORT}/${FTP_BASE_DIR}${remote}`], { stdio: ['ignore', 'ignore', 'ignore'] });
+			fs.rmSync(cfg, { force: true });
+			return;
+		} catch (e) {
+			console.log(`upload of ${remote} failed (attempt ${attempt}, curl exit ${e.status})`);
+			if (attempt >= 4) { fs.rmSync(cfg, { force: true }); throw new Error(`upload of ${remote} failed`); }
+			execFileSync('sleep', [String(20 * attempt)]);
+		}
+	}
 }
 const sh = (cmd, args) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'inherit'] }).toString().trim();
 
