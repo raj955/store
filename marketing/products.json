@@ -1,0 +1,343 @@
+[
+ {
+  "slug": "unisex-pullover-hoodie",
+  "name": "Unisex Pullover Hoodie",
+  "price": 730,
+  "categories": [
+   "hoodies",
+   "men-hoodies",
+   "men"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "female-cropped-hoodie",
+  "name": "Female Cropped Hoodie",
+  "price": 600,
+  "categories": [
+   "women-hoodies",
+   "hoodies",
+   "women"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "womens-aop-bomber-jacket",
+  "name": "Women&#8217;s AOP Bomber Jacket",
+  "price": 999,
+  "categories": [
+   "women-jacket",
+   "women"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "unisex-acid-washed-hoodie",
+  "name": "Unisex Acid Washed Hoodie",
+  "price": 1200,
+  "categories": [
+   "men-hoodies",
+   "hoodies",
+   "men"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "unisex-varsity-jacket",
+  "name": "Unisex Varsity Jacket",
+  "price": 950,
+  "categories": [
+   "men-jacket",
+   "men"
+  ],
+  "photos": 3,
+  "custom": false
+ },
+ {
+  "slug": "design-your-own-crop-top",
+  "name": "Design Your Own Crop Top",
+  "price": 499,
+  "categories": [
+   "design-your-own",
+   "design-your-own-women"
+  ],
+  "photos": 1,
+  "custom": true
+ },
+ {
+  "slug": "cat-mom-crop-top",
+  "name": "Cat Mom Crop Top",
+  "price": 429,
+  "categories": [
+   "women-crop-tops",
+   "women"
+  ],
+  "photos": 15,
+  "custom": false
+ },
+ {
+  "slug": "dhoop-si-raho-crop-top",
+  "name": "Dhoop Si Raho Crop Top",
+  "price": 429,
+  "categories": [
+   "women-crop-tops",
+   "women"
+  ],
+  "photos": 13,
+  "custom": false
+ },
+ {
+  "slug": "radhe-radhe-oversized-tee",
+  "name": "Radhe Radhe Oversized Tee",
+  "price": 669,
+  "categories": [
+   "men",
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
+  ],
+  "photos": 10,
+  "custom": false
+ },
+ {
+  "slug": "chal-nikalte-hain-oversized-tee",
+  "name": "Chal Nikalte Hain Oversized Tee",
+  "price": 689,
+  "categories": [
+   "men",
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
+  ],
+  "photos": 11,
+  "custom": false
+ },
+ {
+  "slug": "har-har-mahadev-oversized-tee",
+  "name": "Har Har Mahadev Oversized Tee",
+  "price": 659,
+  "categories": [
+   "men",
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
+  ],
+  "photos": 9,
+  "custom": false
+ },
+ {
+  "slug": "aop-mini-skirt",
+  "name": "Aop Mini Skirt",
+  "price": 409,
+  "categories": [
+   "women-skirts",
+   "women"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "unisex-oversized-raglan",
+  "name": "Unisex Oversized Raglan",
+  "price": 489,
+  "categories": [
+   "men",
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "aop-female-kaftan",
+  "name": "AOP Female Kaftan",
+  "price": 639,
+  "categories": [
+   "women-dresses",
+   "women-kaftan",
+   "women"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "unisex-sweatpants",
+  "name": "Unisex Sweatpants",
+  "price": 769,
+  "categories": [
+   "men",
+   "men-sweatpants"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "unisex-tie-dye-oversized-t-shirt",
+  "name": "Unisex Tie Dye Oversized T-Shirt",
+  "price": 679,
+  "categories": [
+   "men",
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
+  ],
+  "photos": 3,
+  "custom": false
+ },
+ {
+  "slug": "unisex-acid-washed-oversized-tee",
+  "name": "Unisex Acid Washed Oversized Tee",
+  "price": 699,
+  "categories": [
+   "men",
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
+  ],
+  "photos": 3,
+  "custom": false
+ },
+ {
+  "slug": "cat-mom-tote-bag",
+  "name": "Cat Mom Tote Bag",
+  "price": 349,
+  "categories": [
+   "tote-bags"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "chai-kitaab-tote-bag",
+  "name": "Chai Kitaab Tote Bag",
+  "price": 349,
+  "categories": [
+   "tote-bags"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "dhoop-si-raho-tote-bag",
+  "name": "Dhoop Si Raho Tote Bag",
+  "price": 349,
+  "categories": [
+   "tote-bags"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "khilti-raho-tote-bag",
+  "name": "Khilti Raho Tote Bag",
+  "price": 349,
+  "categories": [
+   "tote-bags"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "never-settle-black-mug",
+  "name": "Never Settle Black Mug",
+  "price": 379,
+  "categories": [
+   "mugs"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "har-har-mahadev-black-mug",
+  "name": "Har Har Mahadev Black Mug",
+  "price": 379,
+  "categories": [
+   "mugs"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "radhe-radhe-mug",
+  "name": "Radhe Radhe Mug",
+  "price": 299,
+  "categories": [
+   "mugs"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "chai-kitaab-mug",
+  "name": "Chai Kitaab Mug",
+  "price": 299,
+  "categories": [
+   "mugs"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "sab-theek-ho-jayega-mug",
+  "name": "Sab Theek Ho Jayega Mug",
+  "price": 299,
+  "categories": [
+   "mugs"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "chai-over-everything-mug",
+  "name": "Chai Over Everything Mug",
+  "price": 299,
+  "categories": [
+   "mugs"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
+  "slug": "design-your-own-hoodie",
+  "name": "Design Your Own Hoodie",
+  "price": 1079,
+  "categories": [
+   "design-your-own",
+   "design-your-own-men"
+  ],
+  "photos": 1,
+  "custom": true
+ },
+ {
+  "slug": "design-your-own-sweatshirt",
+  "name": "Design Your Own Sweatshirt",
+  "price": 899,
+  "categories": [
+   "design-your-own",
+   "design-your-own-men"
+  ],
+  "photos": 1,
+  "custom": true
+ },
+ {
+  "slug": "design-your-own-oversized-t-shirt",
+  "name": "Design Your Own Oversized T-Shirt",
+  "price": 749,
+  "categories": [
+   "design-your-own",
+   "design-your-own-men"
+  ],
+  "photos": 1,
+  "custom": true
+ },
+ {
+  "slug": "design-your-own-t-shirt",
+  "name": "Design Your Own T-Shirt",
+  "price": 549,
+  "categories": [
+   "design-your-own",
+   "design-your-own-men"
+  ],
+  "photos": 1,
+  "custom": true
+ }
+]
