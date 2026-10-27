@@ -81,8 +81,8 @@ function store_features_product_page_assets() {
 		$product = wc_get_product( get_queried_object_id() );
 		if ( $product ) {
 			wp_add_inline_script( 'store-features', 'window.sfSizeFit=' . wp_json_encode( store_features_size_fit( $product ) ) . ';', 'before' );
-		if ( 'yes' === $product->get_meta( '_sf_from_qikink' ) ) {
-			$colour_images = (array) $product->get_meta( '_sf_qikink_colour_images' );
+		$colour_images = (array) $product->get_meta( '_sf_qikink_colour_images' );
+		if ( $colour_images ) {
 			$image_urls = array();
 			foreach ( $colour_images as $slug => $ids ) {
 				$image_urls[ $slug ] = array_values( array_filter( array_map( function ( $id ) { return wp_get_attachment_image_url( (int) $id, 'full' ); }, (array) $ids ) ) );
@@ -290,6 +290,14 @@ function store_features_product_page_script() {
 		}
 	}
 
+	/* The colour and size dropdowns, whatever the attribute is called (pa_color, color, Colour...). */
+	function sfAttrSelect(form, re) {
+		var list = form ? form.querySelectorAll('select[name^="attribute_"]') : [];
+		for (var i = 0; i < list.length; i++) { if (re.test(list[i].name)) { return list[i]; } }
+		return null;
+	}
+	function sfSlug(v) { return String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+
 	/* Picking a colour shows that colour's photo straight away, before a size is chosen.
 	   WooCommerce only swaps the photo once colour and size are both picked, and resets it
 	   whenever the choice is incomplete, so this runs just after its own handlers. */
@@ -297,24 +305,24 @@ function store_features_product_page_script() {
 	if (vform && !document.body.classList.contains('sf-custom-product') && $.fn.wc_variations_image_update) {
 		var $vform = $(vform);
 		var showColour = function () {
-			var sel = vform.querySelector('select[name="attribute_pa_color"]');
+			var sel = sfAttrSelect(vform, /colou?r/i);
 			var all = $vform.data('product_variations');
 			if (!sel || !sel.value || !Array.isArray(all)) {
 				return;
 			}
-			var size = vform.querySelector('select[name="attribute_pa_size"]');
+			var size = sfAttrSelect(vform, /size/i);
 			if (size && size.value) {
 				return; /* a full choice: WooCommerce shows that variation's photo itself */
 			}
 			for (var i = 0; i < all.length; i++) {
 				var v = all[i];
-				if (v.attributes && v.attributes.attribute_pa_color === sel.value && v.image && v.image.src) {
+				if (v.attributes && v.attributes[sel.name] === sel.value && v.image && v.image.src) {
 					$vform.wc_variations_image_update(v);
 					return;
 				}
 			}
 		};
-		$vform.on('change', 'select[name="attribute_pa_color"]', function () { setTimeout(showColour, 30); });
+		$vform.on('change', 'select[name^="attribute_"]', function () { setTimeout(showColour, 30); });
 		$vform.on('reset_data', function () { setTimeout(showColour, 30); });
 		setTimeout(showColour, 300);
 	}
@@ -326,7 +334,7 @@ function store_features_product_page_script() {
 		function bindWhenReady() {
 			var gallery = document.querySelector('.single-product .woocommerce-product-gallery');
 			var form = document.querySelector('.single-product form.variations_form');
-			var colour = form && form.querySelector('select[name="attribute_pa_color"]');
+			var colour = sfAttrSelect(form, /colou?r/i);
 			var slides = gallery && gallery.querySelector('.woocommerce-product-gallery__wrapper');
 			var thumbs = gallery && gallery.querySelector('.flex-control-thumbs');
 			if (!gallery || !form || !colour || !slides || !thumbs || !thumbs.children.length) {
@@ -352,13 +360,13 @@ function store_features_product_page_script() {
 			}
 			function variationForColour() {
 				if (activeVariation && activeVariation.image && activeVariation.attributes &&
-					activeVariation.attributes.attribute_pa_color === colour.value) {
+					activeVariation.attributes[colour.name] === colour.value) {
 					return activeVariation;
 				}
 				if (Array.isArray(variations)) {
 					for (var i = 0; i < variations.length; i++) {
 						var v = variations[i];
-						if (v.attributes && v.attributes.attribute_pa_color === colour.value && v.image && v.image.src) {
+						if (v.attributes && v.attributes[colour.name] === colour.value && v.image && v.image.src) {
 							return v;
 						}
 					}
@@ -368,7 +376,7 @@ function store_features_product_page_script() {
 			function applyFilter() {
 				var variation = colour.value ? variationForColour() : null;
 				var selectedUrl = variation && variation.image ? normalise(variation.image.src) : '';
-				var mappedUrls = window.sfQikinkColourImages && window.sfQikinkColourImages[colour.value];
+				var mappedUrls = (window.sfQikinkColourImages || {})[colour.value] || (window.sfQikinkColourImages || {})[sfSlug(colour.value)];
 				var selectedUrls = Array.isArray(mappedUrls) ? mappedUrls.map(normalise) : (selectedUrl ? [selectedUrl] : []);
 				var slideItems = Array.prototype.slice.call(slides.children);
 				var thumbItems = Array.prototype.slice.call(thumbs.children);
@@ -394,7 +402,7 @@ function store_features_product_page_script() {
 					if (t) { t.click(); }
 				}
 			}
-			$(form).on('change', 'select[name="attribute_pa_color"]', function () {
+			$(form).on('change', 'select[name="' + colour.name + '"]', function () {
 				activeVariation = null;
 				window.setTimeout(applyFilter, 120);
 			});
