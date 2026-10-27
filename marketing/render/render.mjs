@@ -120,6 +120,11 @@ for (const [n, it] of todo.entries()) {
 }
 if (browser) await browser.close();
 
+// Time, caption and hashtags always follow the queue files (they can be edited after rendering).
+for (const it of items) {
+	const k = known.get(it.id);
+	if (k) Object.assign(k, { post_at: it.post_at, caption: it.caption, hashtags: it.hashtags || [] });
+}
 // Keep only posts that are still queued; newest last.
 const ids = new Set(items.map((i) => i.id));
 manifest.posts = [...known.values()].filter((p) => ids.has(p.id)).sort((a, b) => a.post_at.localeCompare(b.post_at));
