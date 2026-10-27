@@ -325,6 +325,7 @@ require_once STORE_FEATURES_DIR . 'includes/cart-reminder.php';
 require_once STORE_FEATURES_DIR . 'includes/blog-posts.php';
 require_once STORE_FEATURES_DIR . 'includes/trust.php';
 require_once STORE_FEATURES_DIR . 'includes/speed.php';
+require_once STORE_FEATURES_DIR . 'includes/social.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
