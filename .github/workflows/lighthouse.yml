@@ -1,0 +1,68 @@
+# Speed check: runs Lighthouse (mobile) on live pages and saves a short summary to the "shots" branch
+# under <tag>/lighthouse.txt (plus the full JSON reports). Nothing is deployed.
+name: Speed check
+
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: "Space-separated paths"
+        default: "/ /shop/"
+      tag:
+        description: "Folder name"
+        default: "speed"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shots
+  cancel-in-progress: false
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run Lighthouse
+        env:
+          PATHS: ${{ inputs.paths }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          npm i -g lighthouse@12.2.1 >/dev/null 2>&1
+          mkdir -p "out/$TAG"
+          for p in $PATHS; do
+            slug=$(echo "$p" | sed 's/[^a-zA-Z0-9]\+/-/g; s/^-//; s/-$//'); [ -z "$slug" ] && slug=home
+            for run in 1 2; do
+              lighthouse "https://panuwear.com$p" --quiet --chrome-flags="--headless=new --no-sandbox" --only-categories=performance --output=json --output-path="out/$TAG/$slug-$run.json" || true
+            done
+          done
+          node -e '
+            const fs=require("fs"),dir="out/"+process.env.TAG; let s="";
+            for (const f of fs.readdirSync(dir).filter(f=>f.endsWith(".json")).sort()) {
+              try { const r=JSON.parse(fs.readFileSync(dir+"/"+f)); const a=r.audits;
+                const v=k=>a[k]?a[k].displayValue:"";
+                s+=`${f}: score ${Math.round((r.categories.performance.score||0)*100)} | FCP ${v("first-contentful-paint")} | LCP ${v("largest-contentful-paint")} | TBT ${v("total-blocking-time")} | CLS ${v("cumulative-layout-shift")} | TTFB ${v("server-response-time")} | weight ${v("total-byte-weight")} | requests ${(a["network-requests"].details.items||[]).length}\n`;
+                for (const k of ["render-blocking-resources","unused-javascript","unused-css-rules","uses-optimized-images","modern-image-formats","uses-responsive-images","offscreen-images","uses-long-cache-ttl","uses-text-compression","bootup-time","third-party-summary","largest-contentful-paint-element","font-display","unminified-css","unminified-javascript","duplicated-javascript","legacy-javascript","dom-size"]) {
+                  const x=a[k]; if(!x) continue; if (x.score!==null && x.score>=0.9) continue;
+                  s+=`   - ${k}: ${x.displayValue||""}\n`;
+                  const items=(x.details&&x.details.items)||[];
+                  for (const it of items.slice(0,6)) { s+=`       ${(it.url||it.entity||(it.node&&it.node.snippet)||JSON.stringify(it).slice(0,120))} ${it.wastedBytes?Math.round(it.wastedBytes/1024)+"KB":""} ${it.wastedMs?Math.round(it.wastedMs)+"ms":""} ${it.totalBytes?Math.round(it.totalBytes/1024)+"KB":""}\n`; }
+                }
+              } catch(e) { s+=f+": ERROR "+e.message+"\n"; }
+            }
+            fs.writeFileSync(dir+"/lighthouse.txt", s); console.log(s);'
+      - name: Commit to shots branch
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          cd out
+          git init -q -b shots
+          git config user.name "shots-bot"
+          git config user.email "shots-bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "Speed: $TAG"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" shots:shots
