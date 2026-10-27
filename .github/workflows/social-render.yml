@@ -43,10 +43,13 @@ jobs:
         with:
           node-version: "20"
       - name: Tools
+        timeout-minutes: 20
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji ffmpeg >/dev/null
-          pip install -q -U edge-tts gTTS
-          cd marketing/render && npm i --silent && npx playwright install chromium >/dev/null
+          # Each tool gets a few tries with a time limit, so a slow mirror can't hang the run.
+          for i in 1 2 3; do timeout 300 sh -c 'sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji ffmpeg >/dev/null' && break; echo "apt retry $i"; done
+          for i in 1 2 3; do timeout 180 pip install -q -U edge-tts gTTS && break; echo "pip retry $i"; done
+          cd marketing/render && npm i --silent
+          for i in 1 2 3; do timeout 300 npx playwright install chromium >/dev/null && break; echo "playwright retry $i"; done
       - name: List the products on sale (for the weekly post planner)
         run: |
           node -e '
