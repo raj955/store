@@ -68,9 +68,23 @@ add_action(
 	function () {
 		if ( ! is_user_logged_in() && ! is_admin_bar_showing() ) {
 			wp_dequeue_style( 'dashicons' );
+			// Old WooCommerce lightbox styles; the theme has its own photo zoom.
+			wp_dequeue_style( 'woocommerce_prettyPhoto_css' );
 		}
 	},
 	100
+);
+
+/**
+ * Another plugin pulls the admin icon font back in as a dependency; drop its tag for shoppers.
+ */
+add_filter(
+	'style_loader_tag',
+	function ( $tag, $handle ) {
+		return ( 'dashicons' === $handle && ! is_admin() && ! is_user_logged_in() ) ? '' : $tag;
+	},
+	10,
+	2
 );
 
 /**
