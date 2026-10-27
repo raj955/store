@@ -152,6 +152,7 @@ add_action(
 	.sf-trust__tile { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
 	.sf-trust__icon { width: 38px; height: 38px; }
 	.sf-trust__title { font-size: 16px; }
+	.sf-trust--single .sf-trust__tile { flex-direction: row; align-items: center; }
 }
 .sf-trust-line { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 0 !important; color: #2F6B3F; font-size: 12.5px; font-weight: 700; line-height: 1.3; }
 .sf-trust-line__item { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
