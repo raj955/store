@@ -71,7 +71,16 @@ for (const [n, it] of todo.entries()) {
 
 	// Voice
 	const voice = path.join(OUT, `${it.id}.mp3`);
-	sh('edge-tts', ['--voice', it.voice_name || 'hi-IN-MadhurNeural', '--rate', it.voice_rate || '+6%', '--text', it.voice, '--write-media', voice]);
+	try {
+		sh('edge-tts', ['--voice', it.voice_name || 'hi-IN-MadhurNeural', '--rate', it.voice_rate || '+6%', '--text', it.voice, '--write-media', voice]);
+	} catch (e) {
+		// Fallback voice (Google), a little slower to read but always available.
+		console.log('edge-tts failed, using gTTS');
+		sh('gtts-cli', ['--lang', 'hi', '--output', voice, it.voice]);
+		const fast = voice.replace('.mp3', '-fast.mp3');
+		sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', voice, '-filter:a', 'atempo=1.15', fast]);
+		fs.renameSync(fast, voice);
+	}
 	const vdur = Number(sh('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', voice]));
 	const duration = Math.min(30, Math.max(13, Math.ceil((vdur + 2.8) * 10) / 10));
 	console.log(`voice ${vdur.toFixed(1)}s -> video ${duration}s, ${images.length} photos, ${price}`);
