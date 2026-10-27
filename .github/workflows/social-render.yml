@@ -47,10 +47,20 @@ jobs:
           cd marketing/render && npm i --silent && npx playwright install chromium >/dev/null
       - name: Render and upload
         working-directory: marketing/render
-        run: node render.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node render.mjs 2>&1 | tee render.log
       - name: Save the posting list
         run: |
           git config user.name "social-bot"
           git config user.email "social-bot@users.noreply.github.com"
           git add wp-content/plugins/store-features/social/queue.json
           git diff --cached --quiet || (git commit -qm "Social: reels ready [skip ci]" && git pull -q --rebase && git push -q)
+      - name: Keep the log (shots branch, social/render.log)
+        if: always()
+        run: |
+          mkdir -p /tmp/logs/social && cp marketing/render/render.log /tmp/logs/social/ 2>/dev/null || echo "no log" > /tmp/logs/social/render.log
+          cp marketing/render/out/*.jpg /tmp/logs/social/ 2>/dev/null || true
+          cd /tmp/logs && git init -q -b shots && git config user.name bot && git config user.email bot@users.noreply.github.com
+          git add -A && git commit -qm "social log" && git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" shots:social-log
