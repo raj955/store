@@ -72,3 +72,46 @@ add_action(
 	},
 	100
 );
+
+/**
+ * Timing: a Server-Timing header shows how long each stage of building the page took
+ * (visible in the browser's network tab; no private data).
+ */
+$GLOBALS['sf_timing'] = array( 'start' => isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] : microtime( true ) );
+foreach ( array( 'plugins_loaded', 'setup_theme', 'after_setup_theme', 'init', 'wp_loaded', 'wp', 'template_redirect', 'wp_head', 'wp_footer' ) as $sf_hook ) {
+	add_action(
+		$sf_hook,
+		function () use ( $sf_hook ) {
+			$GLOBALS['sf_timing'][ $sf_hook ] = microtime( true );
+		},
+		PHP_INT_MAX
+	);
+}
+add_action(
+	'template_redirect',
+	function () {
+		ob_start(
+			function ( $html ) {
+				if ( ! headers_sent() ) {
+					global $wpdb;
+					$t    = $GLOBALS['sf_timing'];
+					$prev = $t['start'];
+					$out  = array();
+					foreach ( $t as $k => $v ) {
+						if ( 'start' === $k ) {
+							continue;
+						}
+						$out[] = str_replace( '_', '-', $k ) . ';dur=' . round( ( $v - $prev ) * 1000 );
+						$prev  = $v;
+					}
+					$out[] = 'render;dur=' . round( ( microtime( true ) - $prev ) * 1000 );
+					$out[] = 'total;dur=' . round( ( microtime( true ) - $t['start'] ) * 1000 );
+					$out[] = 'queries;dur=' . (int) $wpdb->num_queries;
+					header( 'Server-Timing: ' . implode( ', ', $out ) );
+				}
+				return $html;
+			}
+		);
+	},
+	PHP_INT_MAX
+);
