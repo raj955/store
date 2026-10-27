@@ -124,10 +124,43 @@ function store_features_social_caption( $p ) {
 }
 
 /**
+ * The reel files are only for Instagram and Facebook to fetch: delete each one from the server as
+ * soon as it is posted everywhere it should go, and any file older than 7 days in any case.
+ */
+function store_features_social_cleanup() {
+	$dir = trailingslashit( wp_upload_dir()['basedir'] ) . 'sf-social';
+	if ( ! is_dir( $dir ) ) {
+		return;
+	}
+	$s     = store_features_social_settings();
+	$state = store_features_social_state();
+	$done  = array();
+	foreach ( store_features_social_queue() as $p ) {
+		$st     = $state[ $p['id'] ?? '' ] ?? array();
+		$ig_ok  = empty( $s['ig_id'] ) || ! empty( $st['ig']['media_id'] );
+		$fb_ok  = empty( $s['page_id'] ) || ! empty( $st['fb']['video_id'] );
+		$posted = ( ! empty( $s['ig_id'] ) || ! empty( $s['page_id'] ) ) && $ig_ok && $fb_ok;
+		if ( $posted ) {
+			foreach ( array( 'video_url', 'cover_url' ) as $k ) {
+				if ( ! empty( $p[ $k ] ) ) {
+					$done[ basename( (string) wp_parse_url( $p[ $k ], PHP_URL_PATH ) ) ] = true;
+				}
+			}
+		}
+	}
+	foreach ( (array) glob( $dir . '/*.{mp4,jpg}', GLOB_BRACE ) as $file ) {
+		if ( isset( $done[ basename( $file ) ] ) || filemtime( $file ) < time() - WEEK_IN_SECONDS ) {
+			wp_delete_file( $file );
+		}
+	}
+}
+
+/**
  * Post what is due (runs every 15 minutes).
  */
 function store_features_social_run() {
 	$s = store_features_social_settings();
+	store_features_social_cleanup();
 	if ( empty( $s['token'] ) || get_transient( 'store_features_social_lock' ) ) {
 		return;
 	}
