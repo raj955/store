@@ -38,8 +38,8 @@
   "name": "Unisex Pullover Hoodie",
   "price": 730,
   "categories": [
-   "hoodies",
    "men-hoodies",
+   "hoodies",
    "men"
   ],
   "photos": 8,
@@ -142,8 +142,8 @@
   "price": 690,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
   "photos": 6,
   "custom": false
@@ -212,8 +212,8 @@
   "price": 680,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 4,
   "custom": false
