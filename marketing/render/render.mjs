@@ -50,6 +50,9 @@ const browser = todo.length ? await chromium.launch() : null;
 let page;
 if (browser) {
 	page = await browser.newPage();
+	// WebCodecs needs a secure (https) page, so serve the blank page from a made-up https address.
+	await page.route('https://reel.panuwear.local/**', (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>reel</title>' }));
+	await page.goto('https://reel.panuwear.local/');
 	await page.setContent(`<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Baloo+2:wght@500;700;800&family=Kalam:wght@700&display=swap">
 </head><body style="font-family:'Baloo 2'">Panuwear चल</body></html>`, { waitUntil: 'networkidle' });
