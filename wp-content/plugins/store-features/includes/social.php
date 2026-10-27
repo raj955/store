@@ -360,7 +360,7 @@ function store_features_social_tags( $s ) {
 			$out[] = $u;
 		}
 	}
-	return array_slice( array_unique( $out ), 0, 5 );
+	return array_slice( array_unique( $out ), 0, 20 );
 }
 
 /**
@@ -387,7 +387,7 @@ function store_features_social_page() {
 	wp_nonce_field( 'sf_social' );
 	echo '<input type="hidden" name="action" value="sf_social_save">';
 	echo '<p><label>Page access token<br><input type="password" name="token" autocomplete="off" style="width:560px" placeholder="' . esc_attr( empty( $s['token'] ) ? 'Paste the token here' : 'Saved. Paste a new one only to replace it.' ) . '"></label></p>';
-	echo '<p><label>Tag in every reel (Instagram username)<br><input type="text" name="tag" value="' . esc_attr( (string) ( $s['tag'] ?? '' ) ) . '" placeholder="@yourname" style="width:300px"></label></p>';
+	echo '<p><label>Tag in every reel (Instagram usernames, separated by commas, up to 20)<br><input type="text" name="tag" value="' . esc_attr( (string) ( $s['tag'] ?? '' ) ) . '" placeholder="@friend1, @friend2" style="width:560px"></label></p>';
 	echo '<p><label><input type="checkbox" name="trial" value="1"' . checked( ! isset( $s['trial'] ) || ! empty( $s['trial'] ), true, false ) . '> Instagram trial reels: new reels go to non-followers first, and Instagram shares them with followers automatically when they do well</label></p>';
 	echo '<p><button class="button button-primary">Save and connect</button> <button class="button" name="run_now" value="1">Post anything due now</button></p></form>';
 	echo '<h2>Posts</h2><table class="widefat striped"><thead><tr><th>Time (IST)</th><th>Post</th><th>Instagram</th><th>Facebook</th><th>Video</th></tr></thead><tbody>';
