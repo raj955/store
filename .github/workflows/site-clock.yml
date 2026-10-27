@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - run: curl -sS -m 60 -o /dev/null -w "%{http_code}\n" -A "PanuwearClock/1.0" "https://panuwear.com/wp-cron.php?doing_wp_cron=$(date +%s)"
+      - run: curl -fsS -m 60 -o /dev/null -w "%{http_code}\n" -A "PanuwearClock/1.0" "https://panuwear.com/wp-cron.php?doing_wp_cron=$(date +%s)"
