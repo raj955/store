@@ -306,11 +306,15 @@ function store_child_home() {
 					<a class="pw-btn pw-btn--haldi" href="<?php echo esc_url( $shop ); ?>">अपना fit ढूँढो</a>
 					<a class="pw-btn pw-btn--ghost" href="<?php echo esc_url( $custom ); ?>">अपना design बनाओ</a>
 				</div>
+				<?php if ( function_exists( 'store_features_trust_html' ) ) : ?>
+					<?php echo store_features_trust_html( true, 'full', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php else : ?>
 				<ul class="pw-hero__facts">
 					<li>Free shipping</li>
 					<li>Cash on delivery</li>
 					<li>5 से 7 दिन में delivery</li>
 				</ul>
+				<?php endif; ?>
 			</div>
 			<?php if ( $hero ) :
 				$hero_image = wp_get_attachment_image_src( $hero[0]->get_image_id(), 'woocommerce_single' );

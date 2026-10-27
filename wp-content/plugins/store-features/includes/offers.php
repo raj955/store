@@ -341,11 +341,8 @@ add_action( 'woocommerce_checkout_create_order', 'store_features_offer_remember_
  * @return string
  */
 function store_features_offer_line() {
-	$from = store_features_lowest_price();
-	return $from
-		/* translators: %s: lowest price */
-		? sprintf( __( 'Free shipping across India | ₹20 off on online payment | Tees from ₹%s', 'store-features' ), number_format_i18n( $from ) )
-		: __( 'Free shipping across India | ₹20 off on online payment', 'store-features' );
+	// Free delivery and COD lead: they are what builds trust. Hindi first, short enough for one line on phones.
+	return 'फ्री डिलीवरी पूरे भारत में • कैश ऑन डिलीवरी • Online पर ₹20 off';
 }
 
 /**
