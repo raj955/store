@@ -27,8 +27,8 @@
   "price": 350,
   "categories": [
    "men",
-   "t-shirts",
-   "men-t-shirts"
+   "men-t-shirts",
+   "t-shirts"
   ],
   "photos": 2,
   "custom": false
@@ -73,8 +73,8 @@
   "name": "Unisex Acid Washed Hoodie",
   "price": 1200,
   "categories": [
-   "men-hoodies",
    "hoodies",
+   "men-hoodies",
    "men"
   ],
   "photos": 8,
@@ -212,8 +212,8 @@
   "price": 680,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
   "photos": 4,
   "custom": false
