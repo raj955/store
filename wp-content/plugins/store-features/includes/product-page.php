@@ -393,7 +393,9 @@ function store_features_product_page_script() {
 				   empty frame); only the thumbnails are narrowed to this colour. */
 				slideItems.forEach(function (el) { el.style.display = ''; });
 				thumbItems.forEach(function (el) { el.style.display = matchingThumbs.indexOf(el) !== -1 ? '' : 'none'; });
-				var target = slideItems.indexOf(matchingSlides[0]);
+				/* Open on this colour's own front photo (first in its list), not whichever comes first in the gallery. */
+				var first = matchingSlides.filter(function (el) { return imageUrl(el) === selectedUrls[0]; })[0] || matchingSlides[0];
+				var target = slideItems.indexOf(first);
 				var slider = window.jQuery && (jQuery(gallery).data('flexslider') || jQuery(gallery.querySelector('.flexslider')).data('flexslider'));
 				if (slider && slider.currentSlide !== target) {
 					try { slider.flexAnimate(target, true); } catch (e) {}
