@@ -149,7 +149,8 @@ function store_features_social_cleanup() {
 		}
 	}
 	foreach ( (array) glob( $dir . '/*.{mp4,jpg}', GLOB_BRACE ) as $file ) {
-		if ( isset( $done[ basename( $file ) ] ) || filemtime( $file ) < time() - WEEK_IN_SECONDS ) {
+		// Posted files are kept 2 days (so a test re-post still works), anything else 7 days.
+		if ( ( isset( $done[ basename( $file ) ] ) && filemtime( $file ) < time() - 2 * DAY_IN_SECONDS ) || filemtime( $file ) < time() - WEEK_IN_SECONDS ) {
 			wp_delete_file( $file );
 		}
 	}
@@ -188,10 +189,16 @@ function store_features_social_run() {
 	foreach ( store_features_social_queue() as $p ) {
 		$id  = (string) ( $p['id'] ?? '' );
 		$due = strtotime( (string) ( $p['post_at'] ?? '' ) );
-		if ( '' === $id || ! $due || $due > $now || $now - $due > 2 * DAY_IN_SECONDS || empty( $p['video_url'] ) ) {
+		$test = (array) get_option( 'store_features_social_test', array() );
+		$is_test = isset( $test[ $id ] ) && $now - (int) $test[ $id ] < DAY_IN_SECONDS;
+		if ( '' === $id || empty( $p['video_url'] ) || ( ! $is_test && ( ! $due || $due > $now || $now - $due > 2 * DAY_IN_SECONDS ) ) ) {
 			continue;
 		}
 		$st = $state[ $id ] ?? array();
+		if ( $is_test && ! empty( $st['ig']['media_id'] ) ) {
+			unset( $test[ $id ] );
+			update_option( 'store_features_social_test', $test, false );
+		}
 
 		// Instagram: create the Reel container, wait until Instagram has processed it, publish.
 		if ( ! empty( $s['ig_id'] ) && empty( $st['ig']['media_id'] ) && ( $st['ig']['tries'] ?? 0 ) < 6 ) {
@@ -262,6 +269,7 @@ function store_features_social_run() {
 	delete_transient( 'store_features_social_lock' );
 }
 add_action( 'store_features_social_run', 'store_features_social_run' );
+add_action( 'store_features_social_run_soon', 'store_features_social_run' );
 
 add_action(
 	'init',
@@ -337,6 +345,24 @@ add_action(
 			update_option( 'store_features_social', $cur, false );
 			$msg = $msg ? $msg : 'options';
 		}
+		if ( ! empty( $_POST['test_id'] ) ) {
+			// Test: post this reel to Instagram again now (with the current tags and trial setting).
+			$tid           = sanitize_key( wp_unslash( $_POST['test_id'] ) );
+			$test          = (array) get_option( 'store_features_social_test', array() );
+			$test[ $tid ]  = time();
+			update_option( 'store_features_social_test', $test, false );
+			$all           = store_features_social_state();
+			$all[ $tid ]['ig'] = array( 'at' => gmdate( 'c' ) );
+			update_option( 'store_features_social_state', $all, false );
+			delete_transient( 'store_features_social_lock' );
+			store_features_social_run();
+			if ( function_exists( 'as_schedule_single_action' ) ) {
+				foreach ( array( 1, 2, 4, 7, 11 ) as $min ) {
+					as_schedule_single_action( time() + $min * MINUTE_IN_SECONDS, 'store_features_social_run_soon', array( $min ), 'store-features' );
+				}
+			}
+			$msg = 'test';
+		}
 		if ( ! empty( $_POST['run_now'] ) ) {
 			store_features_social_run();
 			$msg = $msg ? $msg : 'ran';
@@ -367,12 +393,23 @@ function store_features_social_tags( $s ) {
  * The page.
  */
 function store_features_social_page() {
+	$pending = array_filter(
+		(array) get_option( 'store_features_social_test', array() ),
+		function ( $t ) {
+			return time() - (int) $t < HOUR_IN_SECONDS;
+		}
+	);
+	if ( $pending ) {
+		store_features_social_run();
+	}
 	$s     = store_features_social_settings();
 	$state = store_features_social_state();
 	$m     = isset( $_GET['m'] ) ? sanitize_text_field( wp_unslash( $_GET['m'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	echo '<div class="wrap"><h1>Social posting (Instagram + Facebook)</h1>';
 	if ( 'saved' === $m ) {
 		echo '<div class="notice notice-success"><p>Connected.</p></div>';
+	} elseif ( 'test' === $m ) {
+		echo '<div class="notice notice-info"><p>Test started: Instagram takes 1–3 minutes to process the video. This page refreshes by itself until it shows posted.</p></div>';
 	} elseif ( 'options' === $m ) {
 		echo '<div class="notice notice-success"><p>Saved.</p></div>';
 	} elseif ( 0 === strpos( $m, 'error:' ) ) {
@@ -383,14 +420,14 @@ function store_features_social_page() {
 		echo '<div class="notice notice-error"><p>Posting is paused: ' . esc_html( $err ) . ' Paste a new token below.</p></div>';
 	}
 	echo '<p><strong>Facebook Page:</strong> ' . esc_html( $s['page_name'] ?? 'not connected' ) . ' &nbsp; <strong>Instagram:</strong> ' . esc_html( ! empty( $s['ig_name'] ) ? '@' . $s['ig_name'] : 'not connected' ) . '</p>';
-	echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+	echo '<form id="sf-social-form" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 	wp_nonce_field( 'sf_social' );
 	echo '<input type="hidden" name="action" value="sf_social_save">';
 	echo '<p><label>Page access token<br><input type="password" name="token" autocomplete="off" style="width:560px" placeholder="' . esc_attr( empty( $s['token'] ) ? 'Paste the token here' : 'Saved. Paste a new one only to replace it.' ) . '"></label></p>';
 	echo '<p><label>Tag in every reel (Instagram usernames, separated by commas, up to 20)<br><input type="text" name="tag" value="' . esc_attr( (string) ( $s['tag'] ?? '' ) ) . '" placeholder="@friend1, @friend2" style="width:560px"></label></p>';
 	echo '<p><label><input type="checkbox" name="trial" value="1"' . checked( ! isset( $s['trial'] ) || ! empty( $s['trial'] ), true, false ) . '> Instagram trial reels: new reels go to non-followers first, and Instagram shares them with followers automatically when they do well</label></p>';
 	echo '<p><button class="button button-primary">Save and connect</button> <button class="button" name="run_now" value="1">Post anything due now</button></p></form>';
-	echo '<h2>Posts</h2><table class="widefat striped"><thead><tr><th>Time (IST)</th><th>Post</th><th>Instagram</th><th>Facebook</th><th>Video</th></tr></thead><tbody>';
+	echo '<h2>Posts</h2><table class="widefat striped"><thead><tr><th>Time (IST)</th><th>Post</th><th>Instagram</th><th>Facebook</th><th>Video</th><th>Test</th></tr></thead><tbody>';
 	foreach ( store_features_social_queue() as $p ) {
 		$st   = $state[ $p['id'] ] ?? array();
 		$cell = function ( $x, $key ) {
@@ -404,13 +441,18 @@ function store_features_social_page() {
 		};
 		$time = strtotime( (string) $p['post_at'] );
 		printf(
-			'<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href="%s" target="_blank" rel="noopener">watch</a></td></tr>',
+			'<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href="%s" target="_blank" rel="noopener">watch</a></td><td><button class="button" form="sf-social-form" name="test_id" value="%s">Test: post to Instagram now</button></td></tr>',
 			esc_html( $time ? wp_date( 'D j M, g:i a', $time, new DateTimeZone( 'Asia/Kolkata' ) ) : '' ),
 			esc_html( (string) $p['product'] ),
 			$cell( $st['ig'] ?? array(), 'media_id' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			$cell( $st['fb'] ?? array(), 'video_id' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			esc_url( (string) $p['video_url'] )
+			esc_url( (string) $p['video_url'] ),
+			esc_attr( (string) $p['id'] )
 		);
 	}
-	echo '</tbody></table></div>';
+	echo '</tbody></table>';
+	if ( $pending && array_intersect_key( $pending, (array) get_option( 'store_features_social_test', array() ) ) ) {
+		echo '<p><em>Test running… this page refreshes every 30 seconds.</em></p><script>setTimeout(function(){location.href=' . wp_json_encode( admin_url( 'admin.php?page=sf-social' ) ) . ';},30000);</script>';
+	}
+	echo '</div>';
 }
