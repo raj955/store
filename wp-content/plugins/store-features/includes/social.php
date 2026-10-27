@@ -179,18 +179,42 @@ function store_features_social_run() {
 		if ( ! empty( $s['ig_id'] ) && empty( $st['ig']['media_id'] ) && ( $st['ig']['tries'] ?? 0 ) < 6 ) {
 			$tries = (int) ( $st['ig']['tries'] ?? 0 );
 			if ( empty( $st['ig']['container'] ) ) {
-				$r = store_features_social_api(
-					'POST',
-					$s['ig_id'] . '/media',
-					array(
-						'media_type'    => 'REELS',
-						'video_url'     => $p['video_url'],
-						'cover_url'     => $p['cover_url'] ?? '',
-						'caption'       => store_features_social_caption( $p ),
-						'share_to_feed' => 'true',
-					)
+				$args  = array(
+					'media_type'    => 'REELS',
+					'video_url'     => $p['video_url'],
+					'cover_url'     => $p['cover_url'] ?? '',
+					'caption'       => store_features_social_caption( $p ),
+					'share_to_feed' => 'true',
 				);
-				store_features_social_set( $id, 'ig', isset( $r['id'] ) ? array( 'container' => $r['id'], 'error' => '' ) : array( 'error' => $r['error']['message'] ?? 'unknown', 'tries' => $tries + 1 ) );
+				$extra = array();
+				$tags  = store_features_social_tags( $s );
+				if ( $tags ) {
+					$extra['user_tags'] = wp_json_encode(
+						array_map(
+							function ( $u ) {
+								return array( 'username' => $u );
+							},
+							$tags
+						)
+					);
+				}
+				// Trial reel: shown to non-followers first; Instagram makes it a normal reel if it does well.
+				if ( ! isset( $s['trial'] ) || ! empty( $s['trial'] ) ) {
+					$extra['trial_params'] = wp_json_encode( array( 'graduation_strategy' => 'SS_PERFORMANCE' ) );
+				}
+				$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args + $extra );
+				$note = implode( ' + ', array_filter( array( isset( $extra['trial_params'] ) ? 'trial' : '', $tags ? 'tagged' : '' ) ) );
+				if ( ! isset( $r['id'] ) && isset( $extra['trial_params'] ) ) {
+					// Trial reels not available for this account yet: post it as a normal reel.
+					unset( $extra['trial_params'] );
+					$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args + $extra );
+					$note = $tags ? 'tagged, trial not available' : 'trial not available';
+				}
+				if ( ! isset( $r['id'] ) && $extra ) {
+					$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args );
+					$note = 'posted without tag';
+				}
+				store_features_social_set( $id, 'ig', isset( $r['id'] ) ? array( 'container' => $r['id'], 'error' => '', 'note' => $note ) : array( 'error' => $r['error']['message'] ?? 'unknown', 'tries' => $tries + 1 ) );
 			} else {
 				$c      = store_features_social_api( 'GET', $st['ig']['container'], array( 'fields' => 'status_code,status' ) );
 				$status = $c['status_code'] ?? '';
@@ -288,6 +312,13 @@ add_action(
 				$msg = 'error:' . ( $me['error']['message'] ?? $acc['error']['message'] ?? 'Token not accepted' );
 			}
 		}
+		if ( isset( $_POST['tag'] ) ) {
+			$cur          = store_features_social_settings();
+			$cur['tag']   = sanitize_text_field( wp_unslash( $_POST['tag'] ) );
+			$cur['trial'] = empty( $_POST['trial'] ) ? 0 : 1;
+			update_option( 'store_features_social', $cur, false );
+			$msg = $msg ? $msg : 'options';
+		}
 		if ( ! empty( $_POST['run_now'] ) ) {
 			store_features_social_run();
 			$msg = $msg ? $msg : 'ran';
@@ -296,6 +327,23 @@ add_action(
 		exit;
 	}
 );
+
+/**
+ * Instagram usernames to tag in every reel.
+ *
+ * @param array $s Settings.
+ * @return string[]
+ */
+function store_features_social_tags( $s ) {
+	$out = array();
+	foreach ( preg_split( '/[\s,]+/', (string) ( $s['tag'] ?? '' ) ) as $u ) {
+		$u = preg_replace( '/[^a-z0-9._]/', '', strtolower( ltrim( $u, '@' ) ) );
+		if ( '' !== $u ) {
+			$out[] = $u;
+		}
+	}
+	return array_slice( array_unique( $out ), 0, 5 );
+}
 
 /**
  * The page.
@@ -307,6 +355,8 @@ function store_features_social_page() {
 	echo '<div class="wrap"><h1>Social posting (Instagram + Facebook)</h1>';
 	if ( 'saved' === $m ) {
 		echo '<div class="notice notice-success"><p>Connected.</p></div>';
+	} elseif ( 'options' === $m ) {
+		echo '<div class="notice notice-success"><p>Saved.</p></div>';
 	} elseif ( 0 === strpos( $m, 'error:' ) ) {
 		echo '<div class="notice notice-error"><p>' . esc_html( substr( $m, 6 ) ) . '</p></div>';
 	}
@@ -319,13 +369,15 @@ function store_features_social_page() {
 	wp_nonce_field( 'sf_social' );
 	echo '<input type="hidden" name="action" value="sf_social_save">';
 	echo '<p><label>Page access token<br><input type="password" name="token" autocomplete="off" style="width:560px" placeholder="' . esc_attr( empty( $s['token'] ) ? 'Paste the token here' : 'Saved. Paste a new one only to replace it.' ) . '"></label></p>';
+	echo '<p><label>Tag in every reel (Instagram username)<br><input type="text" name="tag" value="' . esc_attr( (string) ( $s['tag'] ?? '' ) ) . '" placeholder="@yourname" style="width:300px"></label></p>';
+	echo '<p><label><input type="checkbox" name="trial" value="1"' . checked( ! isset( $s['trial'] ) || ! empty( $s['trial'] ), true, false ) . '> Instagram trial reels: new reels go to non-followers first, and Instagram shares them with followers automatically when they do well</label></p>';
 	echo '<p><button class="button button-primary">Save and connect</button> <button class="button" name="run_now" value="1">Post anything due now</button></p></form>';
 	echo '<h2>Posts</h2><table class="widefat striped"><thead><tr><th>Time (IST)</th><th>Post</th><th>Instagram</th><th>Facebook</th><th>Video</th></tr></thead><tbody>';
 	foreach ( store_features_social_queue() as $p ) {
 		$st   = $state[ $p['id'] ] ?? array();
 		$cell = function ( $x, $key ) {
 			if ( ! empty( $x[ $key ] ) ) {
-				return '✅ posted';
+				return '✅ posted' . ( ! empty( $x['note'] ) ? ' (' . esc_html( $x['note'] ) . ')' : '' );
 			}
 			if ( ! empty( $x['error'] ) ) {
 				return '⚠️ ' . esc_html( $x['error'] );
