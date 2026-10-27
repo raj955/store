@@ -1,5 +1,39 @@
 [
  {
+  "slug": "aop-sports-crop-top",
+  "name": "Aop Sports Crop Top",
+  "price": 370,
+  "categories": [
+   "women-crop-tops",
+   "women"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "aop-pencil-skirt",
+  "name": "Aop Pencil Skirt",
+  "price": 480,
+  "categories": [
+   "women-skirts",
+   "women"
+  ],
+  "photos": 1,
+  "custom": false
+ },
+ {
+  "slug": "unisex-dryfit-t-shirt",
+  "name": "Unisex DryFit T-shirt",
+  "price": 350,
+  "categories": [
+   "men",
+   "t-shirts",
+   "men-t-shirts"
+  ],
+  "photos": 2,
+  "custom": false
+ },
+ {
   "slug": "unisex-pullover-hoodie",
   "name": "Unisex Pullover Hoodie",
   "price": 730,
@@ -8,7 +42,7 @@
    "men-hoodies",
    "men"
   ],
-  "photos": 2,
+  "photos": 8,
   "custom": false
  },
  {
@@ -16,17 +50,17 @@
   "name": "Female Cropped Hoodie",
   "price": 600,
   "categories": [
-   "women-hoodies",
    "hoodies",
+   "women-hoodies",
    "women"
   ],
-  "photos": 1,
+  "photos": 8,
   "custom": false
  },
  {
   "slug": "womens-aop-bomber-jacket",
   "name": "Women&#8217;s AOP Bomber Jacket",
-  "price": 999,
+  "price": 1000,
   "categories": [
    "women-jacket",
    "women"
@@ -43,7 +77,7 @@
    "hoodies",
    "men"
   ],
-  "photos": 2,
+  "photos": 8,
   "custom": false
  },
  {
@@ -54,13 +88,13 @@
    "men-jacket",
    "men"
   ],
-  "photos": 3,
+  "photos": 12,
   "custom": false
  },
  {
   "slug": "design-your-own-crop-top",
   "name": "Design Your Own Crop Top",
-  "price": 499,
+  "price": 500,
   "categories": [
    "design-your-own",
    "design-your-own-women"
@@ -71,65 +105,65 @@
  {
   "slug": "cat-mom-crop-top",
   "name": "Cat Mom Crop Top",
-  "price": 429,
+  "price": 430,
   "categories": [
    "women-crop-tops",
    "women"
-  ],
-  "photos": 15,
-  "custom": false
- },
- {
-  "slug": "dhoop-si-raho-crop-top",
-  "name": "Dhoop Si Raho Crop Top",
-  "price": 429,
-  "categories": [
-   "women-crop-tops",
-   "women"
-  ],
-  "photos": 13,
-  "custom": false
- },
- {
-  "slug": "radhe-radhe-oversized-tee",
-  "name": "Radhe Radhe Oversized Tee",
-  "price": 669,
-  "categories": [
-   "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
-  ],
-  "photos": 10,
-  "custom": false
- },
- {
-  "slug": "chal-nikalte-hain-oversized-tee",
-  "name": "Chal Nikalte Hain Oversized Tee",
-  "price": 689,
-  "categories": [
-   "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
-  ],
-  "photos": 11,
-  "custom": false
- },
- {
-  "slug": "har-har-mahadev-oversized-tee",
-  "name": "Har Har Mahadev Oversized Tee",
-  "price": 659,
-  "categories": [
-   "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
   ],
   "photos": 9,
   "custom": false
  },
  {
+  "slug": "dhoop-si-raho-crop-top",
+  "name": "Dhoop Si Raho Crop Top",
+  "price": 430,
+  "categories": [
+   "women-crop-tops",
+   "women"
+  ],
+  "photos": 9,
+  "custom": false
+ },
+ {
+  "slug": "radhe-radhe-oversized-tee",
+  "name": "Radhe Radhe Oversized Tee",
+  "price": 670,
+  "categories": [
+   "men",
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
+  ],
+  "photos": 7,
+  "custom": false
+ },
+ {
+  "slug": "chal-nikalte-hain-oversized-tee",
+  "name": "Chal Nikalte Hain Oversized Tee",
+  "price": 690,
+  "categories": [
+   "men",
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
+  ],
+  "photos": 6,
+  "custom": false
+ },
+ {
+  "slug": "har-har-mahadev-oversized-tee",
+  "name": "Har Har Mahadev Oversized Tee",
+  "price": 660,
+  "categories": [
+   "men",
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
+  ],
+  "photos": 6,
+  "custom": false
+ },
+ {
   "slug": "aop-mini-skirt",
   "name": "Aop Mini Skirt",
-  "price": 409,
+  "price": 410,
   "categories": [
    "women-skirts",
    "women"
@@ -140,19 +174,19 @@
  {
   "slug": "unisex-oversized-raglan",
   "name": "Unisex Oversized Raglan",
-  "price": 489,
+  "price": 490,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
-  "photos": 2,
+  "photos": 8,
   "custom": false
  },
  {
   "slug": "aop-female-kaftan",
   "name": "AOP Female Kaftan",
-  "price": 639,
+  "price": 640,
   "categories": [
    "women-dresses",
    "women-kaftan",
@@ -164,42 +198,42 @@
  {
   "slug": "unisex-sweatpants",
   "name": "Unisex Sweatpants",
-  "price": 769,
+  "price": 770,
   "categories": [
    "men",
    "men-sweatpants"
   ],
-  "photos": 1,
+  "photos": 2,
   "custom": false
  },
  {
   "slug": "unisex-tie-dye-oversized-t-shirt",
   "name": "Unisex Tie Dye Oversized T-Shirt",
-  "price": 679,
+  "price": 680,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
-  "photos": 3,
+  "photos": 4,
   "custom": false
  },
  {
   "slug": "unisex-acid-washed-oversized-tee",
   "name": "Unisex Acid Washed Oversized Tee",
-  "price": 699,
+  "price": 700,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
-  "photos": 3,
+  "photos": 10,
   "custom": false
  },
  {
   "slug": "cat-mom-tote-bag",
   "name": "Cat Mom Tote Bag",
-  "price": 349,
+  "price": 350,
   "categories": [
    "tote-bags"
   ],
@@ -209,7 +243,7 @@
  {
   "slug": "chai-kitaab-tote-bag",
   "name": "Chai Kitaab Tote Bag",
-  "price": 349,
+  "price": 350,
   "categories": [
    "tote-bags"
   ],
@@ -219,7 +253,7 @@
  {
   "slug": "dhoop-si-raho-tote-bag",
   "name": "Dhoop Si Raho Tote Bag",
-  "price": 349,
+  "price": 350,
   "categories": [
    "tote-bags"
   ],
@@ -229,7 +263,7 @@
  {
   "slug": "khilti-raho-tote-bag",
   "name": "Khilti Raho Tote Bag",
-  "price": 349,
+  "price": 350,
   "categories": [
    "tote-bags"
   ],
@@ -239,7 +273,7 @@
  {
   "slug": "never-settle-black-mug",
   "name": "Never Settle Black Mug",
-  "price": 379,
+  "price": 380,
   "categories": [
    "mugs"
   ],
@@ -249,7 +283,7 @@
  {
   "slug": "har-har-mahadev-black-mug",
   "name": "Har Har Mahadev Black Mug",
-  "price": 379,
+  "price": 380,
   "categories": [
    "mugs"
   ],
@@ -259,7 +293,7 @@
  {
   "slug": "radhe-radhe-mug",
   "name": "Radhe Radhe Mug",
-  "price": 299,
+  "price": 300,
   "categories": [
    "mugs"
   ],
@@ -269,7 +303,7 @@
  {
   "slug": "chai-kitaab-mug",
   "name": "Chai Kitaab Mug",
-  "price": 299,
+  "price": 300,
   "categories": [
    "mugs"
   ],
@@ -279,7 +313,7 @@
  {
   "slug": "sab-theek-ho-jayega-mug",
   "name": "Sab Theek Ho Jayega Mug",
-  "price": 299,
+  "price": 300,
   "categories": [
    "mugs"
   ],
@@ -289,7 +323,7 @@
  {
   "slug": "chai-over-everything-mug",
   "name": "Chai Over Everything Mug",
-  "price": 299,
+  "price": 300,
   "categories": [
    "mugs"
   ],
@@ -299,7 +333,7 @@
  {
   "slug": "design-your-own-hoodie",
   "name": "Design Your Own Hoodie",
-  "price": 1079,
+  "price": 1080,
   "categories": [
    "design-your-own",
    "design-your-own-men"
@@ -310,7 +344,7 @@
  {
   "slug": "design-your-own-sweatshirt",
   "name": "Design Your Own Sweatshirt",
-  "price": 899,
+  "price": 900,
   "categories": [
    "design-your-own",
    "design-your-own-men"
@@ -321,7 +355,7 @@
  {
   "slug": "design-your-own-oversized-t-shirt",
   "name": "Design Your Own Oversized T-Shirt",
-  "price": 749,
+  "price": 750,
   "categories": [
    "design-your-own",
    "design-your-own-men"
@@ -332,7 +366,7 @@
  {
   "slug": "design-your-own-t-shirt",
   "name": "Design Your Own T-Shirt",
-  "price": 549,
+  "price": 550,
   "categories": [
    "design-your-own",
    "design-your-own-men"
