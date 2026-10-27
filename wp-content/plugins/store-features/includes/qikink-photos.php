@@ -208,21 +208,19 @@ function store_features_photos_build_inner( $product_id ) {
 			$common[] = $id;
 			continue;
 		}
-		$best = null;
-		$d1   = PHP_INT_MAX;
-		$d2   = PHP_INT_MAX;
+		// Nearest colour wins; if two colours are about as near (white vs off-white), it goes to
+		// both of them, never to clearly different colours.
+		$dist = array();
 		foreach ( $refs as $slug => $ref ) {
-			$d = sqrt( pow( $sig[0] - $ref[0], 2 ) + pow( $sig[1] - $ref[1], 2 ) + pow( $sig[2] - $ref[2], 2 ) );
-			if ( $d < $d1 ) {
-				$d2   = $d1;
-				$d1   = $d;
-				$best = $slug;
-			} elseif ( $d < $d2 ) {
-				$d2 = $d;
-			}
+			$dist[ $slug ] = sqrt( pow( $sig[0] - $ref[0], 2 ) + pow( $sig[1] - $ref[1], 2 ) + pow( $sig[2] - $ref[2], 2 ) );
 		}
-		if ( $best && ( 1 === count( $refs ) ? $d1 < 90 : ( $d1 < 70 && $d2 - $d1 > 18 ) ) ) {
-			$by_colour[ $best ][] = $id;
+		asort( $dist );
+		$d1   = $dist ? reset( $dist ) : PHP_INT_MAX;
+		$near = array_keys( array_filter( $dist, function ( $d ) use ( $d1 ) { return $d < 90 && $d <= $d1 + 20; } ) );
+		if ( $near ) {
+			foreach ( $near as $slug ) {
+				$by_colour[ $slug ][] = $id;
+			}
 		} else {
 			$common[] = $id;
 		}
