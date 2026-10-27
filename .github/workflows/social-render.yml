@@ -11,6 +11,8 @@ on:
       - "marketing/queue/**"
       - "marketing/render/**"
       - ".github/workflows/social-render.yml"
+  schedule:
+    - cron: "30 1 * * *"
   workflow_dispatch:
     inputs:
       force:
@@ -45,6 +47,12 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji ffmpeg >/dev/null
           pip install -q -U edge-tts gTTS
           cd marketing/render && npm i --silent && npx playwright install chromium >/dev/null
+      - name: List the products on sale (for the weekly post planner)
+        run: |
+          node -e '
+            (async()=>{ const all=[]; for(let p=1;p<6;p++){ const r=await fetch("https://panuwear.com/wp-json/wc/store/v1/products?per_page=100&page="+p,{headers:{"User-Agent":"Mozilla/5.0"}}); if(!r.ok) break; const j=await r.json(); if(!j.length) break; all.push(...j); }
+            const out=all.filter(p=>p.is_purchasable!==false).map(p=>({slug:p.slug,name:p.name,price:Math.round(p.prices.price/10**(p.prices.currency_minor_unit||0)),categories:p.categories.map(c=>c.slug),photos:p.images.length,custom:/design-your-own/.test(p.slug)}));
+            require("fs").writeFileSync("marketing/products.json", JSON.stringify(out,null,1)); console.log(out.length+" products"); })()'
       - name: Render and upload
         working-directory: marketing/render
         shell: bash
@@ -55,7 +63,7 @@ jobs:
         run: |
           git config user.name "social-bot"
           git config user.email "social-bot@users.noreply.github.com"
-          git add wp-content/plugins/store-features/social/queue.json
+          git add wp-content/plugins/store-features/social/queue.json marketing/products.json
           git diff --cached --quiet || (git commit -qm "Social: reels ready [skip ci]" && git pull -q --rebase && git push -q)
       - name: Keep the log (shots branch, social/render.log)
         if: always()
