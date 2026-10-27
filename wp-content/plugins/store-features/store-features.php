@@ -149,6 +149,11 @@ function store_features_contact_fields() {
 			'type'    => 'text',
 			'default' => '',
 		),
+		'store_features_facebook'  => array(
+			'label'   => __( 'Facebook page (full link)', 'store-features' ),
+			'type'    => 'text',
+			'default' => 'https://www.facebook.com/profile.php?id=61595937690948',
+		),
 	);
 }
 

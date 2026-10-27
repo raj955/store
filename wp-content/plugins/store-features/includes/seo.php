@@ -400,8 +400,10 @@ function store_features_seo_organization() {
 		);
 	}
 	$instagram = esc_url_raw( (string) get_option( 'store_features_instagram', '' ) );
-	if ( $instagram ) {
-		$org['sameAs'] = array( $instagram );
+	$facebook = esc_url_raw( (string) get_option( 'store_features_facebook', 'https://www.facebook.com/profile.php?id=61595937690948' ) );
+	$same     = array_values( array_filter( array( $instagram, $facebook ) ) );
+	if ( $same ) {
+		$org['sameAs'] = $same;
 	}
 	return $org;
 }

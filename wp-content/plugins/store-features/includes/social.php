@@ -165,6 +165,24 @@ function store_features_social_run() {
 		return;
 	}
 	set_transient( 'store_features_social_lock', 1, 10 * MINUTE_IN_SECONDS );
+	// Keep the Instagram link on the website right if the username is changed (checked every few hours).
+	if ( ! empty( $s['ig_id'] ) && ! get_transient( 'store_features_social_ig_name' ) ) {
+		set_transient( 'store_features_social_ig_name', 1, 3 * HOUR_IN_SECONDS );
+		$me = store_features_social_api( 'GET', $s['ig_id'], array( 'fields' => 'username' ) );
+		if ( ! empty( $me['username'] ) ) {
+			$link = 'https://www.instagram.com/' . $me['username'] . '/';
+			if ( ( $s['ig_name'] ?? '' ) !== $me['username'] ) {
+				$s['ig_name'] = $me['username'];
+				update_option( 'store_features_social', $s, false );
+			}
+			if ( get_option( 'store_features_instagram' ) !== $link ) {
+				update_option( 'store_features_instagram', $link );
+				if ( function_exists( 'wp_cache_clear_cache' ) ) {
+					wp_cache_clear_cache();
+				}
+			}
+		}
+	}
 	$state = store_features_social_state();
 	$now   = time();
 	foreach ( store_features_social_queue() as $p ) {

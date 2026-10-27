@@ -269,6 +269,14 @@ function store_child_instagram_link( $mods ) {
 	if ( ! is_array( $mods ) ) {
 		return $mods;
 	}
+	$fb = esc_url( (string) get_option( 'store_features_facebook', 'https://www.facebook.com/profile.php?id=61595937690948' ) );
+	if ( $fb ) {
+		$mods['facebook_link'] = $fb;
+		if ( ! is_admin() && ! empty( $mods['footer_html_content'] ) && false === strpos( $mods['footer_html_content'], 'facebook.com' ) ) {
+			$ficon                       = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M14 8h3V4h-3c-2.8 0-5 2.2-5 5v2H7v4h2v9h4v-9h3l1-4h-4V9c0-.6.4-1 1-1z"/></svg>';
+			$mods['footer_html_content'] .= ' <a class="pw-insta pw-fb" href="' . $fb . '" target="_blank" rel="noopener">' . $ficon . 'Facebook</a>';
+		}
+	}
 	$insta = esc_url( (string) get_option( 'store_features_instagram', '' ) );
 	if ( ! $insta ) {
 		return $mods;
