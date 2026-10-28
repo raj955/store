@@ -129,3 +129,30 @@ add_action(
 	},
 	PHP_INT_MAX
 );
+
+/**
+ * The checkout page is the block checkout (React). The old-style checkout scripts that some
+ * plugins still load next to it do nothing there but cost time on phones: the classic checkout
+ * script, the country dropdown library, and the password strength checker (zxcvbn, ~800 KB).
+ * Only on the checkout page itself, and only when it really is the block checkout.
+ */
+function store_features_speed_block_checkout_only() {
+	if ( is_admin() || ! function_exists( 'is_checkout' ) || ! is_checkout() || is_wc_endpoint_url() ) {
+		return false;
+	}
+	$page = get_post( wc_get_page_id( 'checkout' ) );
+	return $page && has_block( 'woocommerce/checkout', $page );
+}
+add_action(
+	'wp_enqueue_scripts',
+	function () {
+		if ( ! store_features_speed_block_checkout_only() ) {
+			return;
+		}
+		foreach ( array( 'wc-checkout', 'selectWoo', 'select2', 'wc-password-strength-meter', 'password-strength-meter', 'zxcvbn-async', 'wc-country-select', 'wc-address-i18n', 'wc-cart-fragments' ) as $h ) {
+			wp_dequeue_script( $h );
+		}
+		wp_dequeue_style( 'select2' );
+	},
+	1000
+);

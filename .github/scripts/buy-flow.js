@@ -15,7 +15,7 @@ const note = (s) => { log.push(s); console.log(s); };
     const page = await ctx.newPage();
     page.on('console', (m) => { if (['error','warning'].includes(m.type())) note(m.type()+' '+`[${v.name}] console: ${m.text().slice(0, 300)}`); });
     page.on('framenavigated', (f) => { if (f === page.mainFrame()) note(`[${v.name}] NAV ${f.url()}`); });
-    page.on('response', (r) => { if (r.request().isNavigationRequest()) note(`[${v.name}] doc ${r.status()} ${r.url()} cache=${r.headers()['cf-cache-status'] || ''} wpsc=${/WP-Super-Cache/i.test(JSON.stringify(r.headers())) ? 'y' : ''} loc=${r.headers()['location'] || ''}`); });
+    page.on('response', (r) => { if (r.request().isNavigationRequest()) note(`[${v.name}] doc ${r.status()} ${r.url()} cache=${r.headers()['cf-cache-status'] || ''} wpsc=${/WP-Super-Cache/i.test(JSON.stringify(r.headers())) ? 'y' : ''} loc=${r.headers()['location'] || ''} st=${r.headers()['server-timing'] || ''}`); });
     page.on('pageerror', (e) => note(`[${v.name}] pageerror: ${e.message.slice(0, 300)}`));
     page.on('response', (r) => { if (r.status() >= 400 && /panuwear/.test(r.url())) note(`[${v.name}] HTTP ${r.status()} ${r.url().slice(0, 160)}`); });
     const shot = (n) => page.screenshot({ path: `${out}/${v.name}-${n}.png`, fullPage: true }).catch(() => {});

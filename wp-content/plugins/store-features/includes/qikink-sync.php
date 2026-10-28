@@ -347,3 +347,30 @@ add_filter(
 	10,
 	3
 );
+
+/**
+ * Also run every 30 minutes from the site's scheduler. Most visitors get pages from the page
+ * cache (PHP doesn't run), so the run after a page view alone could wait for hours.
+ */
+add_action(
+	'init',
+	function () {
+		if ( function_exists( 'as_has_scheduled_action' ) && ! as_has_scheduled_action( 'store_features_qk_sync_tick', array(), 'store-features' ) ) {
+			as_schedule_recurring_action( time() + 120, 30 * MINUTE_IN_SECONDS, 'store_features_qk_sync_tick', array(), 'store-features' );
+		}
+	}
+);
+add_action(
+	'store_features_qk_sync_tick',
+	function () {
+		if ( '' === store_features_qikink_setting( 'client_id' ) ) {
+			return;
+		}
+		set_transient( 'store_features_qk_sync_wait', 1, 25 * MINUTE_IN_SECONDS );
+		try {
+			store_features_qk_sync();
+		} catch ( Throwable $e ) {
+			update_option( 'store_features_qk_sync_last', array( 'time' => gmdate( 'c' ), 'error' => $e->getMessage() ), false );
+		}
+	}
+);
