@@ -44,8 +44,8 @@ const note = (s) => { log.push(s); console.log(s); };
       note(`[${v.name}] cart: ${JSON.stringify(cart)}`);
       await shot('3-cart');
       await page.goto(base + '/checkout/', { waitUntil: 'load', timeout: 60000 });
-      await page.waitForTimeout(7000);
-      const co = await page.evaluate(() => ({ url: location.pathname, text: (document.querySelector('main') || document.body).innerText.slice(0, 700), pay: [...document.querySelectorAll('input[name="radio-control-wc-payment-method-options"], input[name="payment_method"]')].map((i) => i.value) }));
+      await page.waitForTimeout(15000);
+      const co = await page.evaluate(() => ({ url: location.pathname, skeleton: document.querySelectorAll('.wc-block-components-skeleton__element, .wc-block-checkout.is-loading, [class*=skeleton]').length, form: !!document.querySelector('.wc-block-checkout__form, form.checkout'), scripts: [...document.scripts].map((x) => x.src.split('/').pop().split('?')[0]).filter((x) => /checkout|razorpay|cod|cashfree|phonepe|payment/i.test(x)), globals: ['wc','wcSettings','wp'].filter((g) => window[g]).join(','), wcKeys: window.wc ? Object.keys(window.wc).join(',') : '', text: (document.querySelector('main') || document.body).innerText.slice(0, 700), pay: [...document.querySelectorAll('input[name="radio-control-wc-payment-method-options"], input[name="payment_method"]')].map((i) => i.value) }));
       note(`[${v.name}] checkout: ${JSON.stringify(co)}`);
       await shot('4-checkout');
     } catch (e) { note(`[${v.name}] ERROR ${e.message.slice(0, 300)}`); await shot('error'); }
