@@ -1,0 +1,33 @@
+# Checks every morning (and on demand) that a customer can add to cart and reach checkout.
+name: Buy flow check
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+    inputs:
+      product:
+        description: "Product path to test"
+        default: "/product/unisex-pullover-hoodie/"
+permissions:
+  contents: write
+jobs:
+  flow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null
+      - env:
+          PRODUCT: ${{ inputs.product || '/product/unisex-pullover-hoodie/' }}
+        run: NODE_PATH=/tmp/pw/node_modules node .github/scripts/buy-flow.js /tmp/flow/flow
+      - name: Save results (buy-flow branch)
+        if: always()
+        run: |
+          cd /tmp/flow && git init -q -b r && git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -qm flow --allow-empty && git add -A && git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -qm "buy flow" && git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" r:buy-flow
+      - name: Fail if the cart or checkout is broken
+        run: |
+          grep -q 'checkout: {"url":"/checkout/"' /tmp/flow/flow/log.txt && ! grep -q '"items":0' /tmp/flow/flow/log.txt
