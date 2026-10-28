@@ -43,10 +43,17 @@ const note = (s) => { log.push(s); console.log(s); };
       const cart = await page.evaluate(() => ({ text: (document.querySelector('main') || document.body).innerText.slice(0, 500), items: document.querySelectorAll('.wc-block-cart-items__row, .cart_item').length, spinner: !!document.querySelector('.wc-block-components-skeleton, .wc-block-components-spinner') }));
       note(`[${v.name}] cart: ${JSON.stringify(cart)}`);
       await shot('3-cart');
+      const pend = new Map();
+      const onReq = (r) => { if (/wp-json|admin-ajax|wc-ajax/.test(r.url())) pend.set(r, Date.now()); };
+      const onFin = async (r) => { const req = r.request(); if (pend.has(req)) { note(`[${v.name}] api ${req.method()} ${r.status()} ${req.url().replace(base, '').slice(0, 140)}`); pend.delete(req); } };
+      const onFail = (req) => { if (pend.has(req)) { note(`[${v.name}] api FAILED ${req.method()} ${req.url().replace(base, '').slice(0, 140)} ${req.failure() && req.failure().errorText}`); pend.delete(req); } };
+      page.on('request', onReq); page.on('response', onFin); page.on('requestfailed', onFail);
       await page.goto(base + '/checkout/', { waitUntil: 'load', timeout: 60000 });
       await page.waitForTimeout(15000);
       const co = await page.evaluate(() => ({ url: location.pathname, skeleton: document.querySelectorAll('.wc-block-components-skeleton__element, .wc-block-checkout.is-loading, [class*=skeleton]').length, form: !!document.querySelector('.wc-block-checkout__form, form.checkout'), scripts: [...document.scripts].map((x) => x.src.split('/').pop().split('?')[0]).filter((x) => /checkout|razorpay|cod|cashfree|phonepe|payment/i.test(x)), globals: ['wc','wcSettings','wp'].filter((g) => window[g]).join(','), wcKeys: window.wc ? Object.keys(window.wc).join(',') : '', text: (document.querySelector('main') || document.body).innerText.slice(0, 700), pay: [...document.querySelectorAll('input[name="radio-control-wc-payment-method-options"], input[name="payment_method"]')].map((i) => i.value) }));
       note(`[${v.name}] checkout: ${JSON.stringify(co)}`);
+      for (const [r] of pend) note(`[${v.name}] api NEVER FINISHED ${r.method()} ${r.url().replace(base, '').slice(0, 140)}`);
+      const html = await page.content(); fs.writeFileSync(`${out}/${v.name}-checkout.html`, html);
       await shot('4-checkout');
     } catch (e) { note(`[${v.name}] ERROR ${e.message.slice(0, 300)}`); await shot('error'); }
     const cookies = (await ctx.cookies()).map((c) => c.name).filter((n) => /woocommerce|wp_/.test(n));
