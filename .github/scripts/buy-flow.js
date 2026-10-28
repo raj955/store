@@ -51,7 +51,7 @@ const note = (s) => { log.push(s); console.log(s); };
       const onFail = (req) => { if (pend.has(req)) { note(`[${v.name}] api FAILED ${req.method()} ${req.url().replace(base, '').slice(0, 140)} ${req.failure() && req.failure().errorText}`); pend.delete(req); } };
       page.on('request', onReq); page.on('response', onFin); page.on('requestfailed', onFail);
       const t0 = Date.now();
-      await page.goto(base + '/checkout/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.goto(base + '/checkout/' + (process.env.PROF ? '?sf_prof=1' : ''), { waitUntil: 'domcontentloaded', timeout: 60000 });
       const tDom = Date.now() - t0;
       await page.waitForSelector('.wc-block-checkout__form, form.checkout', { timeout: 45000 }).catch(() => {});
       note(`[${v.name}] checkout timing: html+dom ${tDom} ms, form visible ${Date.now() - t0} ms, ttfb ${await page.evaluate(() => Math.round(performance.getEntriesByType('navigation')[0].responseStart))} ms`);

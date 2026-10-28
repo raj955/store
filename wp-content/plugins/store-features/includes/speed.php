@@ -156,3 +156,50 @@ add_action(
 	},
 	1000
 );
+
+/**
+ * Profiling on demand (?sf_prof=1): times between consecutive hooks, the slowest 15 go into a
+ * Server-Timing header as "p<n>-<hook>". Nothing changes for normal visitors.
+ */
+if ( isset( $_GET['sf_prof'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$GLOBALS['sf_prof'] = array( array( 'start', microtime( true ) ) );
+	add_action(
+		'all',
+		function ( $hook ) {
+			static $n = 0;
+			if ( ++$n % 1 === 0 ) {
+				$GLOBALS['sf_prof'][] = array( $hook, microtime( true ) );
+			}
+		}
+	);
+	add_action(
+		'template_redirect',
+		function () {
+			ob_start(
+				function ( $html ) {
+					if ( headers_sent() ) {
+						return $html;
+					}
+					$p    = $GLOBALS['sf_prof'];
+					$gaps = array();
+					for ( $i = 1, $c = count( $p ); $i < $c; $i++ ) {
+						$gaps[] = array( $p[ $i - 1 ][0] . '>' . $p[ $i ][0], ( $p[ $i ][1] - $p[ $i - 1 ][1] ) * 1000 );
+					}
+					usort(
+						$gaps,
+						function ( $a, $b ) {
+							return $b[1] <=> $a[1];
+						}
+					);
+					$out = array();
+					foreach ( array_slice( $gaps, 0, 15 ) as $k => $g ) {
+						$out[] = 'p' . $k . ';desc="' . preg_replace( '/[^A-Za-z0-9_>\/\-\.]/', '', $g[0] ) . '";dur=' . round( $g[1] );
+					}
+					header( 'Server-Timing: ' . implode( ', ', $out ), false );
+					return $html;
+				}
+			);
+		},
+		PHP_INT_MAX - 1
+	);
+}
