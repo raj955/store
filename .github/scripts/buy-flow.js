@@ -13,7 +13,7 @@ const note = (s) => { log.push(s); console.log(s); };
   for (const v of [{ name: 'mob', w: 390, h: 844, m: true }, { name: 'desk', w: 1366, h: 900, m: false }]) {
     const ctx = await browser.newContext({ viewport: { width: v.w, height: v.h }, isMobile: v.m, deviceScaleFactor: v.m ? 2 : 1 });
     const page = await ctx.newPage();
-    page.on('console', (m) => { if (m.type() === 'error') note(`[${v.name}] console: ${m.text().slice(0, 300)}`); });
+    page.on('console', (m) => { if (['error','warning'].includes(m.type())) note(m.type()+' '+`[${v.name}] console: ${m.text().slice(0, 300)}`); });
     page.on('framenavigated', (f) => { if (f === page.mainFrame()) note(`[${v.name}] NAV ${f.url()}`); });
     page.on('response', (r) => { if (r.request().isNavigationRequest()) note(`[${v.name}] doc ${r.status()} ${r.url()} cache=${r.headers()['cf-cache-status'] || ''} wpsc=${/WP-Super-Cache/i.test(JSON.stringify(r.headers())) ? 'y' : ''} loc=${r.headers()['location'] || ''}`); });
     page.on('pageerror', (e) => note(`[${v.name}] pageerror: ${e.message.slice(0, 300)}`));
@@ -52,6 +52,8 @@ const note = (s) => { log.push(s); console.log(s); };
       page.on('request', onReq); page.on('response', onFin); page.on('requestfailed', onFail);
       await page.goto(base + '/checkout/', { waitUntil: 'load', timeout: 60000 });
       await page.waitForTimeout(15000);
+      const st = await page.evaluate(() => { try { const d = wp.data; const cart = d.select('wc/store/cart'); const co = d.select('wc/store/checkout'); const pm = d.select('wc/store/payment'); return { cartLoaded: cart.hasFinishedResolution('getCartData'), items: (cart.getCartData().items||[]).length, coStatus: co.getCheckoutStatus && co.getCheckoutStatus(), pmInit: pm.paymentMethodsInitialized && pm.paymentMethodsInitialized(), expInit: pm.expressPaymentMethodsInitialized && pm.expressPaymentMethodsInitialized(), avail: pm.getAvailablePaymentMethods && Object.keys(pm.getAvailablePaymentMethods()), reg: Object.keys(wc.wcBlocksRegistry.getPaymentMethods()), regExp: Object.keys(wc.wcBlocksRegistry.getExpressPaymentMethods()), inner: document.querySelector('.wc-block-checkout').innerHTML.slice(0,300) }; } catch (e) { return 'ERR ' + e.message; } });
+      note(`[${v.name}] state: ${JSON.stringify(st)}`);
       const co = await page.evaluate(() => ({ url: location.pathname, skeleton: document.querySelectorAll('.wc-block-components-skeleton__element, .wc-block-checkout.is-loading, [class*=skeleton]').length, form: !!document.querySelector('.wc-block-checkout__form, form.checkout'), scripts: [...document.scripts].map((x) => x.src.split('/').pop().split('?')[0]).filter((x) => /checkout|razorpay|cod|cashfree|phonepe|payment/i.test(x)), globals: ['wc','wcSettings','wp'].filter((g) => window[g]).join(','), wcKeys: window.wc ? Object.keys(window.wc).join(',') : '', text: (document.querySelector('main') || document.body).innerText.slice(0, 700), pay: [...document.querySelectorAll('input[name="radio-control-wc-payment-method-options"], input[name="payment_method"]')].map((i) => i.value) }));
       note(`[${v.name}] checkout: ${JSON.stringify(co)}`);
       for (const [r] of pend) note(`[${v.name}] api NEVER FINISHED ${r.method()} ${r.url().replace(base, '').slice(0, 140)}`);
