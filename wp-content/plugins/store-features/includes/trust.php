@@ -124,6 +124,44 @@ add_filter(
 	10,
 	2
 );
+/**
+ * WooCommerce marks the first tag of a block's HTML with data-block-name, and its script only
+ * starts the cart/checkout on the element that carries that mark. Our notes above the block
+ * (trust tiles, offer, Google button) come first, so the mark can land on them and the checkout
+ * never loads. Last thing before output: put the mark back on the block itself.
+ *
+ * @param string $html  Block HTML.
+ * @param array  $block Block.
+ * @return string
+ */
+function store_features_fix_block_mark( $html, $block ) {
+	$name = $block['blockName'] ?? '';
+	if ( ! in_array( $name, array( 'woocommerce/cart', 'woocommerce/checkout' ), true ) ) {
+		return $html;
+	}
+	$slug = 'wp-block-' . str_replace( '/', '-', $name );
+	$attr = 'data-block-name="' . $name . '"';
+	// Drop the mark from any tag that isn't the block's own wrapper.
+	$html = preg_replace_callback(
+		'/<([a-z0-9]+)(\s[^>]*?)\s' . preg_quote( $attr, '/' ) . '([^>]*)>/i',
+		function ( $m ) use ( $slug, $attr ) {
+			$tag = $m[0];
+			if ( preg_match( '/class="' . preg_quote( $slug, '/' ) . '[\s"]/', $tag ) ) {
+				return $tag;
+			}
+			return '<' . $m[1] . $m[2] . $m[3] . '>';
+		},
+		$html
+	);
+	$html = preg_replace( '/<([a-z0-9]+)\s' . preg_quote( $attr, '/' ) . '(\s[^>]*)?>/i', '<$1$2>', $html ) ?? $html;
+	// Make sure the wrapper has it.
+	if ( false === strpos( $html, $attr ) ) {
+		$html = preg_replace( '/<div class="' . preg_quote( $slug, '/' ) . '([\s"])/', '<div ' . $attr . ' class="' . $slug . '$1', $html, 1 );
+	}
+	return $html;
+}
+add_filter( 'render_block', 'store_features_fix_block_mark', PHP_INT_MAX, 2 );
+
 add_action(
 	'woocommerce_before_cart',
 	function () {
