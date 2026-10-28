@@ -374,3 +374,15 @@ add_action(
 		}
 	}
 );
+
+// Right after the Qikink settings are saved, check tracking straight away (no 30-minute wait).
+add_action(
+	'woocommerce_update_options_integration_store_features_qikink',
+	function () {
+		delete_transient( 'store_features_qk_sync_wait' );
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			as_enqueue_async_action( 'store_features_qk_sync_tick', array(), 'store-features' );
+		}
+	},
+	20
+);
