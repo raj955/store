@@ -27,8 +27,8 @@
   "price": 350,
   "categories": [
    "men",
-   "t-shirts",
-   "men-t-shirts"
+   "men-t-shirts",
+   "t-shirts"
   ],
   "photos": 2,
   "custom": false
@@ -130,8 +130,8 @@
   "price": 670,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
   "photos": 7,
   "custom": false
