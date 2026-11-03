@@ -211,6 +211,8 @@ function store_features_social_run() {
 					'caption'       => store_features_social_caption( $p ),
 					'share_to_feed' => 'true',
 				);
+				$why1  = '';
+				$why2  = '';
 				$extra = array();
 				$tags  = store_features_social_tags( $s );
 				if ( $tags ) {
@@ -231,13 +233,19 @@ function store_features_social_run() {
 				$note = implode( ' + ', array_filter( array( isset( $extra['trial_params'] ) ? 'trial' : '', $tags ? 'tagged' : '' ) ) );
 				if ( ! isset( $r['id'] ) && isset( $extra['trial_params'] ) ) {
 					// Trial reels not available for this account yet: post it as a normal reel.
+					$why1 = (string) ( $r['error']['error_user_msg'] ?? $r['error']['message'] ?? '' );
 					unset( $extra['trial_params'] );
 					$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args + $extra );
 					$note = $tags ? 'tagged, trial not available' : 'trial not available';
 				}
 				if ( ! isset( $r['id'] ) && $extra ) {
+					$why2 = (string) ( $r['error']['error_user_msg'] ?? $r['error']['message'] ?? '' );
 					$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args );
 					$note = 'posted without tag';
+				}
+				$why = trim( implode( ' | ', array_filter( array( $why1 ?? '', $why2 ?? '' ) ) ) );
+				if ( $why ) {
+					$note .= ' — ' . substr( $why, 0, 300 );
 				}
 				store_features_social_set( $id, 'ig', isset( $r['id'] ) ? array( 'container' => $r['id'], 'error' => '', 'note' => $note ) : array( 'error' => $r['error']['message'] ?? 'unknown', 'tries' => $tries + 1 ) );
 			} else {
