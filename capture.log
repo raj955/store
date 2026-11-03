@@ -1,0 +1,22 @@
+shot home {}
+tall home_tall
+tall category_tall
+shot product {}
+shot product_colour_before {"tap":{"x":77,"y":402.3125,"w":40,"h":40}}
+shot product_colour_after {}
+shot product_size_before {"tap":{"x":120.5625,"y":513.3125,"w":44.28125,"h":44}}
+shot product_add {"tap":{"x":137.9375,"y":662.015625,"w":226.0625,"h":54}}
+shot product_added {}
+shot cart {}
+shot cart_checkout {"tap":{"x":61,"y":790.859375,"w":268,"h":54}}
+shot checkout_contact {"tap":{"x":35,"y":670.5625,"w":320,"h":50}}
+shot checkout_address {"tap":{"x":35,"y":397.09375,"w":320,"h":50}}
+shot checkout_payment {"tap":{"x":35,"y":293.21875,"w":320,"h":258.25}}
+shot checkout_cod {"tap":{"x":36,"y":484.5625,"w":318,"h":49.90625}}
+shot checkout_place {"tap":{"x":35,"y":399.34375,"w":320,"h":46}}
+shot track {"tap":{"x":16,"y":364.484375,"w":358,"h":51.59375}}
+shot design {}
+shot design_text {"tap":{"x":31,"y":386.125,"w":328,"h":72.375}}
+shot design_preview {}
+shot design_photo_tab {"tap":{"x":140.328125,"y":389.734375,"w":109.328125,"h":66}}
+done 21 shots
