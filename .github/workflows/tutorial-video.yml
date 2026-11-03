@@ -1,0 +1,38 @@
+# Makes the "how to order on Panuwear" tutorial video from the live site.
+# Results go to the tutorial-video branch (nothing is posted or deployed).
+name: Tutorial video
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "capture (screens only) or full"
+        default: "full"
+permissions:
+  contents: write
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Tools
+        timeout-minutes: 20
+        run: |
+          for i in 1 2 3; do timeout 300 sh -c 'sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji ffmpeg >/dev/null' && break; done
+          for i in 1 2 3; do timeout 180 pip install -q -U edge-tts gTTS && break; done
+          cd marketing/render && npm i --silent
+          for i in 1 2 3; do timeout 300 npx playwright install chromium >/dev/null && break; done
+      - name: Film the site
+        working-directory: marketing/render
+        run: node ../tutorial/capture.mjs /tmp/tut/shots
+      - name: Make the video
+        if: inputs.stage != 'capture'
+        working-directory: marketing/render
+        run: node ../tutorial/build.mjs /tmp/tut/shots /tmp/tut/out
+      - name: Save (tutorial-video branch)
+        if: always()
+        run: |
+          cd /tmp/tut && git init -q -b r && git add -A && git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -qm "tutorial" && git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" r:tutorial-video
