@@ -456,3 +456,43 @@ function store_features_social_page() {
 	}
 	echo '</div>';
 }
+
+/**
+ * Public status of the reel posts (no personal data, no token): which posts went out, and the
+ * error text if one failed. GET /wp-json/store-features/v1/social-status
+ */
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'store-features/v1',
+			'/social-status',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'callback'            => function () {
+					$s     = store_features_social_settings();
+					$state = store_features_social_state();
+					$rows  = array();
+					foreach ( store_features_social_queue() as $p ) {
+						$st     = $state[ $p['id'] ] ?? array();
+						$cell   = function ( $x, $key ) {
+							return ! empty( $x[ $key ] ) ? 'posted' . ( ! empty( $x['note'] ) ? ' (' . $x['note'] . ')' : '' ) : ( ! empty( $x['error'] ) ? 'error: ' . $x['error'] : ( ! empty( $x['container'] ) ? 'processing' : 'waiting' ) );
+						};
+						$rows[] = array(
+							'id'        => $p['id'],
+							'post_at'   => $p['post_at'],
+							'instagram' => $cell( $st['ig'] ?? array(), 'media_id' ),
+							'facebook'  => $cell( $st['fb'] ?? array(), 'video_id' ),
+						);
+					}
+					return array(
+						'connected'   => ! empty( $s['token'] ),
+						'token_error' => (string) get_option( 'store_features_social_token_error', '' ),
+						'posts'       => $rows,
+					);
+				},
+			)
+		);
+	}
+);
