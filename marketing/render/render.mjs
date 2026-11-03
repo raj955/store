@@ -76,7 +76,26 @@ if (browser) {
 }
 
 for (const [n, it] of todo.entries()) {
-	console.log(`\n== ${it.id} (${it.product})`);
+	console.log(`\n== ${it.id} (${it.product || it.video_src})`);
+	// A ready-made video (e.g. the tutorial): download it instead of rendering.
+	if (it.video_src) {
+		const final = path.join(OUT, `${it.id}.mp4`), cover = path.join(OUT, `${it.id}.jpg`);
+		for (const [src, dst] of [[it.video_src, final], [it.cover_src, cover]]) {
+			if (!src) continue;
+			const r = await fetch(src); if (!r.ok) throw new Error(`${src} -> ${r.status}`);
+			fs.writeFileSync(dst, Buffer.from(await r.arrayBuffer()));
+		}
+		const stamp = Date.now().toString(36);
+		ftpUpload(final, `uploads/sf-social/${it.id}-${stamp}.mp4`);
+		if (it.cover_src) ftpUpload(cover, `uploads/sf-social/${it.id}-${stamp}.jpg`);
+		known.set(it.id, {
+			id: it.id, post_at: it.post_at, product: it.product || '', link: it.link || SITE + '/',
+			caption: it.caption, hashtags: it.hashtags || [],
+			video_url: `${SITE}/wp-content/uploads/sf-social/${it.id}-${stamp}.mp4`,
+			cover_url: it.cover_src ? `${SITE}/wp-content/uploads/sf-social/${it.id}-${stamp}.jpg` : '',
+		});
+		continue;
+	}
 	const prod = (await getJson(`${SITE}/wp-json/wc/store/v1/products?slug=${encodeURIComponent(it.product)}`))[0];
 	if (!prod) { console.log('product not found, skipped'); continue; }
 	const minor = prod.prices.currency_minor_unit || 0;
