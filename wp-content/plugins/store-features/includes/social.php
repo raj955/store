@@ -230,6 +230,24 @@ function store_features_social_run() {
 					$extra['trial_params'] = wp_json_encode( array( 'graduation_strategy' => 'SS_PERFORMANCE' ) );
 				}
 				$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args + $extra );
+				// Some tagged accounts can't be tagged (private or renamed): drop just those and try again.
+				$skipped = array();
+				if ( ! isset( $r['id'] ) && $tags && preg_match( '/cannot be accessed:\s*([a-z0-9._,\s]+)/i', (string) ( $r['error']['error_user_msg'] ?? $r['error']['message'] ?? '' ), $mm ) ) {
+					$skipped = array_filter( array_map( 'trim', explode( ',', strtolower( $mm[1] ) ) ) );
+					$tags    = array_values( array_diff( $tags, $skipped ) );
+					unset( $extra['user_tags'] );
+					if ( $tags ) {
+						$extra['user_tags'] = wp_json_encode(
+							array_map(
+								function ( $u ) {
+									return array( 'username' => $u );
+								},
+								$tags
+							)
+						);
+					}
+					$r = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args + $extra );
+				}
 				$note = implode( ' + ', array_filter( array( isset( $extra['trial_params'] ) ? 'trial' : '', $tags ? 'tagged' : '' ) ) );
 				if ( ! isset( $r['id'] ) && isset( $extra['trial_params'] ) ) {
 					// Trial reels not available for this account yet: post it as a normal reel.
@@ -242,6 +260,9 @@ function store_features_social_run() {
 					$why2 = (string) ( $r['error']['error_user_msg'] ?? $r['error']['message'] ?? '' );
 					$r    = store_features_social_api( 'POST', $s['ig_id'] . '/media', $args );
 					$note = 'posted without tag';
+				}
+				if ( $skipped ) {
+					$note .= ' (not tagged: ' . implode( ', ', $skipped ) . ')';
 				}
 				$why = trim( implode( ' | ', array_filter( array( $why1 ?? '', $why2 ?? '' ) ) ) );
 				if ( $why ) {
