@@ -83,7 +83,6 @@ await step('product', async () => {
 	await shot('product_colour_before', { tap: tapC });
 	await pick.click();
 	await settle(1600);
-	await page.evaluate(() => window.scrollTo(0, 0));
 	await shot('product_colour_after');
 	const size = page.locator('.cfvsw-swatches-container[swatches-attr*="size" i] .cfvsw-swatches-option').nth(2);
 	const tapS = await rectOf(size);
