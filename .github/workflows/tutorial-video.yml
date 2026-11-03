@@ -27,12 +27,15 @@ jobs:
           for i in 1 2 3; do timeout 300 npx playwright install chromium >/dev/null && break; done
       - name: Film the site
         working-directory: marketing/render
-        run: node ../tutorial/capture.mjs /tmp/tut/shots
+        shell: bash
+        run: |
+          mkdir -p /tmp/tut && cp ../tutorial/* . && set -o pipefail && node capture.mjs /tmp/tut/shots 2>&1 | tee /tmp/tut/capture.log
       - name: Make the video
         if: inputs.stage != 'capture'
         working-directory: marketing/render
-        run: node ../tutorial/build.mjs /tmp/tut/shots /tmp/tut/out
+        shell: bash
+        run: set -o pipefail && node build.mjs /tmp/tut/shots /tmp/tut/out 2>&1 | tee /tmp/tut/build.log
       - name: Save (tutorial-video branch)
         if: always()
         run: |
-          cd /tmp/tut && git init -q -b r && git add -A && git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -qm "tutorial" && git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" r:tutorial-video
+          mkdir -p /tmp/tut && cd /tmp/tut && git init -q -b r && git add -A && git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -qm "tutorial" && git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" r:tutorial-video
