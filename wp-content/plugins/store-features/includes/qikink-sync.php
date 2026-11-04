@@ -149,6 +149,21 @@ function store_features_qk_apply( $order, $qk ) {
 		$changed[] = 'link';
 	}
 
+	// Out for delivery: tell the customer today, with the courier page that shows the rider's number.
+	if ( preg_match( '/out[\s_-]*for[\s_-]*deliver|\bofd\b/', $status ) && ! $order->get_meta( '_sf_ofd_told' ) ) {
+		$order->update_meta_data( '_sf_ofd_told', gmdate( 'c' ) );
+		$order->save();
+		$ship = store_features_shipment( $order );
+		$link = $ship['courier_url'] ? $ship['courier_url'] : $ship['url'];
+		$order->add_order_note(
+			"आपका order आज delivery के लिए निकल चुका है! 🚚\n"
+			. ( $link ? 'Delivery boy का नाम और नंबर देखने के लिए यह link खोलें: ' . $link . "\nवहाँ order वाला मोबाइल नंबर और OTP डालें।\n" : '' )
+			. ( $ship['awb'] ? 'AWB: ' . $ship['awb'] . "\n" : '' )
+			. ( 'cod' === $order->get_payment_method() ? 'Cash on Delivery: ₹' . wc_format_decimal( $order->get_total(), 0 ) . ' तैयार रखें।' : '' ),
+			true
+		);
+		$changed[] = 'out for delivery';
+	}
 	if ( 'delivered' === $status && 'yes' !== $order->get_meta( '_sf_delivered' ) ) {
 		$order->update_meta_data( '_sf_delivered', 'yes' );
 		$order->save();

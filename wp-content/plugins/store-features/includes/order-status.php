@@ -49,7 +49,16 @@ function store_features_shipment( $order ) {
 	if ( '' === $url && '' !== $awb && isset( $couriers[ $courier ] ) && '' !== $couriers[ $courier ][1] ) {
 		$url = sprintf( $couriers[ $courier ][1], rawurlencode( $awb ) );
 	}
+	// The courier's own page (it shows the delivery person's name and number once the customer
+	// enters their mobile number), even when Qikink gave us its own tracking link.
+	$courier_url = '';
+	if ( '' !== $awb && isset( $couriers[ $courier ] ) && '' !== $couriers[ $courier ][1] && false !== strpos( $couriers[ $courier ][1], '%s' ) ) {
+		$courier_url = sprintf( $couriers[ $courier ][1], rawurlencode( $awb ) );
+	}
+	$live = strtolower( (string) $order->get_meta( '_sf_qikink_live_status' ) );
 	return array(
+		'courier_url'  => $courier_url,
+		'out'          => (bool) preg_match( '/out[\s_-]*for[\s_-]*deliver|\bofd\b/', $live ),
 		'courier'      => $courier,
 		'courier_name' => (string) $order->get_meta( '_sf_courier_name' ) ? (string) $order->get_meta( '_sf_courier_name' ) : ( isset( $couriers[ $courier ] ) && 'other' !== $courier ? $couriers[ $courier ][0] : '' ),
 		'awb'          => $awb,
@@ -98,6 +107,9 @@ function store_features_order_steps( $order ) {
 	}
 	if ( $ship['awb'] || 'completed' === $status ) {
 		$current = 2;
+	}
+	if ( $ship['out'] && ! $ship['delivered'] ) {
+		$steps[2][1] = 'Out for delivery · आज पहुँचेगा';
 	}
 	if ( $ship['delivered'] ) {
 		$current = 3;
@@ -151,6 +163,20 @@ function store_features_order_timeline( $order ) {
 					</li>
 				<?php endforeach; ?>
 			</ol>
+			<?php if ( 2 === $data['current'] && ( $ship['courier_url'] || $ship['url'] ) ) : ?>
+				<div class="sf-track__rider">
+					<p class="sf-track__rider-title"><?php echo $ship['out'] ? 'आज delivery है! Delivery boy का नंबर चाहिए?' : 'Delivery boy का नंबर और live location'; ?></p>
+					<ol class="sf-track__rider-steps">
+						<li>नीचे वाला button दबाएँ (<?php echo esc_html( $ship['courier_name'] ? $ship['courier_name'] : 'courier' ); ?> का page खुलेगा)।</li>
+						<li>वही मोबाइल नंबर डालें जो order में दिया था, फिर OTP डालें।</li>
+						<li>Delivery boy का नाम, नंबर और आपका parcel कहाँ है, सब दिख जाएगा।</li>
+					</ol>
+					<a class="sf-track__live sf-track__rider-btn" href="<?php echo esc_url( $ship['courier_url'] ? $ship['courier_url'] : $ship['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( ( $ship['courier_name'] ? $ship['courier_name'] : 'Courier' ) . ' पर देखें' ); ?></a>
+					<?php if ( $ship['awb'] ) : ?>
+						<p class="sf-track__awb">AWB: <strong><?php echo esc_html( $ship['awb'] ); ?></strong></p>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
 			<?php if ( $data['current'] < 2 ) : ?>
 				<p class="sf-track__note">ज़्यादातर orders 2-3 working days में ship होते हैं और 5-7 working days में पहुँचते हैं। Ship होते ही आपको email पर tracking link आ जाएगा।</p>
 			<?php endif; ?>
@@ -187,7 +213,12 @@ function store_features_track_css() {
 		. '.sf-track-form{display:grid;gap:12px;max-width:420px}.sf-track-form label{display:grid;gap:6px;font-weight:600}'
 		. '.sf-track-form input{padding:12px 14px;border:1px solid #CFC8BB;border-radius:10px;font-size:16px}'
 		. '.sf-track-form button{padding:13px 18px;border:0;border-radius:999px;background:#17171A;color:#fff;font-weight:700;font-size:16px;cursor:pointer}'
-		. '.sf-track-err{color:#B42318;font-weight:600}';
+		. '.sf-track-err{color:#B42318;font-weight:600}'
+		. '.sf-track__rider{margin-top:16px;padding:14px 16px;border-radius:14px;background:#EEF6EF;border:1.5px solid #BFD6C3}'
+		. '.sf-track__rider-title{margin:0 0 8px;font-weight:800;font-size:16px;color:#173A22}'
+		. '.sf-track__rider-steps{margin:0 0 12px 18px;padding:0;font-size:14px;color:#2F4A37;line-height:1.5}'
+		. '.sf-track__rider-btn{background:#1F9D55!important}'
+		. '.sf-track__awb{margin:10px 0 0;font-size:13px;color:#4A4740}';
 }
 
 /**
