@@ -107,10 +107,10 @@ setTimeout(done,3200);})();
 add_action(
 	'init',
 	function () {
-		if ( '1' === get_option( 'store_features_intro_v' ) ) {
+		if ( '2' === get_option( 'store_features_intro_v' ) ) {
 			return;
 		}
-		update_option( 'store_features_intro_v', '1', false );
+		update_option( 'store_features_intro_v', '2', false );
 		if ( function_exists( 'wp_cache_clear_cache' ) ) {
 			wp_cache_clear_cache();
 		}
