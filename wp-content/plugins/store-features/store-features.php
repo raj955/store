@@ -320,6 +320,7 @@ require_once STORE_FEATURES_DIR . 'includes/product-zoom.php';
 require_once STORE_FEATURES_DIR . 'includes/cancellation.php';
 require_once STORE_FEATURES_DIR . 'includes/order-hold.php';
 require_once STORE_FEATURES_DIR . 'includes/prices.php';
+require_once STORE_FEATURES_DIR . 'includes/intro.php';
 require_once STORE_FEATURES_DIR . 'includes/card-colours.php';
 require_once STORE_FEATURES_DIR . 'includes/reviews.php';
 require_once STORE_FEATURES_DIR . 'includes/checkout-ux.php';
@@ -334,6 +335,7 @@ require_once STORE_FEATURES_DIR . 'includes/social.php';
 require_once STORE_FEATURES_DIR . 'includes/wishlist-lite.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-photos.php';
 require_once STORE_FEATURES_DIR . 'includes/prices.php';
+require_once STORE_FEATURES_DIR . 'includes/intro.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
