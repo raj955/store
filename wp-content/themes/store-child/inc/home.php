@@ -334,6 +334,10 @@ function store_child_home() {
 		</div>
 	</section>
 
+	<div class="pw-marquee-wrap"><div class="pw-marquee" aria-label="फ्री डिलीवरी, कैश ऑन डिलीवरी">
+		<div class="pw-marquee__track" aria-hidden="true"><span>फ्री डिलीवरी पूरे भारत में</span><i aria-hidden="true">✦</i><span>कैश ऑन डिलीवरी</span><i aria-hidden="true">✦</i><span>Desi graphic streetwear</span><i aria-hidden="true">✦</i><span>अपना design बनाओ</span><i aria-hidden="true">✦</i><span>Online पर ₹20 off</span><i aria-hidden="true">✦</i><span>पहाड़ी feels</span><i aria-hidden="true">✦</i><span>5-7 दिन में delivery</span><i aria-hidden="true">✦</i><span>फ्री डिलीवरी पूरे भारत में</span><i aria-hidden="true">✦</i><span>कैश ऑन डिलीवरी</span><i aria-hidden="true">✦</i><span>Desi graphic streetwear</span><i aria-hidden="true">✦</i><span>अपना design बनाओ</span><i aria-hidden="true">✦</i><span>Online पर ₹20 off</span><i aria-hidden="true">✦</i><span>पहाड़ी feels</span><i aria-hidden="true">✦</i><span>5-7 दिन में delivery</span><i aria-hidden="true">✦</i></div>
+	</div></div>
+
 	<?php if ( $products ) : ?>
 	<section class="pw-new" aria-labelledby="pw-new-title">
 		<div class="pw-wrap">

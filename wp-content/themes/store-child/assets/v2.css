@@ -1666,3 +1666,19 @@ body.single-product table.variations .cfvsw-swatches-container.cfvsw-product-con
 body.single-product table.variations .cfvsw-swatches-container.cfvsw-product-container[swatches-attr*="colour" i] .cfvsw-label-option .cfvsw-swatch-inner {
   width: auto !important; overflow: visible !important; white-space: nowrap; font-size: 14.5px;
 }
+
+/* Moving strip under the hero */
+.pw-marquee { overflow: hidden; background: var(--pw-haldi, #FFA41B); color: #17171A; border-block: 2px solid #17171A; transform: rotate(-1.2deg) scale(1.03); }
+.pw-marquee-wrap { overflow: hidden; padding: 12px 0 22px; }
+.pw-marquee__track { display: flex; align-items: center; gap: 22px; width: max-content; padding: 11px 0; font-weight: 800; font-size: 16px; letter-spacing: .2px; white-space: nowrap; animation: pwMarquee 28s linear infinite; }
+.pw-marquee__track i { font-style: normal; font-size: 13px; }
+.pw-marquee:hover .pw-marquee__track { animation-play-state: paused; }
+@keyframes pwMarquee { to { transform: translateX(-50%); } }
+/* Hero photos float gently */
+@media (prefers-reduced-motion: no-preference) {
+	.pw-hero__card { animation: pwFloat 6s ease-in-out infinite; }
+	.pw-hero__card--2 { animation-delay: -2s; animation-duration: 7s; }
+	.pw-hero__card--3 { animation-delay: -4s; animation-duration: 8s; }
+}
+@keyframes pwFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@media (prefers-reduced-motion: reduce) { .pw-marquee__track { animation: none; flex-wrap: wrap; justify-content: center; width: auto; } }

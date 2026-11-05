@@ -335,6 +335,7 @@ require_once STORE_FEATURES_DIR . 'includes/wishlist-lite.php';
 require_once STORE_FEATURES_DIR . 'includes/qikink-photos.php';
 require_once STORE_FEATURES_DIR . 'includes/prices.php';
 require_once STORE_FEATURES_DIR . 'includes/intro.php';
+require_once STORE_FEATURES_DIR . 'includes/motion.php';
 
 /**
  * One-time wording fix in the theme settings: products are not described as "printed after you
