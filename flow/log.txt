@@ -1,0 +1,51 @@
+[mob] doc 200 https://panuwear.com/product/unisex-pullover-hoodie/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=1594, setup-theme;dur=1, after-setup-theme;dur=118, init;dur=306, wp-loaded;dur=3, wp;dur=19, template-redirect;dur=5, wp-head;dur=597, wp-footer;dur=565, render;dur=4, total;dur=3212, queries;dur=269
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=20,cfOrigin;dur=4440
+[mob] NAV https://panuwear.com/product/unisex-pullover-hoodie/
+[mob] picked attribute_color=White, attribute_size=S
+[mob] after add: https://panuwear.com/product/unisex-pullover-hoodie/
+[mob] doc 200 https://panuwear.com/cart/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=181, setup-theme;dur=1, after-setup-theme;dur=11, init;dur=116, wp-loaded;dur=16, wp;dur=8, template-redirect;dur=2, wp-head;dur=529, wp-footer;dur=476, render;dur=6, total;dur=1347, queries;dur=156
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=4,cfOrigin;dur=1418
+cfExtPri
+[mob] NAV https://panuwear.com/cart/
+[mob] cart: {"text":"Cart\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nProducts in cart\nUnisex Pullover Hoodie\n₹730\nColour: White / Size: S\n−\n+\n₹730\nAdd coupons\nFree Shipping\nFREE\nEstimated total\n₹730\nProceed to Checkout","items":1,"spinner":false}
+[mob] doc 200 https://panuwear.com/checkout/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=236, setup-theme;dur=1, after-setup-theme;dur=15, init;dur=156, wp-loaded;dur=8, wp;dur=11, template-redirect;dur=6, wp-head;dur=559, wp-footer;dur=291, render;dur=3, total;dur=1287, queries;dur=119
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=4,cfOrigin;dur=1490
+cfExtPri
+[mob] NAV https://panuwear.com/checkout/
+warning [mob] console: Unrecognized feature: 'web-share'.
+warning [mob] console: Unrecognized feature: 'local-network-access'.
+warning [mob] console: Unrecognized feature: 'loopback-network'.
+[mob] checkout timing: html+dom 2076 ms, form visible 2113 ms, ttfb 1507 ms
+[mob] doc 200 https://api.razorpay.com/v1/checkout/public?traffic_env=baseline&build=57804717575cfbaa28f42f7afcb17d2967384cf2&build_v1=755bf4b2e2419bf0ffc2bac7c1fd6e126753d61d&checkout_v2=1&new_session=1&run_id=41994882521&unified_session_id=TxCR0OrziCKSPf cache= wpsc= loc= st=
+[mob] api POST 207 /wp-json/wc/store/v1/batch?_locale=site
+[mob] state: {"cartLoaded":true,"items":1,"coStatus":"idle","pmInit":true,"expInit":true,"avail":["razorpay","cod"],"reg":["razorpay","cod"],"regExp":[],"inner":"<div class=\"with-scroll-to-top__scroll-point\" aria-hidden=\"true\"></div><div class=\"wc-block-components-notices\"></div><div class=\"wc-block-components-notices__snackbar wc-block-components-notice-snackbar-list\" tabindex=\"-1\"><div></div></div><div class=\"wc-block-components-sidebar-layout wc-block-che"}
+[mob] checkout: {"url":"/checkout/","skeleton":0,"form":true,"scripts":["checkout.js","wc-cart-checkout-vendors-frontend.js","wc-cart-checkout-base-frontend.js","blocks-checkout-events.js","keycodes.min.js","blocks-checkout.js","checkout_block.js","wc-payment-method-cod.js","checkout-frontend.js"],"globals":"wc,wcSettings,wp","wcKeys":"wcTypes,blocksCheckoutEvents,wcSettings,wcBlocksRegistry,wcBlocksMiddleware,wcBlocksData,sanitize,blocksComponents,blocksCheckout,wcBlocksSharedContext,wcBlocksSharedHocs,priceFormat,checkout","text":"Checkout\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nContact information\nContact information\nLog in\nEmail address\n\nYou are currently checking out as a guest.\n\nCreate an account with Panuwear\nShipping address\nShipping address\nCountry/Region\nSelect a country/region\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntarctica\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelau\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Saint Eustatius and Saba\nBosnia and Herzegov","pay":["razorpay","cod"]}
+[mob] cookies: woocommerce_items_in_cart, wp_woocommerce_session_1efbd9342674e7999a2857f4306bf093, woocommerce_cart_hash
+[desk] doc 200 https://panuwear.com/product/unisex-pullover-hoodie/ cache=DYNAMIC wpsc= loc= st=cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=7,cfOrigin;dur=218
+[desk] NAV https://panuwear.com/product/unisex-pullover-hoodie/
+[desk] picked attribute_color=White, attribute_size=S
+[desk] after add: https://panuwear.com/product/unisex-pullover-hoodie/
+[desk] doc 200 https://panuwear.com/cart/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=198, setup-theme;dur=1, after-setup-theme;dur=11, init;dur=139, wp-loaded;dur=13, wp;dur=5, template-redirect;dur=2, wp-head;dur=515, wp-footer;dur=395, render;dur=5, total;dur=1284, queries;dur=156
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=4,cfOrigin;dur=1350
+cfExtPri
+[desk] NAV https://panuwear.com/cart/
+[desk] cart: {"text":"Cart\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nProducts in cart\nPRODUCT\t\nDETAILS\n\tTOTAL\n\n\t\nUnisex Pullover Hoodie\n₹730\nColour: White / Size: S\n−\n+\n\t\n₹730\nCART TOTALS\nAdd coupons\nFree Shipping\nFREE\nEstimated total\n₹730\nProceed to Checkout","items":1,"spinner":false}
+[desk] doc 200 https://panuwear.com/checkout/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=222, setup-theme;dur=1, after-setup-theme;dur=13, init;dur=154, wp-loaded;dur=14, wp;dur=7, template-redirect;dur=8, wp-head;dur=553, wp-footer;dur=260, render;dur=3, total;dur=1235, queries;dur=119
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=4,cfOrigin;dur=1437
+cfExtPri
+[desk] NAV https://panuwear.com/checkout/
+warning [desk] console: Unrecognized feature: 'web-share'.
+warning [desk] console: Unrecognized feature: 'local-network-access'.
+warning [desk] console: Unrecognized feature: 'loopback-network'.
+[desk] checkout timing: html+dom 1906 ms, form visible 1952 ms, ttfb 1453 ms
+[desk] api POST 207 /wp-json/wc/store/v1/batch?_locale=site
+[desk] doc 200 https://api.razorpay.com/v1/checkout/public?traffic_env=production&build=57804717575cfbaa28f42f7afcb17d2967384cf2&build_v1=755bf4b2e2419bf0ffc2bac7c1fd6e126753d61d&checkout_v2=1&new_session=1&run_id=41994882521&unified_session_id=TxCRazO5TMlJSF cache= wpsc= loc= st=
+[desk] state: {"cartLoaded":true,"items":1,"coStatus":"idle","pmInit":true,"expInit":true,"avail":["razorpay","cod"],"reg":["razorpay","cod"],"regExp":[],"inner":"<div class=\"with-scroll-to-top__scroll-point\" aria-hidden=\"true\"></div><div class=\"wc-block-components-notices\"></div><div class=\"wc-block-components-notices__snackbar wc-block-components-notice-snackbar-list\" tabindex=\"-1\"><div></div></div><div class=\"wc-block-components-sidebar-layout wc-block-che"}
+[desk] checkout: {"url":"/checkout/","skeleton":0,"form":true,"scripts":["checkout.js","wc-cart-checkout-vendors-frontend.js","wc-cart-checkout-base-frontend.js","blocks-checkout-events.js","keycodes.min.js","blocks-checkout.js","checkout_block.js","wc-payment-method-cod.js","checkout-frontend.js"],"globals":"wc,wcSettings,wp","wcKeys":"wcTypes,blocksCheckoutEvents,wcSettings,wcBlocksRegistry,wcBlocksMiddleware,wcBlocksData,sanitize,blocksComponents,blocksCheckout,wcBlocksSharedContext,wcBlocksSharedHocs,priceFormat,checkout","text":"Checkout\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nContact information\nContact information\nLog in\nEmail address\n\nYou are currently checking out as a guest.\n\nCreate an account with Panuwear\nShipping address\nShipping address\nCountry/Region\nSelect a country/region\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntarctica\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelau\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Saint Eustatius and Saba\nBosnia and Herzegov","pay":["razorpay","cod"]}
+[desk] cookies: woocommerce_items_in_cart, wp_woocommerce_session_1efbd9342674e7999a2857f4306bf093, woocommerce_cart_hash
