@@ -1,0 +1,4 @@
+[desk] /product/aop-female-kaftan/ -> 200
+[probe desk] /product/aop-female-kaftan/: "https://panuwear.com/wp-content/uploads/2026/10/img_65f528828e4dcd.jpg"
+[mob] /product/aop-female-kaftan/ -> 200
+[probe mob] /product/aop-female-kaftan/: "https://panuwear.com/wp-content/uploads/2026/10/img_65f528828e4dcd.jpg"
