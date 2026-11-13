@@ -28,68 +28,10 @@
   "price": 260,
   "categories": [
    "men",
-   "men-t-shirts",
-   "t-shirts"
-  ],
-  "photos": 14,
-  "custom": false
- },
- {
-  "slug": "boys-crew-neck-t-shirt-2",
-  "name": "Boy&#8217;s Crew Neck T-Shirt",
-  "price": 400,
-  "categories": [
-   "men",
-   "men-t-shirts",
-   "t-shirts"
-  ],
-  "photos": 50,
-  "custom": false
- },
- {
-  "slug": "boys-crew-neck-t-shirt",
-  "name": "Boy&#8217;s Crew Neck T-Shirt",
-  "price": 300,
-  "categories": [
-   "men",
    "t-shirts",
    "men-t-shirts"
   ],
-  "photos": 50,
-  "custom": false
- },
- {
-  "slug": "aop-sports-crop-top",
-  "name": "Aop Sports Crop Top",
-  "price": 370,
-  "categories": [
-   "women-crop-tops",
-   "women"
-  ],
-  "photos": 1,
-  "custom": false
- },
- {
-  "slug": "aop-pencil-skirt",
-  "name": "Aop Pencil Skirt",
-  "price": 480,
-  "categories": [
-   "women-skirts",
-   "women"
-  ],
-  "photos": 1,
-  "custom": false
- },
- {
-  "slug": "unisex-dryfit-t-shirt",
-  "name": "Unisex DryFit T-shirt",
-  "price": 350,
-  "categories": [
-   "men",
-   "men-t-shirts",
-   "t-shirts"
-  ],
-  "photos": 2,
+  "photos": 14,
   "custom": false
  },
  {
@@ -97,8 +39,8 @@
   "name": "Unisex Pullover Hoodie",
   "price": 730,
   "categories": [
-   "men-hoodies",
    "hoodies",
+   "men-hoodies",
    "men"
   ],
   "photos": 8,
@@ -109,22 +51,11 @@
   "name": "Female Cropped Hoodie",
   "price": 600,
   "categories": [
-   "hoodies",
    "women-hoodies",
+   "hoodies",
    "women"
   ],
   "photos": 8,
-  "custom": false
- },
- {
-  "slug": "womens-aop-bomber-jacket",
-  "name": "Women&#8217;s AOP Bomber Jacket",
-  "price": 1000,
-  "categories": [
-   "women-jacket",
-   "women"
-  ],
-  "photos": 1,
   "custom": false
  },
  {
@@ -132,22 +63,11 @@
   "name": "Unisex Acid Washed Hoodie",
   "price": 1200,
   "categories": [
-   "men-hoodies",
    "hoodies",
+   "men-hoodies",
    "men"
   ],
   "photos": 8,
-  "custom": false
- },
- {
-  "slug": "unisex-varsity-jacket",
-  "name": "Unisex Varsity Jacket",
-  "price": 950,
-  "categories": [
-   "men-jacket",
-   "men"
-  ],
-  "photos": 12,
   "custom": false
  },
  {
@@ -220,38 +140,15 @@
   "custom": false
  },
  {
-  "slug": "aop-mini-skirt",
-  "name": "Aop Mini Skirt",
-  "price": 410,
-  "categories": [
-   "women-skirts",
-   "women"
-  ],
-  "photos": 1,
-  "custom": false
- },
- {
   "slug": "unisex-oversized-raglan",
   "name": "Unisex Oversized Raglan",
   "price": 490,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
   "photos": 8,
-  "custom": false
- },
- {
-  "slug": "aop-female-kaftan",
-  "name": "AOP Female Kaftan",
-  "price": 640,
-  "categories": [
-   "women-dresses",
-   "women-kaftan",
-   "women"
-  ],
-  "photos": 1,
   "custom": false
  },
  {
