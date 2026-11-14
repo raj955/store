@@ -16,8 +16,8 @@
   "price": 400,
   "categories": [
    "men",
-   "men-t-shirts",
-   "t-shirts"
+   "t-shirts",
+   "men-t-shirts"
   ],
   "photos": 2,
   "custom": false
@@ -63,8 +63,8 @@
   "name": "Unisex Acid Washed Hoodie",
   "price": 1200,
   "categories": [
-   "hoodies",
    "men-hoodies",
+   "hoodies",
    "men"
   ],
   "photos": 8,
@@ -109,8 +109,8 @@
   "price": 670,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 7,
   "custom": false
@@ -121,8 +121,8 @@
   "price": 690,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 6,
   "custom": false
@@ -133,8 +133,8 @@
   "price": 660,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 6,
   "custom": false
@@ -145,8 +145,8 @@
   "price": 490,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 8,
   "custom": false
@@ -168,8 +168,8 @@
   "price": 680,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 4,
   "custom": false
@@ -180,8 +180,8 @@
   "price": 700,
   "categories": [
    "men",
-   "oversized-t-shirts",
-   "men-oversized-t-shirts"
+   "men-oversized-t-shirts",
+   "oversized-t-shirts"
   ],
   "photos": 10,
   "custom": false
