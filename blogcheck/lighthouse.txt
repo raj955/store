@@ -1,0 +1,98 @@
+blog-1.json: score 52 | FCP 5.0 s | LCP 7.1 s | TBT 280 ms | CLS 0 | TTFB Root document took 4,900 ms | weight Total size was 804 KiB | requests 54
+   - render-blocking-resources: 
+   - unused-javascript: Potential savings of 75 KiB
+       https://www.googletagmanager.com/gtag/js?id=G-JGK422NE0S 75KB  179KB
+   - unused-css-rules: Potential savings of 34 KiB
+       https://panuwear.com/wp-content/themes/kadence/assets/css/woocommerce.min.css?ver=1.6.0 21KB  21KB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 13KB  15KB
+   - uses-long-cache-ttl: 3 resources found
+       https://img1.wsimg.com/signals/js/clients/scc-c2/scc-c2.min.js 19KB  22KB
+       https://scripts.clarity.ms/0.8.80-beta/clarity.js 10KB  25KB
+       https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092 4KB  10KB
+   - third-party-summary: Third-party code blocked the main thread for 410 ms
+       Google Tag Manager   
+       Clarity   
+       GoDaddy   
+       Google Fonts   
+       Cloudflare   
+       secureserver.net   
+   - largest-contentful-paint-element: 
+   - unminified-css: Potential savings of 3 KiB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 3KB  15KB
+   - legacy-javascript: Potential savings of 0 KiB
+       https://img1.wsimg.com/traffic-assets/js/tccl.min.js 0KB  
+blog-2.json: score 67 | FCP 3.2 s | LCP 6.8 s | TBT 80 ms | CLS 0.03 | TTFB Root document took 290 ms | weight Total size was 804 KiB | requests 53
+   - render-blocking-resources: 
+   - unused-javascript: Potential savings of 75 KiB
+       https://www.googletagmanager.com/gtag/js?id=G-JGK422NE0S 75KB  179KB
+   - unused-css-rules: Potential savings of 34 KiB
+       https://panuwear.com/wp-content/themes/kadence/assets/css/woocommerce.min.css?ver=1.6.0 21KB  21KB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 13KB  15KB
+   - uses-long-cache-ttl: 3 resources found
+       https://img1.wsimg.com/signals/js/clients/scc-c2/scc-c2.min.js 19KB  22KB
+       https://scripts.clarity.ms/0.8.80-beta/clarity.js 10KB  25KB
+       https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092 4KB  10KB
+   - largest-contentful-paint-element: 
+   - unminified-css: Potential savings of 3 KiB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 3KB  15KB
+   - legacy-javascript: Potential savings of 0 KiB
+       https://img1.wsimg.com/traffic-assets/js/tccl.min.js 0KB  
+custom-wedding-t-shirts-team-bride-groom-squad-1.json: ERROR Cannot read properties of undefined (reading 'items')
+custom-wedding-t-shirts-team-bride-groom-squad-2.json: score 59 | FCP 3.9 s | LCP 7.0 s | TBT 80 ms | CLS 0 | TTFB Root document took 5,340 ms | weight Total size was 816 KiB | requests 57
+   - render-blocking-resources: 
+   - unused-javascript: Potential savings of 75 KiB
+       https://www.googletagmanager.com/gtag/js?id=G-JGK422NE0S 75KB  179KB
+   - unused-css-rules: Potential savings of 34 KiB
+       https://panuwear.com/wp-content/themes/kadence/assets/css/woocommerce.min.css?ver=1.6.0 21KB  21KB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 13KB  15KB
+   - uses-responsive-images: Potential savings of 13 KiB
+       https://panuwear.com/wp-content/uploads/2026/10/img_4ccd1dbe4ccd15.jpg 13KB  23KB
+   - uses-long-cache-ttl: 3 resources found
+       https://img1.wsimg.com/signals/js/clients/scc-c2/scc-c2.min.js 19KB  22KB
+       https://scripts.clarity.ms/0.8.80-beta/clarity.js 10KB  25KB
+       https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092 4KB  10KB
+   - largest-contentful-paint-element: 
+   - unminified-css: Potential savings of 3 KiB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 3KB  15KB
+   - legacy-javascript: Potential savings of 0 KiB
+       https://img1.wsimg.com/traffic-assets/js/tccl.min.js 0KB  
+how-to-style-an-oversized-t-shirt-1.json: score 70 | FCP 2.7 s | LCP 5.1 s | TBT 90 ms | CLS 0 | TTFB Root document took 1,480 ms | weight Total size was 839 KiB | requests 59
+   - render-blocking-resources: 
+   - unused-javascript: Potential savings of 75 KiB
+       https://www.googletagmanager.com/gtag/js?id=G-JGK422NE0S 75KB  179KB
+   - unused-css-rules: Potential savings of 34 KiB
+       https://panuwear.com/wp-content/themes/kadence/assets/css/woocommerce.min.css?ver=1.6.0 21KB  21KB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 13KB  15KB
+   - uses-responsive-images: Potential savings of 27 KiB
+       https://panuwear.com/wp-content/uploads/2026/10/img_39896872fb0c47-600x750.jpg 9KB  13KB
+       https://panuwear.com/wp-content/uploads/2026/10/img_f05c07ee1c5d39-600x750.jpg 9KB  12KB
+       https://panuwear.com/wp-content/uploads/2026/10/img_f5a769620095f5-600x750.jpg 9KB  12KB
+   - uses-long-cache-ttl: 3 resources found
+       https://img1.wsimg.com/signals/js/clients/scc-c2/scc-c2.min.js 19KB  22KB
+       https://scripts.clarity.ms/0.8.80-beta/clarity.js 10KB  25KB
+       https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092 4KB  10KB
+   - largest-contentful-paint-element: 
+   - unminified-css: Potential savings of 3 KiB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 3KB  15KB
+   - legacy-javascript: Potential savings of 0 KiB
+       https://img1.wsimg.com/traffic-assets/js/tccl.min.js 0KB  
+how-to-style-an-oversized-t-shirt-2.json: score 69 | FCP 2.8 s | LCP 6.3 s | TBT 40 ms | CLS 0.026 | TTFB Root document took 150 ms | weight Total size was 839 KiB | requests 59
+   - render-blocking-resources: 
+   - unused-javascript: Potential savings of 75 KiB
+       https://www.googletagmanager.com/gtag/js?id=G-JGK422NE0S 75KB  179KB
+   - unused-css-rules: Potential savings of 34 KiB
+       https://panuwear.com/wp-content/themes/kadence/assets/css/woocommerce.min.css?ver=1.6.0 21KB  21KB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 13KB  15KB
+   - uses-responsive-images: Potential savings of 27 KiB
+       https://panuwear.com/wp-content/uploads/2026/10/img_39896872fb0c47-600x750.jpg 9KB  13KB
+       https://panuwear.com/wp-content/uploads/2026/10/img_f05c07ee1c5d39-600x750.jpg 9KB  12KB
+       https://panuwear.com/wp-content/uploads/2026/10/img_f5a769620095f5-600x750.jpg 9KB  12KB
+   - uses-long-cache-ttl: 3 resources found
+       https://img1.wsimg.com/signals/js/clients/scc-c2/scc-c2.min.js 19KB  22KB
+       https://scripts.clarity.ms/0.8.80-beta/clarity.js 10KB  25KB
+       https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092 4KB  10KB
+   - largest-contentful-paint-element: 
+   - unminified-css: Potential savings of 3 KiB
+       https://panuwear.com/wp-content/themes/store-child/assets/v2.css?ver=1793869146 3KB  15KB
+   - legacy-javascript: Potential savings of 0 KiB
+       https://img1.wsimg.com/traffic-assets/js/tccl.min.js 0KB  
