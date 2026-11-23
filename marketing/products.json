@@ -39,8 +39,8 @@
   "name": "Unisex Pullover Hoodie",
   "price": 730,
   "categories": [
-   "hoodies",
    "men-hoodies",
+   "hoodies",
    "men"
   ],
   "photos": 8,
@@ -51,8 +51,8 @@
   "name": "Female Cropped Hoodie",
   "price": 600,
   "categories": [
-   "hoodies",
    "women-hoodies",
+   "hoodies",
    "women"
   ],
   "photos": 8,
@@ -168,8 +168,8 @@
   "price": 680,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
   "photos": 4,
   "custom": false
@@ -180,8 +180,8 @@
   "price": 700,
   "categories": [
    "men",
-   "men-oversized-t-shirts",
-   "oversized-t-shirts"
+   "oversized-t-shirts",
+   "men-oversized-t-shirts"
   ],
   "photos": 10,
   "custom": false
