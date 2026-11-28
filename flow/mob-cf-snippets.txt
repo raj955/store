@@ -1,0 +1,6 @@
+{
+ "len": 62243,
+ "out": [
+  "ocommerce/checkout\",po={hasDarkControls:{type:\"boolean\",default:(0,E.getSetting)(\"hasDarkEditorStyleSupport\",!1)},showRateAfterTaxName:{type:\"boolean\",default:(0,E.getSetting)(\"displayCartPricesIncludingTax\",!1)}},mo=JSON.parse('{\"xY\":{\"le\":false},\"uK\":{\"align\":{\"type\":\"string\",\"default\":\"wide\"},\"showFormStepNumbers\":{\"type\":\"boolean\",\"default\":false}}}');(0,l.S)({Block:no,blockName:lo,selector:'.wp-block-woocommerce-checkout[data-block-name=\"woocommerce/checkout\"]',getProps:e=>({attributes:(0,r.N)({...mo.uK,...po},e instanceof HTMLElement?e.dataset:{})}),blockMap:(0,n.getRegisteredBlockComponents)(lo),blockWrapper:({children:e})=>{const{extensions:t,receiveCart:o,...r}=(0,c.V)(),n=(0,a.v)()"
+ ]
+}

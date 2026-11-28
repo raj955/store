@@ -1,0 +1,51 @@
+[mob] doc 200 https://panuwear.com/product/unisex-pullover-hoodie/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=1504, setup-theme;dur=1, after-setup-theme;dur=140, init;dur=266, wp-loaded;dur=3, wp;dur=20, template-redirect;dur=6, wp-head;dur=636, wp-footer;dur=587, render;dur=4, total;dur=3165, queries;dur=376
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=12,cfOrigin;dur=4515
+[mob] NAV https://panuwear.com/product/unisex-pullover-hoodie/
+[mob] picked attribute_color=White, attribute_size=S
+[mob] after add: https://panuwear.com/product/unisex-pullover-hoodie/
+[mob] doc 200 https://panuwear.com/cart/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=176, setup-theme;dur=1, after-setup-theme;dur=14, init;dur=123, wp-loaded;dur=11, wp;dur=7, template-redirect;dur=2, wp-head;dur=532, wp-footer;dur=365, render;dur=4, total;dur=1234, queries;dur=152
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=3,cfOrigin;dur=1368
+cfExtPri
+[mob] NAV https://panuwear.com/cart/
+[mob] cart: {"text":"Cart\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nProducts in cart\nUnisex Pullover Hoodie\n₹730\nColour: White / Size: S\n−\n+\n₹730\nAdd coupons\nFree Shipping\nFREE\nEstimated total\n₹730\nProceed to Checkout","items":1,"spinner":false}
+[mob] doc 200 https://panuwear.com/checkout/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=190, setup-theme;dur=1, after-setup-theme;dur=14, init;dur=106, wp-loaded;dur=6, wp;dur=5, template-redirect;dur=4, wp-head;dur=421, wp-footer;dur=238, render;dur=3, total;dur=987, queries;dur=118
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=3,cfOrigin;dur=1290
+cfExtPri
+[mob] NAV https://panuwear.com/checkout/
+warning [mob] console: Unrecognized feature: 'web-share'.
+warning [mob] console: Unrecognized feature: 'local-network-access'.
+warning [mob] console: Unrecognized feature: 'loopback-network'.
+[mob] checkout timing: html+dom 1992 ms, form visible 2071 ms, ttfb 1319 ms
+[mob] api POST 207 /wp-json/wc/store/v1/batch?_locale=site
+[mob] doc 200 https://api.razorpay.com/v1/checkout/public?traffic_env=baseline&build=2288fb1d5ccded43a8801346ce3ef18b0d2d8975&checkout_v2=1&new_session=1&run_id=45774709608&unified_session_id=U5XMyZGo8OL2hv cache= wpsc= loc= st=
+[mob] state: {"cartLoaded":true,"items":1,"coStatus":"idle","pmInit":true,"expInit":true,"avail":["razorpay","cod"],"reg":["razorpay","cod"],"regExp":[],"inner":"<div class=\"with-scroll-to-top__scroll-point\" aria-hidden=\"true\"></div><div class=\"wc-block-components-notices\"></div><div class=\"wc-block-components-notices__snackbar wc-block-components-notice-snackbar-list\" tabindex=\"-1\"><div></div></div><div class=\"wc-block-components-sidebar-layout wc-block-che"}
+[mob] checkout: {"url":"/checkout/","skeleton":0,"form":true,"scripts":["checkout.js","wc-cart-checkout-vendors-frontend.js","wc-cart-checkout-base-frontend.js","blocks-checkout-events.js","keycodes.min.js","blocks-checkout.js","checkout_block.js","wc-payment-method-cod.js","checkout-frontend.js"],"globals":"wc,wcSettings,wp","wcKeys":"wcTypes,blocksCheckoutEvents,wcSettings,wcBlocksRegistry,wcBlocksMiddleware,wcBlocksData,sanitize,blocksComponents,blocksCheckout,wcBlocksSharedContext,wcBlocksSharedHocs,priceFormat,checkout","text":"Checkout\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nContact information\nContact information\nLog in\nEmail address\n\nYou are currently checking out as a guest.\n\nCreate an account with Panuwear\nShipping address\nShipping address\nCountry/Region\nSelect a country/region\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntarctica\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelau\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Saint Eustatius and Saba\nBosnia and Herzegov","pay":["razorpay","cod"]}
+[mob] cookies: woocommerce_items_in_cart, wp_woocommerce_session_1efbd9342674e7999a2857f4306bf093, woocommerce_cart_hash
+[desk] doc 200 https://panuwear.com/product/unisex-pullover-hoodie/ cache=DYNAMIC wpsc= loc= st=cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=7,cfOrigin;dur=308
+[desk] NAV https://panuwear.com/product/unisex-pullover-hoodie/
+[desk] picked attribute_color=White, attribute_size=S
+[desk] after add: https://panuwear.com/product/unisex-pullover-hoodie/
+[desk] doc 200 https://panuwear.com/cart/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=188, setup-theme;dur=1, after-setup-theme;dur=16, init;dur=107, wp-loaded;dur=9, wp;dur=4, template-redirect;dur=2, wp-head;dur=492, wp-footer;dur=307, render;dur=5, total;dur=1129, queries;dur=152
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=2,cfOrigin;dur=1269
+cfExtPri
+[desk] NAV https://panuwear.com/cart/
+[desk] cart: {"text":"Cart\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nProducts in cart\nPRODUCT\t\nDETAILS\n\tTOTAL\n\n\t\nUnisex Pullover Hoodie\n₹730\nColour: White / Size: S\n−\n+\n\t\n₹730\nCART TOTALS\nAdd coupons\nFree Shipping\nFREE\nEstimated total\n₹730\nProceed to Checkout","items":1,"spinner":false}
+[desk] doc 200 https://panuwear.com/checkout/ cache=DYNAMIC wpsc= loc= st=plugins-loaded;dur=174, setup-theme;dur=1, after-setup-theme;dur=16, init;dur=115, wp-loaded;dur=7, wp;dur=5, template-redirect;dur=5, wp-head;dur=479, wp-footer;dur=210, render;dur=3, total;dur=1014, queries;dur=118
+cfCacheStatus;desc="DYNAMIC"
+cfEdge;dur=3,cfOrigin;dur=1368
+cfExtPri
+[desk] NAV https://panuwear.com/checkout/
+warning [desk] console: Unrecognized feature: 'web-share'.
+warning [desk] console: Unrecognized feature: 'local-network-access'.
+warning [desk] console: Unrecognized feature: 'loopback-network'.
+[desk] checkout timing: html+dom 2018 ms, form visible 2121 ms, ttfb 1396 ms
+[desk] api POST 207 /wp-json/wc/store/v1/batch?_locale=site
+[desk] doc 200 https://api.razorpay.com/v1/checkout/public?traffic_env=production&build=2288fb1d5ccded43a8801346ce3ef18b0d2d8975&checkout_v2=1&new_session=1&run_id=45774709608&unified_session_id=U5XNZoMwHe90RY cache= wpsc= loc= st=
+[desk] state: {"cartLoaded":true,"items":1,"coStatus":"idle","pmInit":true,"expInit":true,"avail":["razorpay","cod"],"reg":["razorpay","cod"],"regExp":[],"inner":"<div class=\"with-scroll-to-top__scroll-point\" aria-hidden=\"true\"></div><div class=\"wc-block-components-notices\"></div><div class=\"wc-block-components-notices__snackbar wc-block-components-notice-snackbar-list\" tabindex=\"-1\"><div></div></div><div class=\"wc-block-components-sidebar-layout wc-block-che"}
+[desk] checkout: {"url":"/checkout/","skeleton":0,"form":true,"scripts":["checkout.js","wc-cart-checkout-vendors-frontend.js","wc-cart-checkout-base-frontend.js","blocks-checkout-events.js","keycodes.min.js","blocks-checkout.js","checkout_block.js","wc-payment-method-cod.js","checkout-frontend.js"],"globals":"wc,wcSettings,wp","wcKeys":"wcTypes,blocksCheckoutEvents,wcSettings,wcBlocksRegistry,wcBlocksMiddleware,wcBlocksData,sanitize,blocksComponents,blocksCheckout,wcBlocksSharedContext,wcBlocksSharedHocs,priceFormat,checkout","text":"Checkout\n\nPay online at checkout and get ₹20 off.\n\nघर बैठे मँगाओ, सामान मिले तब पैसे दो।\n\nफ्री डिलीवरी\nपूरे भारत में · Free shipping\nकैश ऑन डिलीवरी\nसामान मिले, तब पैसे दो · COD\nContact information\nContact information\nLog in\nEmail address\n\nYou are currently checking out as a guest.\n\nCreate an account with Panuwear\nShipping address\nShipping address\nCountry/Region\nSelect a country/region\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntarctica\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelau\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Saint Eustatius and Saba\nBosnia and Herzegov","pay":["razorpay","cod"]}
+[desk] cookies: woocommerce_items_in_cart, wp_woocommerce_session_1efbd9342674e7999a2857f4306bf093, woocommerce_cart_hash
